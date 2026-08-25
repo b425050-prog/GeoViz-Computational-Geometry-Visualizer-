@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/book6/Documents/GeoViz_B425050_v1.0.1/GeoViz/build/release/cmake_install.cmake",
+		"C:/Users/book6/Documents/GeoViz_B425050_v1.0.1/GeoViz/build/release/_deps/raylib-build/cmake_install.cmake",
+		"C:/Users/book6/Documents/GeoViz_B425050_v1.0.1/GeoViz/build/release/_deps/raylib-build/raylib/cmake_install.cmake",
+		"C:/Users/book6/Documents/GeoViz_B425050_v1.0.1/GeoViz/build/release/_deps/raylib-build/raylib/external/glfw/cmake_install.cmake",
+		"C:/Users/book6/Documents/GeoViz_B425050_v1.0.1/GeoViz/build/release/_deps/raylib-build/raylib/external/glfw/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">GeoViz desktop interface preview</title>
+  <desc id="desc">Dark neon computational geometry application with algorithm sidebar, Delaunay canvas, and animated playback inspector.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0c1729"/>
+      <stop offset="1" stop-color="#070d19"/>
+    </linearGradient>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0b1424"/>
+      <stop offset="1" stop-color="#101d32"/>
+    </linearGradient>
+    <radialGradient id="canvasGlow" cx="55%" cy="45%" r="55%">
+      <stop offset="0" stop-color="#9169ff" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#091321" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0H0V50" fill="none" stroke="#1d2f44" stroke-width="1"/>
+      <path d="M25 0V50M0 25H50" fill="none" stroke="#15263a" stroke-width="0.6"/>
+    </pattern>
+    <filter id="cyanGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="violetGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .font{font-family:Inter,Segoe UI,Arial,sans-serif}.label{fill:#8b9db8;font-size:10px;font-weight:600;letter-spacing:1.4px}.text{fill:#e8f2ff}.muted{fill:#8b9db8}.panel{fill:#101c30;stroke:#2e435e;stroke-width:1}.button{fill:#0d192b;stroke:#2e435e;stroke-width:1}.cyan{fill:#36e2d1}.violet{fill:#9169ff}.amber{fill:#faca4a}.coral{fill:#ff6780}.sky{fill:#4ba9ff}
+    </style>
+  </defs>
+
+  <rect width="1440" height="900" fill="url(#bg)"/>
+
+  <!-- Header -->
+  <rect width="1440" height="68" fill="url(#header)"/>
+  <path d="M0 67.5H1440" stroke="#2e435e"/>
+  <g transform="translate(14 8)">
+    <circle cx="26" cy="26" r="21" fill="#36e2d1" opacity="0.09" stroke="#36e2d1"/>
+    <path d="M12 37L28 13l17 25z" fill="#9169ff" opacity="0.12" stroke="#9169ff" stroke-width="1.5"/>
+    <path d="M12 37l25-14 8 15" fill="none" stroke="#36e2d1" stroke-width="2"/>
+    <circle cx="12" cy="37" r="3.5" fill="#ff6780"/><circle cx="28" cy="13" r="3.5" fill="#faca4a"/><circle cx="37" cy="23" r="3.5" fill="#36e2d1"/>
+  </g>
+  <text x="67" y="32" class="font text" font-size="23" font-weight="800" letter-spacing="3">GEOVIZ</text>
+  <text x="68" y="50" class="font muted" font-size="9" font-weight="600" letter-spacing="1.8">COMPUTATIONAL GEOMETRY VISUALIZER</text>
+  <g transform="translate(1106 10)">
+    <rect width="316" height="48" rx="10" class="panel" fill-opacity="0.75"/>
+    <circle cx="25" cy="24" r="13" fill="#9169ff" opacity="0.22"/>
+    <text x="25" y="28" text-anchor="middle" class="font violet" font-size="10" font-weight="800">SD</text>
+    <text x="49" y="20" class="font text" font-size="12" font-weight="700">SATYAM DHAL  |  B425050</text>
+    <text x="49" y="36" class="font muted" font-size="9">IIIT BHUBANESWAR  •  CSE-B  •  SEM 3</text>
+  </g>
+
+  <!-- Main panels -->
+  <rect x="12" y="80" width="234" height="778" rx="13" class="panel"/>
+  <rect x="260" y="80" width="834" height="778" rx="13" fill="#091321" stroke="#2e435e"/>
+  <rect x="260" y="80" width="834" height="778" rx="13" fill="url(#grid)"/>
+  <rect x="260" y="80" width="834" height="778" rx="13" fill="url(#canvasGlow)"/>
+  <rect x="1106" y="80" width="322" height="778" rx="13" class="panel"/>
+
+  <!-- Sidebar -->
+  <text x="27" y="108" class="font text" font-size="12" font-weight="750" letter-spacing="1">ALGORITHM ATLAS</text>
+  <text x="200" y="108" class="font cyan" font-size="8" font-weight="700">14 LABS</text>
+  <path d="M25 122H233" stroke="#2e435e"/>
+  <text x="29" y="145" class="font label">FOUNDATIONS</text>
+  <rect x="22" y="154" width="214" height="36" rx="7" class="button"/>
+  <text x="36" y="177" class="font text" font-size="11">Point / Line / Ray</text>
+  <text x="29" y="217" class="font label">CONVEX HULLS</text>
+  <rect x="22" y="226" width="214" height="36" rx="7" class="button"/><text x="36" y="249" class="font text" font-size="11">Monotonic Chain</text>
+  <rect x="22" y="268" width="214" height="36" rx="7" class="button"/><text x="36" y="291" class="font text" font-size="11">Graham Scan</text>
+  <rect x="22" y="310" width="214" height="36" rx="7" class="button"/><text x="36" y="333" class="font text" font-size="11">Jarvis March</text>
+  <rect x="22" y="352" width="214" height="36" rx="7" class="button"/><text x="36" y="375" class="font text" font-size="11">QuickHull</text>
+  <text x="29" y="415" class="font label">TESSELLATION</text>
+  <rect x="22" y="424" width="214" height="36" rx="7" fill="#4ba9ff" fill-opacity="0.16" stroke="#4ba9ff" stroke-opacity="0.8"/>
+  <circle cx="34" cy="442" r="3" fill="#4ba9ff"/>
+  <text x="45" y="447" class="font sky" font-size="11" font-weight="700">Delaunay</text>
+  <rect x="22" y="466" width="214" height="36" rx="7" class="button"/><text x="36" y="489" class="font text" font-size="11">Voronoi</text>
+  <text x="29" y="529" class="font label">CLIPPING</text>
+  <rect x="22" y="538" width="214" height="36" rx="7" class="button"/><text x="36" y="561" class="font text" font-size="11">Half-Plane Intersection</text>
+  <text x="29" y="601" class="font label">POLYGONS + PROXIMITY</text>
+  <rect x="22" y="610" width="214" height="36" rx="7" class="button"/><text x="36" y="633" class="font text" font-size="11">Ear Clipping</text>
+  <rect x="22" y="652" width="214" height="36" rx="7" class="button"/><text x="36" y="675" class="font text" font-size="11">Closest Pair</text>
+  <rect x="22" y="694" width="214" height="36" rx="7" class="button"/><text x="36" y="717" class="font text" font-size="11">Segment Intersections</text>
+  <rect x="22" y="736" width="214" height="36" rx="7" class="button"/><text x="36" y="759" class="font text" font-size="11">Point in Polygon</text>
+  <rect x="22" y="778" width="214" height="36" rx="7" class="button"/><text x="36" y="801" class="font text" font-size="11">Enclosing Circle</text>
+  <rect x="22" y="820" width="214" height="3" rx="2" fill="#36e2d1" opacity="0.45"/>
+
+  <!-- Canvas toolbar -->
+  <g transform="translate(274 94)">
+    <rect width="548" height="42" rx="9" fill="#101c30" fill-opacity="0.96" stroke="#2e435e"/>
+    <g class="font" font-size="9" font-weight="700" text-anchor="middle">
+      <rect x="6" y="6" width="102" height="30" rx="7" class="button"/><text x="57" y="25" class="cyan">SMART</text>
+      <rect x="114" y="6" width="102" height="30" rx="7" class="button"/><text x="165" y="25" class="text">RANDOM</text>
+      <rect x="222" y="6" width="102" height="30" rx="7" class="button"/><text x="273" y="25" class="text">GRID</text>
+      <rect x="330" y="6" width="102" height="30" rx="7" class="button"/><text x="381" y="25" class="text">RING</text>
+      <rect x="438" y="6" width="104" height="30" rx="7" class="button"/><text x="490" y="25" class="coral">CLEAR</text>
+    </g>
+  </g>
+  <g transform="translate(980 96)" class="font" font-size="9" font-weight="700" text-anchor="middle">
+    <rect width="96" height="24" rx="12" fill="#101c30" stroke="#2e435e"/><text x="48" y="16" class="muted">ZOOM 100%</text>
+    <rect y="29" width="96" height="24" rx="12" fill="#36e2d1" fill-opacity="0.1" stroke="#36e2d1" stroke-opacity="0.45"/><text x="48" y="45" class="cyan">15 POINTS</text>
+  </g>
+
+  <!-- Delaunay canvas geometry -->
+  <g fill="#4ba9ff" fill-opacity="0.055" stroke="#4ba9ff" stroke-opacity="0.67" stroke-width="2">
+    <path d="M326 621L402 417L470 679Z"/><path d="M402 417L519 538L470 679Z"/>
+    <path d="M402 417L471 268L556 384L519 538Z"/><path d="M519 538L556 384L663 474Z"/>
+    <path d="M519 538L663 474L703 645L470 679Z"/><path d="M556 384L632 234L720 350L663 474Z"/>
+    <path d="M663 474L720 350L807 485L703 645Z"/><path d="M703 645L807 485L922 664Z"/>
+    <path d="M720 350L820 255L903 384L807 485Z"/><path d="M807 485L903 384L1016 513L922 664Z"/>
+    <path d="M402 417L556 384L471 268Z"/><path d="M556 384L720 350L632 234Z"/>
+  </g>
+  <g stroke="#36e2d1" stroke-width="2.2" fill="none" filter="url(#cyanGlow)" opacity="0.82">
+    <path d="M326 621L402 417L471 268L632 234L820 255L903 384L1016 513L922 664L703 645L470 679Z"/>
+  </g>
+  <g fill="#e8f2ff" stroke="#36e2d1" stroke-width="2">
+    <circle cx="326" cy="621" r="6"/><circle cx="402" cy="417" r="6"/><circle cx="471" cy="268" r="6"/>
+    <circle cx="470" cy="679" r="6"/><circle cx="519" cy="538" r="6"/><circle cx="556" cy="384" r="6"/>
+    <circle cx="632" cy="234" r="6"/><circle cx="663" cy="474" r="6"/><circle cx="703" cy="645" r="6"/>
+    <circle cx="720" cy="350" r="6"/><circle cx="807" cy="485" r="6"/><circle cx="820" cy="255" r="6"/>
+    <circle cx="903" cy="384" r="6"/><circle cx="922" cy="664" r="6"/><circle cx="1016" cy="513" r="6"/>
+  </g>
+  <g filter="url(#violetGlow)"><circle cx="663" cy="474" r="9" fill="#9169ff" stroke="#fff" stroke-opacity="0.8"/></g>
+  <circle cx="663" cy="474" r="119" fill="#9169ff" fill-opacity="0.025" stroke="#9169ff" stroke-opacity="0.5" stroke-dasharray="5 7"/>
+  <text x="278" y="839" class="font muted" font-size="9">LMB add/drag  •  RMB remove  •  MMB pan  •  Wheel zoom</text>
+
+  <!-- Inspector -->
+  <g class="font">
+    <rect x="1120" y="94" width="96" height="22" rx="11" fill="#4ba9ff" fill-opacity="0.1" stroke="#4ba9ff" stroke-opacity="0.4"/>
+    <text x="1168" y="109" text-anchor="middle" class="sky" font-size="9" font-weight="700">TESSELLATION</text>
+    <text x="1120" y="145" class="text" font-size="21" font-weight="750">Delaunay</text>
+    <text x="1120" y="171" class="text" font-size="21" font-weight="750">Triangulation</text>
+    <text x="1120" y="199" class="muted" font-size="10.5">Incremental Bowyer-Watson triangulation</text>
+    <text x="1120" y="215" class="muted" font-size="10.5">satisfying the empty-circumcircle property.</text>
+    <rect x="1120" y="233" width="294" height="45" rx="8" fill="#4ba9ff" fill-opacity="0.07"/>
+    <text x="1131" y="248" class="sky" font-size="8" font-weight="700" letter-spacing="1">TIME COMPLEXITY</text>
+    <text x="1131" y="267" class="text" font-size="12">Expected O(n log n)</text>
+    <text x="1120" y="301" class="label">INPUT MODEL</text>
+    <rect x="1120" y="311" width="294" height="58" rx="8" fill="#0d192b" stroke="#2e435e"/>
+    <text x="1131" y="332" class="muted" font-size="9.5">Add non-collinear sites; avoid exact duplicates.</text>
+    <text x="1131" y="349" class="muted" font-size="9.5">Drag any site to rebuild the cavity live.</text>
+    <g transform="translate(1120 384)" text-anchor="middle">
+      <rect width="95" height="50" rx="8" fill="#0d192b"/><rect x="99" width="95" height="50" rx="8" fill="#0d192b"/><rect x="198" width="96" height="50" rx="8" fill="#0d192b"/>
+      <text x="47" y="23" class="text" font-size="16" font-weight="700">15</text><text x="47" y="39" class="label">POINTS</text>
+      <text x="146" y="23" class="sky" font-size="16" font-weight="700">31</text><text x="146" y="39" class="label">FRAMES</text>
+      <text x="246" y="23" class="text" font-size="16" font-weight="700">84</text><text x="246" y="39" class="label">TESTS</text>
+    </g>
+    <text x="1120" y="458" class="label">PLAYBACK</text>
+    <g transform="translate(1120 469)" text-anchor="middle" font-size="11" font-weight="700">
+      <rect width="55" height="32" rx="7" class="button"/><text x="27" y="21" class="text">&lt;&lt;</text>
+      <rect x="60" width="55" height="32" rx="7" class="button"/><text x="87" y="21" class="text">&lt;</text>
+      <rect x="120" width="55" height="32" rx="7" fill="#4ba9ff" fill-opacity="0.18" stroke="#4ba9ff"/><text x="147" y="21" class="sky">II</text>
+      <rect x="180" width="55" height="32" rx="7" class="button"/><text x="207" y="21" class="text">&gt;</text>
+      <rect x="240" width="54" height="32" rx="7" class="button"/><text x="267" y="21" class="text">&gt;&gt;</text>
+    </g>
+    <rect x="1120" y="517" width="212" height="6" rx="3" fill="#0d192b"/><rect x="1120" y="517" width="130" height="6" rx="3" fill="#4ba9ff"/>
+    <text x="1347" y="524" class="muted" font-size="9">2.0x</text>
+    <rect x="1120" y="548" width="294" height="236" rx="10" fill="#0d192b" stroke="#4ba9ff" stroke-opacity="0.28"/>
+    <text x="1132" y="568" class="sky" font-size="8" font-weight="700" letter-spacing="1">STEP 18 / 31</text>
+    <text x="1132" y="594" class="text" font-size="13" font-weight="700">Retriangulate the cavity</text>
+    <text x="1132" y="619" class="muted" font-size="10">Connect the inserted site to every boundary</text>
+    <text x="1132" y="636" class="muted" font-size="10">edge while preserving counter-clockwise order.</text>
+    <g transform="translate(1131 683)"><circle cx="4" cy="4" r="4" fill="#4ba9ff"/><text x="14" y="8" class="muted" font-size="9">accepted</text><circle cx="92" cy="4" r="4" fill="#faca4a"/><text x="102" y="8" class="muted" font-size="9">candidate</text><circle cx="190" cy="4" r="4" fill="#ff6780"/><text x="200" y="8" class="muted" font-size="9">rejected</text></g>
+    <rect x="1131" y="714" width="272" height="52" rx="8" fill="#4ba9ff" fill-opacity="0.06"/>
+    <text x="1142" y="734" class="sky" font-size="9">EMPTY-CIRCUMCIRCLE INVARIANT</text>
+    <text x="1142" y="751" class="muted" font-size="9">No retained site is inside a final circumcircle.</text>
+  </g>
+
+  <!-- Footer -->
+  <rect y="870" width="1440" height="30" fill="#08101d"/>
+  <path d="M0 870H1440" stroke="#2e435e"/>
+  <circle cx="16" cy="885" r="3.5" fill="#5eeaa2"/>
+  <text x="27" y="889" class="font muted" font-size="9" letter-spacing="0.8">READY  •  C++20 / RAYLIB  •  OOPS LAB</text>
+  <text x="1422" y="889" text-anchor="end" class="font muted" font-size="8.5">H HELP   CTRL+S SAVE   CTRL+O LOAD   CTRL+Z UNDO   R PRESET</text>
+</svg>
+

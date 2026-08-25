@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="250" viewBox="0 0 1000 250" role="img" aria-labelledby="title desc">
+  <title id="title">GeoViz Computational Geometry Visualizer</title>
+  <desc id="desc">Neon geometry mark and GeoViz wordmark on a dark rounded panel.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1424"/>
+      <stop offset="1" stop-color="#111f36"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f0f7ff"/>
+      <stop offset="0.58" stop-color="#36e2d1"/>
+      <stop offset="1" stop-color="#9169ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="984" height="234" rx="42" fill="url(#panel)" stroke="#2e435e" stroke-width="2"/>
+  <g transform="translate(48 33)">
+    <circle cx="92" cy="92" r="82" fill="#36e2d1" opacity="0.06"/>
+    <circle cx="92" cy="92" r="72" fill="none" stroke="#36e2d1" stroke-width="3" opacity="0.8"/>
+    <path d="M27 132 L86 38 L151 126 Z" fill="#9169ff" opacity="0.08" stroke="#9169ff" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M27 132 L118 84 L151 126" fill="none" stroke="#36e2d1" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="27" cy="132" r="9" fill="#ff6780" filter="url(#glow)"/>
+    <circle cx="86" cy="38" r="9" fill="#faca4a" filter="url(#glow)"/>
+    <circle cx="118" cy="84" r="9" fill="#36e2d1" filter="url(#glow)"/>
+    <circle cx="151" cy="126" r="9" fill="#9169ff" filter="url(#glow)"/>
+  </g>
+  <text x="245" y="128" fill="url(#word)" font-family="Inter,Segoe UI,sans-serif" font-size="100" font-weight="800" letter-spacing="8">GEOVIZ</text>
+  <text x="251" y="174" fill="#8b9db8" font-family="Inter,Segoe UI,sans-serif" font-size="21" font-weight="600" letter-spacing="5">COMPUTATIONAL GEOMETRY VISUALIZER</text>
+  <rect x="756" y="188" width="190" height="30" rx="15" fill="#9169ff" opacity="0.12" stroke="#9169ff" stroke-opacity="0.45"/>
+  <text x="851" y="209" text-anchor="middle" fill="#bca9ff" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700" letter-spacing="1">MODERN C++20</text>
+</svg>
+

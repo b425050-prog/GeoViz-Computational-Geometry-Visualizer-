@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If GeoViz helps your teaching or learning, please cite the repository."
+title: "GeoViz: Computational Geometry Visualizer"
+type: software
+authors:
+  - family-names: Dhal
+    given-names: Satyam
+version: 1.0.1
+date-released: 2026-08-25
+repository-code: "https://github.com/b425050-prog/GeoViz"
+license: MIT
+keywords:
+  - computational geometry
+  - visualization
+  - C++20
+  - object-oriented programming
+  - convex hull
+  - Delaunay triangulation
+  - Voronoi diagram
