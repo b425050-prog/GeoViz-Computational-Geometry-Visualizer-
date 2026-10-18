@@ -1,0 +1,35 @@
+# CMake and compiler outputs
+/build/
+/out/
+/cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+
+# Local application data, caches, and private configuration
+/runtime/
+/.cache/
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local.json
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
