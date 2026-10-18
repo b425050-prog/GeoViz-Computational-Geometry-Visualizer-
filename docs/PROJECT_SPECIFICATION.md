@@ -74,21 +74,9 @@ It does not require live third-party social-network integration, machine learnin
 
 ### 2.2 System architecture
 
-```mermaid
-flowchart TB
-    Browser["Browser: HTML + CSS<br/>Forms, photos, native video controls"] -->|HTTPS forms and pages| Server["Drogon C++ backend"]
-    Simulator["C++ scenario simulator<br/>Seeded accounts and actions"] -->|Authenticated demo requests| Server
-    Server --> Store[("SQLite database + protected media storage")]
-    Server --> Events["Append-only activity events"]
-    Events --> Engine["C++ analysis worker<br/>Windows, features, detectors"]
-    Engine --> Results[("Runs, alerts, cases, audit history")]
-    Console["raylib C++ analyst console"] -->|Authenticated C++ HTTP client| Server
-    Server -->|Snapshots and run results| Console
-    Engine --> Core["Shared geometry and algorithm library"]
-    Lab["raylib C++ Algorithm Lab"] --> Core
-    Lab --> Trace["Shared trace and playback engine"]
-    Console --> Trace
-```
+![System architecture connecting the HTML website, Drogon backend, event analysis, persistent storage, raylib console and shared Algorithm Lab.](media/system-architecture.png)
+
+[View diagram source](diagrams/system-architecture.mmd)
 
 Use **SQLite for the local demonstration**, with migrations, transactions, indexes, foreign keys, bounded busy handling, and tested concurrent access. Keep storage behind repository interfaces so PostgreSQL is a later option. Persistent media stays outside the public static directory.
 
@@ -121,8 +109,9 @@ scenarios/         Versioned fixtures and simulator configurations
 docs/
   PROJECT_SPECIFICATION.md
   README.md        Documentation navigation
+  diagrams/        Editable workflow diagram sources
   proposal/        Original submitted proposal PDF
-  media/           Documentation animations and static alternatives
+  media/           Workflow images, animations and static alternatives
                    Future architecture, user guide, validation, OOP map
 ```
 
@@ -325,27 +314,9 @@ Enhancements can introduce a small, versioned multi-feature space, pairwise timi
 
 ## 7. Console workflow
 
-```mermaid
-flowchart TD
-    A["Member registers/logs in"] --> B["Browse eligible photos/videos"]
-    B --> C["View, react, comment or report"]
-    C --> D["Drogon validates identity, age access,<br/>permissions, limits and uniqueness"]
-    D --> E["Commit state + durable event"]
-    E --> F["Window activity and extract features"]
-    F --> G["Surge analysis + behavioural DBSCAN"]
-    G --> H["Correlate history and repeated targets"]
-    H --> I["Publish versioned run and candidate alerts"]
-    I --> J["Analyst inspects timeline, map,<br/>cluster, accounts and content evidence"]
-    J --> K{"Enough evidence?"}
-    K -->|No| L["Record uncertainty / gather context"]
-    K -->|Benign explanation| M["Dismiss with explanation"]
-    K -->|Supported concern| N["Human review and authorized action"]
-    L --> J
-    M --> O["Save case, audit and reproducible summary"]
-    N --> O
-    O --> P["Compare with later windows / evaluate"]
-    P --> F
-```
+![Detailed console workflow, including event validation, clustering, human evidence review, uncertainty and case outcomes.](media/console-workflow.png)
+
+[View diagram source](diagrams/console-workflow.mmd)
 
 ### 7.1 Analyst session
 
@@ -362,18 +333,9 @@ flowchart TD
 
 ### 8.1 Shared execution and trace lifecycle
 
-```mermaid
-flowchart LR
-    A["Choose mode / dataset"] --> B["Edit input and parameters"]
-    B --> C["Validate assumptions"]
-    C --> D["Snapshot input, units, seed and version"]
-    D --> E["Execute C++ algorithm"]
-    E --> F["Result + typed trace events"]
-    F --> G["Play / pause / step / rewind"]
-    G --> H["Compare reference and operation counts"]
-    H --> I["Save scene, settings and summary"]
-    G -. "Edit invalidates old trace" .-> B
-```
+![Detailed algorithm lifecycle from input validation and snapshots through execution, trace playback, reference comparison and saved results.](media/algorithm-workflow.png)
+
+[View diagram source](diagrams/algorithm-workflow.mmd)
 
 - Computation is independent of animation timing. Count comparisons/expansions/queries in the engine, not rendered frames.
 - Trace events are typed and versioned; record sufficient state or bounded checkpoints for deterministic rewind. Document memory limits and cancellation.

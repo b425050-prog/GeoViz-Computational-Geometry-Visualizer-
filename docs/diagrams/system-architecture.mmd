@@ -1,0 +1,13 @@
+flowchart TB
+    Browser["Browser: HTML + CSS<br/>Forms, photos, native video controls"] -->|HTTPS forms and pages| Server["Drogon C++ backend"]
+    Simulator["C++ scenario simulator<br/>Seeded accounts and actions"] -->|Authenticated demo requests| Server
+    Server --> Store[("SQLite database + protected media storage")]
+    Server --> Events["Append-only activity events"]
+    Events --> Engine["C++ analysis worker<br/>Windows, features, detectors"]
+    Engine --> Results[("Runs, alerts, cases, audit history")]
+    Console["raylib C++ analyst console"] -->|Authenticated C++ HTTP client| Server
+    Server -->|Snapshots and run results| Console
+    Engine --> Core["Shared geometry and algorithm library"]
+    Lab["raylib C++ Algorithm Lab"] --> Core
+    Lab --> Trace["Shared trace and playback engine"]
+    Console --> Trace

@@ -1,0 +1,6 @@
+flowchart TD
+    A["Edit / load scene"] --> B["Validate + snapshot"]
+    B --> C["Compute result + trace"]
+    C --> D["Play · pause · step · rewind"]
+    D --> E["Compare + save"]
+    D -. "Edit invalidates trace" .-> A

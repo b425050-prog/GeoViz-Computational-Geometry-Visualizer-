@@ -30,4 +30,8 @@ The project is currently in the specification stage. These documents describe pl
 
 These illustrations were generated for this repository using synthetic data. They are concept presentations, not screenshots or recordings of implemented software. Static alternatives are provided for readers who prefer reduced motion. The geographic panel is a schematic coordinate layout, not a detailed basemap.
 
+## Workflow diagrams
+
+The overview and specification display workflow diagrams as PNG images for compatibility with mobile and other Markdown viewers. [Editable diagram sources and image links](diagrams/README.md) are available separately. No Mermaid renderer is required to read the workflows.
+
 Keep presentation assets in `docs/media/` and the original academic PDF in `docs/proposal/`. Future application media and map assets belong under the separately planned `assets/` directory. Add measured validation results and actual feature recordings as implementation becomes available.

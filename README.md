@@ -46,23 +46,9 @@ The original, Instagram-inspired demo will include photos, native HTML video pla
 
 ## From a post to an investigation
 
-```mermaid
-flowchart TD
-    A["Photo/video website<br/>Create account · log in · interact"] --> B["Drogon C++ backend<br/>Validate access and record durable events"]
-    B --> C["Recent-window analysis<br/>Volume baseline + behavioural DBSCAN"]
-    C --> D["Correlate evidence<br/>History · timing · shared targets"]
-    D --> E["Analyst console<br/>Timeline · world view · behaviour view"]
-    E --> F["Human investigation<br/>Content context · explanation · uncertainty"]
-    F --> G["Case decision<br/>Audit history + reproducible export"]
+![Console workflow from website actions through analysis, investigation and an audited case decision.](docs/media/console-workflow-overview.png)
 
-    style A fill:#101b2d,stroke:#ffc17d,color:#edf4ff
-    style B fill:#101b2d,stroke:#7ba7ff,color:#edf4ff
-    style C fill:#101b2d,stroke:#f38db8,color:#edf4ff
-    style D fill:#101b2d,stroke:#56e0cf,color:#edf4ff
-    style E fill:#101b2d,stroke:#b6a0ff,color:#edf4ff
-    style F fill:#101b2d,stroke:#ffc17d,color:#edf4ff
-    style G fill:#101b2d,stroke:#56e0cf,color:#edf4ff
-```
+[View diagram source](docs/diagrams/console-workflow-overview.mmd)
 
 ### What the analyst will inspect
 
@@ -100,14 +86,9 @@ The five modes from the submitted proposal remain required. They share scene edi
 | **A\*** | g/h/f scores and heuristic-guided exploration. | Compare routes with Dijkstra using valid heuristics. |
 | **DBSCAN** | Radius queries, expansion queues, core/border/noise transitions. | Explain behavioural and geographic density analyses. |
 
-```mermaid
-flowchart LR
-    A["Edit / load scene"] --> B["Validate + snapshot"]
-    B --> C["Compute result + trace"]
-    C --> D["Play · pause · step · rewind"]
-    D --> E["Compare + save"]
-    D -. "Edit invalidates trace" .-> A
-```
+![Algorithm Lab workflow: edit a scene, validate and snapshot, compute a trace, inspect playback, compare and save.](docs/media/algorithm-workflow-overview.png)
+
+[View diagram source](docs/diagrams/algorithm-workflow-overview.mmd)
 
 <details>
 <summary><strong>View the animated Algorithm Lab concept</strong></summary>
@@ -161,8 +142,9 @@ README.md                         Project overview
 docs/
   README.md                       Documentation index
   PROJECT_SPECIFICATION.md        Complete product and implementation plan
+  diagrams/                       Editable workflow diagram sources
   proposal/                       Original submitted proposal PDF
-  media/                          Concept GIFs and static alternatives
+  media/                          Workflow images, concept GIFs and stills
 ```
 
 [Browse the documentation index](docs/README.md) for direct links to workflows, algorithms and acceptance criteria. Application folders will be introduced with their implementations.

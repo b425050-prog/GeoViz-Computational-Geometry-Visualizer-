@@ -1,0 +1,10 @@
+flowchart TD
+    A["Choose mode / dataset"] --> B["Edit input and parameters"]
+    B --> C["Validate assumptions"]
+    C --> D["Snapshot input, units, seed and version"]
+    D --> E["Execute C++ algorithm"]
+    E --> F["Result + typed trace events"]
+    F --> G["Play / pause / step / rewind"]
+    G --> H["Compare reference and operation counts"]
+    H --> I["Save scene, settings and summary"]
+    G -. "Edit invalidates old trace" .-> B
