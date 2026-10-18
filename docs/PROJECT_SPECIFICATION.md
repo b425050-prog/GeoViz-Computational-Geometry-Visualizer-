@@ -11,6 +11,8 @@
 
 **Source:** [Submitted proposal](proposal/Computational_Geometry_Visualizer_Submission.pdf), expanded by the subsequent product discussion. The submitted PDF remains unchanged. This document defines the expanded product; the proposal's five algorithm demonstrations remain required.
 
+**Implementation companion:** Start with the [documentation handbook](README.md), [engineering contracts](CONTRACTS.md) and [architecture guide](implementation/ARCHITECTURE.md). They explain how to realize this scope. Actual execution status belongs in the [validation record](testing/VALIDATION_RECORD.md).
+
 ### Reading guide
 
 - [Product scope](#1-product-and-deliverables)
@@ -112,7 +114,14 @@ docs/
   diagrams/        Editable workflow diagram sources
   proposal/        Original submitted proposal PDF
   media/           Workflow images, animations and static alternatives
-                   Future architecture, user guide, validation, OOP map
+  implementation/  Architecture, database, API, security, setup, operations
+  algorithms/      Foundations, worked examples, detection and extensions
+  requirements/    Software requirements and acceptance stories
+  testing/         Test plan and actual validation ledger
+  evaluation/      Scenario and measurement methodology
+  user/            User and demonstration guides
+  academic/        Report draft with evidence status
+dev-notes/         TEMPORARY tutorials, viva preparation and concept artwork
 ```
 
 ### 2.4 Proposed server interface

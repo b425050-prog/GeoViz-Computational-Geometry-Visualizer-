@@ -13,10 +13,10 @@ A C++ investigation console for coordinated reporting and engagement abuse on a 
 
 [Full project specification](docs/PROJECT_SPECIFICATION.md) · [Console workflow](#from-a-post-to-an-investigation) · [Algorithm Lab](#the-algorithm-lab) · [Submitted proposal](docs/proposal/Computational_Geometry_Visualizer_Submission.pdf)
 
-![Animated concept: a photo/video website produces activity, a timeline reveals a surge, and linked geographic and behavioural views support human investigation.](docs/media/console-overview.gif)
+![Animated concept: a photo/video website produces activity, a timeline reveals a surge, and linked geographic and behavioural views support human investigation.](dev-notes/media/console-overview.gif)
 
-*Concept animation with synthetic data. Planned functionality, not application footage.*<br>
-[View the static overview](docs/media/console-overview.png)
+**Temporary concept asset — replace before submission.** Synthetic data; planned functionality, not application footage.<br>
+[View the static overview](dev-notes/media/console-overview.png)
 
 </div>
 
@@ -93,10 +93,10 @@ The five modes from the submitted proposal remain required. They share scene edi
 <details>
 <summary><strong>View the animated Algorithm Lab concept</strong></summary>
 
-![Concept animation of convex hull, geofence, Dijkstra, A*, DBSCAN and playback.](docs/media/geometry-overview.gif)
+![Concept animation of convex hull, geofence, Dijkstra, A*, DBSCAN and playback.](dev-notes/media/geometry-overview.gif)
 
-*Illustrative algorithm scenes, not running application footage.*<br>
-[Static alternative](docs/media/geometry-overview.png)
+**Temporary concept asset — replace before submission.** Illustrative scenes, not application footage.<br>
+[Static alternative](dev-notes/media/geometry-overview.png)
 
 </details>
 
@@ -133,21 +133,49 @@ Manual account creation/reporting will demonstrate the complete website-to-conso
 7. **Completion:** security/correctness checks, measured validation, documentation and real feature GIFs.
 8. **Enhancements:** selected catalogue additions after the required workflow works.
 
-See the [complete specification and required-feature checklist](docs/PROJECT_SPECIFICATION.md) for data contracts, access rules, workflows, OOP classes, scenarios and acceptance criteria. Build/run commands will be added when the implementation exists.
+See the [complete specification and required-feature checklist](docs/PROJECT_SPECIFICATION.md) for scope. The documentation below explains how to implement it; build commands remain proposed until the source/build system exists.
+
+## Documentation
+
+| Document | Purpose |
+| :--- | :--- |
+| [Documentation handbook](docs/README.md) | Product, engineering and academic reference index. |
+| [Architecture](docs/implementation/ARCHITECTURE.md) | System boundaries, ownership and engineering decisions. |
+| [API reference](docs/implementation/API_REFERENCE.md) | HTTP/authentication contracts and endpoint behaviour. |
+| [Algorithm explanations](docs/algorithms/CORE_ALGORITHMS.md) | Worked examples, assumptions and complexity. |
+| [User guide](docs/user/USER_GUIDE.md) | Website, analyst and Algorithm Lab operation. |
+| [Academic report](docs/academic/PROJECT_REPORT.md) | Report narrative with implementation evidence explicitly pending. |
+| [Demonstration guide](docs/user/DEMONSTRATION.md) | Product and algorithm demonstration runbook. |
+| [Submission checklist](docs/SUBMISSION_CHECKLIST.md) | Final documentation, cleanup and release checks. |
+
+The reference documentation describes the planned system. Actual measurements, screenshots and test outcomes belong in the [validation record](docs/testing/VALIDATION_RECORD.md).
+
+<!-- BEGIN TEMPORARY DEVELOPMENT LINKS -->
+**Development only:** the [temporary preparation hub](dev-notes/README.md) holds personal tutorials, viva notes and concept artwork. It is marked for removal when the author explicitly requests final cleanup.
+<!-- END TEMPORARY DEVELOPMENT LINKS -->
 
 ## Repository guide
 
 ```text
 README.md                         Project overview
 docs/
-  README.md                       Documentation index
+  README.md                       Documentation handbook and navigation
+  CONTRACTS.md                    Shared technical definitions
   PROJECT_SPECIFICATION.md        Complete product and implementation plan
+  requirements/                   Software requirements
+  implementation/                 Retained engineering reference
+  algorithms/                     Foundations, examples and extensions
+  testing/                        Test matrix and validation evidence
+  evaluation/                     Scenarios and measurement methodology
+  user/                           User and demonstration guides
+  academic/                       Project report draft
   diagrams/                       Editable workflow diagram sources
   proposal/                       Original submitted proposal PDF
-  media/                          Workflow images, concept GIFs and stills
+  media/                          Retained workflow and final product media
+dev-notes/                        TEMPORARY: remove on final cleanup request
 ```
 
-[Browse the documentation index](docs/README.md) for direct links to workflows, algorithms and acceptance criteria. Application folders will be introduced with their implementations.
+[Browse the documentation handbook](docs/README.md) for the complete reading path. Application folders will be introduced with their implementations.
 
 ## Academic details
 

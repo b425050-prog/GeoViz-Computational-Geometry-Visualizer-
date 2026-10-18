@@ -1,37 +1,84 @@
-# Project documentation
+# Documentation handbook
 
-The project is currently in the specification stage. These documents describe planned functionality; application code and executable tests will follow during implementation.
+This documentation explains how to understand, implement, operate, demonstrate and report the **Spatial Security Analytics Console**. It contains a detailed design and academic report draft. The application, executable build and tests have not been implemented; planned interfaces/commands are labelled accordingly.
+
+Use the [user guide](user/USER_GUIDE.md) for operation, [architecture](implementation/ARCHITECTURE.md) for the system design and [project report](academic/PROJECT_REPORT.md) for the academic narrative. Personal construction tutorials are separated from retained reference documentation.
+
+## 1. Understand the project
+
+| Document | What you will learn |
+| :--- | :--- |
+| [Project overview](../README.md) | Main product, visuals, roadmap and academic details. |
+| [Complete specification](PROJECT_SPECIFICATION.md) | Every agreed feature, full algorithm catalogue, workflows and completion scope. |
+| [Engineering contracts](CONTRACTS.md) | Shared roles/states, event counts, timestamps, age policy, features and snapshots. |
+| [Requirements specification](requirements/SRS.md) | Stable functional/non-functional requirement IDs and acceptance stories. |
+| [Glossary](GLOSSARY.md) | Definitions of technical and project-specific terms. |
+| [References](REFERENCES.md) | Official framework/security sources and academic algorithm citations. |
+| [Original proposal](proposal/Computational_Geometry_Visualizer_Submission.pdf) | Submitted academic baseline, preserved unchanged. |
+
+## 2. Engineering reference
+
+| Guide | Contents |
+| :--- | :--- |
+| [Build and setup](implementation/BUILD_AND_SETUP.md) | Toolchain/dependencies, target separation, future build flow and platform diagnosis. |
+| [Architecture](implementation/ARCHITECTURE.md) | Layers, ownership, concurrency, transaction flow and engineering trade-offs. |
+| [Database](implementation/DATABASE.md) | Tables/fields, keys, indexes, event consistency, migrations, backup and reset. |
+| [API reference](implementation/API_REFERENCE.md) | Routes, sessions/CSRF, request/response rules, errors, pagination and examples. |
+| [Security and privacy](implementation/SECURITY_AND_PRIVACY.md) | Permissions, threats, safeguards, data minimization and retention. |
+| [Configuration](implementation/CONFIGURATION.md) | Proposed keys, units, validation, safe defaults and reproducibility. |
+| [Operations](implementation/OPERATIONS.md) | Intended startup/shutdown, recovery, backup, reset and troubleshooting. |
+| [OOP feature map](implementation/OOP_MAP.md) | Class responsibilities, patterns, ownership and C++ implementation evidence. |
+
+## 3. Understand and implement the algorithms
+
+| Guide | Contents |
+| :--- | :--- |
+| [Geometry foundations](algorithms/GEOMETRY_FOUNDATIONS.md) | Coordinates, vectors, orientation, intersections, polygon validation and numeric limits. |
+| [Five core algorithms](algorithms/CORE_ALGORITHMS.md) | Procedures, hand-worked examples, trace events, assumptions and complexity. |
+| [Detection pipeline](algorithms/DETECTION_PIPELINE.md) | Windows, median/MAD example, feature formulas, DBSCAN, history and explained priority. |
+| [Extension cookbook](algorithms/EXTENSIONS.md) | How/when to add the complete catalogue's spatial, statistical, graph and optimization techniques. |
+
+The required proposal modes are convex hull, polygon membership, Dijkstra, A* and DBSCAN. Their outputs are separate from a human judgement of report validity. Optional/research additions do not silently become required work.
+
+## 4. Verify and evaluate
 
 | Document | Purpose |
 | :--- | :--- |
-| [Project overview](../README.md) | Product introduction, visual overview, technology choices and academic details. |
-| [Complete specification](PROJECT_SPECIFICATION.md) | Full scope, access rules, data model, algorithms, OOP design, evaluation and implementation checklist. |
-| [Submitted proposal](proposal/Computational_Geometry_Visualizer_Submission.pdf) | Original academic submission, preserved without modifying its contents. |
+| [Test plan](testing/TEST_PLAN.md) | Meaningful unit/integration/UI/recovery test cases with stable IDs. |
+| [Scenarios and metrics](evaluation/SCENARIOS_AND_METRICS.md) | Scenario construction, label separation, held-out evaluation, precision/recall and performance methodology. |
+| [Validation record](testing/VALIDATION_RECORD.md) | Actual outcomes, evidence templates and explicitly unrun application checks. |
 
-## Workflows and implementation references
+The sample calculations teach the mathematics; they are not measured project results. Populate the validation ledger from real execution, preserving failures, skipped and unrun checks.
 
-- [System architecture and language contract](PROJECT_SPECIFICATION.md#2-language-and-architecture)
-- [Photo/video website and age access](PROJECT_SPECIFICATION.md#3-video-and-photo-website)
-- [Data model and event contract](PROJECT_SPECIFICATION.md#4-data-model-and-event-contract)
-- [Detection and evidence pipeline](PROJECT_SPECIFICATION.md#6-detection-and-evidence-pipeline)
-- [Console workflow](PROJECT_SPECIFICATION.md#7-console-workflow)
-- [Algorithm workflow](PROJECT_SPECIFICATION.md#8-algorithm-workflow)
-- [Algorithm catalogue](PROJECT_SPECIFICATION.md#9-algorithm-catalogue)
-- [Demonstration scenarios](PROJECT_SPECIFICATION.md#11-demonstration-and-scenario-catalogue)
-- [Validation and acceptance criteria](PROJECT_SPECIFICATION.md#12-validation-and-acceptance-criteria)
-- [Implementation order and required-feature checklist](PROJECT_SPECIFICATION.md#13-implementation-order)
+## 5. Use, demonstrate and submit
 
-## Visual assets
+| Document | Purpose |
+| :--- | :--- |
+| [User guide](user/USER_GUIDE.md) | Intended website, analyst and lab workflows, with common recovery steps. |
+| [Demonstration guide](user/DEMONSTRATION.md) | Retained product and algorithm demonstration runbook. |
+| [Submission checklist](SUBMISSION_CHECKLIST.md) | Final cleanup, as-built documentation and release verification. |
+| [Academic project report](academic/PROJECT_REPORT.md) | Drafted abstract, background, scope, architecture, OOP, methods, evaluation, limitations and conclusion. |
 
-| Animation | Static alternative | Contents |
-| :--- | :--- | :--- |
-| [Console overview](media/console-overview.gif) | [Console still](media/console-overview.png) | Website activity, timeline, geographic context, behavioural grouping and human review. |
-| [Algorithm Lab overview](media/geometry-overview.gif) | [Algorithm Lab still](media/geometry-overview.png) | Convex hull, geofence, Dijkstra, A*, DBSCAN and playback concepts. |
+The report narrative is prepared. Final source references, actual setup versions/commands, institutional certification where required, screenshots and measurements must come from the completed work. No document claims faculty approval or fabricates signatures/results.
 
-These illustrations were generated for this repository using synthetic data. They are concept presentations, not screenshots or recordings of implemented software. Static alternatives are provided for readers who prefer reduced motion. The geographic panel is a schematic coordinate layout, not a detailed basemap.
+## 6. Visuals and workflows
 
-## Workflow diagrams
+| Retained workflow | Image |
+| :--- | :--- |
+| System architecture | [Architecture diagram](media/system-architecture.png) |
+| Console overview | [Console workflow](media/console-workflow-overview.png) |
+| Algorithm overview | [Algorithm workflow](media/algorithm-workflow-overview.png) |
 
-The overview and specification display workflow diagrams as PNG images for compatibility with mobile and other Markdown viewers. [Editable diagram sources and image links](diagrams/README.md) are available separately. No Mermaid renderer is required to read the workflows.
+[Diagram sources and image index](diagrams/README.md) covers the architecture and overview/detailed workflows. PNGs display without Mermaid support. Update these diagrams against the final implementation; retain their editable sources.
 
-Keep presentation assets in `docs/media/` and the original academic PDF in `docs/proposal/`. Future application media and map assets belong under the separately planned `assets/` directory. Add measured validation results and actual feature recordings as implementation becomes available.
+## 7. Keep documentation consistent
+
+Use the specification for scope, contracts for shared definitions and the validation ledger for observed reality. When a contract changes, update affected modules, guides, requirements/tests and run versions together. Do not mark planned features implemented based only on a diagram or a successful zero-test command.
+
+Keep documentation/media in `docs/`; future application media belongs in `assets/`, private runtime data in ignored storage and application logic in C++. The original proposal remains unchanged for academic traceability.
+
+<!-- BEGIN TEMPORARY DEVELOPMENT LINKS -->
+## Development-only material — remove before submission
+
+The [temporary preparation hub](../dev-notes/README.md) contains the beginner walkthrough, coding tutorials, viva questions and concept artwork. These are explicitly marked **REMOVE BEFORE SUBMISSION**, grouped in `dev-notes/` and retained until the author asks for cleanup. Follow the [submission checklist](SUBMISSION_CHECKLIST.md) when that instruction arrives. Remove this development-only section during cleanup.
+<!-- END TEMPORARY DEVELOPMENT LINKS -->
