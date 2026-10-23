@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: KD nearest
+Result: Nearest distance 58.063
+PASS: Compared query with exhaustive scan.
+Operations: 17
+Range queries: 0
+Visited/expanded: 17
+Scene revision: 40
+Radius: 82
+MinPts: 4
+Trace frames: 62
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 58.062515022783
+Answer indices: 22
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

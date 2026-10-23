@@ -1,0 +1,1 @@
+PASS: clean-folder launch without --root completed all 70 states at 960x640, including all nine security scenarios and both empty filtered views. Data, catalogue, fonts and icon were loaded from the bundled files. The executable imports only standard Windows system DLLs.

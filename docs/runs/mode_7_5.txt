@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: KD radius
+Result: 4 points inside radius.
+PASS: Compared query with exhaustive scan.
+Operations: 16
+Range queries: 0
+Visited/expanded: 16
+Scene revision: 37
+Radius: 60
+MinPts: 4
+Trace frames: 61
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 4.000000000000
+Answer indices: 0 1 2 3
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

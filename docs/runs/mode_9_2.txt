@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: Segment collision
+Result: 3 intersecting segment pairs.
+PASS: Collision predicate covered by independent expected-case tests (no separate runtime oracle).
+Operations: 15
+Range queries: 0
+Visited/expanded: 0
+Scene revision: 5
+Radius: 82
+MinPts: 4
+Trace frames: 16
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 3.000000000000
+Answer indices:
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

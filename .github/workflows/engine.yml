@@ -1,0 +1,12 @@
+name: Engine checks
+on: [push, pull_request]
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build/core -DGEOVIZ_BUILD_APP=OFF -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build/core --parallel 2
+      - run: ctest --test-dir build/core --output-on-failure
+      - run: python3 tools/verify_release.py
+      - run: git diff --exit-code

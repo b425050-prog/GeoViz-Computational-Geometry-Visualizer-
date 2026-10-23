@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: Closest pair
+Result: Closest distance 82.462
+PASS: Compared with exhaustive all-pairs distance.
+Operations: 124
+Range queries: 0
+Visited/expanded: 0
+Scene revision: 4
+Radius: 75
+MinPts: 4
+Trace frames: 23
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 82.462112512353
+Answer indices: 0 1
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

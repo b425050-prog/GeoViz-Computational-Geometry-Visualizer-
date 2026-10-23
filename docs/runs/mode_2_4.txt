@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: Dijkstra
+Result: Optimal cost 1070.000; expanded 14 vertices.
+PASS: Compared cost with Bellman-Ford and checked returned path edges/cost.
+Operations: 52
+Range queries: 0
+Visited/expanded: 14
+Scene revision: 50
+Radius: 72
+MinPts: 4
+Trace frames: 32
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 1070.000000000000
+Answer indices: 0 1 7 13 14 15 9 3 4 5
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

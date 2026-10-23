@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: DBSCAN indexed
+Result: 2 clusters; 4 noise points.
+PASS: Compared with independent core-component/border reference.
+Operations: 602
+Range queries: 48
+Visited/expanded: 602
+Scene revision: 54
+Radius: 35
+MinPts: 3
+Trace frames: 53
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 2.000000000000
+Answer indices:
+Cluster labels: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 -1 -1 -1 -1
+Kinds (0 noise,1 border,2 core): 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 0 0 0 0
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.

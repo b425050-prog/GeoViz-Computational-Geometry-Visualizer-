@@ -1,0 +1,1 @@
+PASS: 24 recordings, including tidal/terrace and six additional security scenarios; step, rewind, final, timeline, play/pause; six document tabs; images; 390px layout; no JavaScript errors.

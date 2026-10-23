@@ -1,0 +1,8 @@
+/build/
+/cmake-build/
+/output/
+*.o
+
+/node_modules/
+__pycache__/
+*.pyc

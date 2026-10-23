@@ -1,0 +1,19 @@
+GEOVIZ CHECKED RUN
+Algorithm: Convex hull
+Result: Hull has 10 vertices.
+PASS: Checked convexity and containment of every input point.
+Operations: 298
+Range queries: 0
+Visited/expanded: 0
+Scene revision: 40
+Radius: 82
+MinPts: 4
+Trace frames: 205
+Trace truncated: 0
+Tie policy: ascending input index; heap (f,g,index); strict coordinate sort.
+Tolerance: 1e-9 scale-aware orientation; exact radius inclusion.
+Value: 10.000000000000
+Answer indices: 0 2 20 25 29 34 35 9 5 4
+Cluster labels:
+Kinds (0 noise,1 border,2 core):
+Reproduce: load the adjacent .scene snapshot, select this algorithm, and Run.
