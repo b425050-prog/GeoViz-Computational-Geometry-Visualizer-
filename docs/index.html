@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GeoViz | Project guide</title><link rel="icon" href="../assets/geoviz.png"><link rel="stylesheet" href="guide.css"></head>
+<body><header><a class="brand" href="#overview"><img src="../assets/geoviz.png" alt="">GEOVIZ</a><span>Geometry & spatial security</span><a class="source" href="../README.md">Repository overview ↗</a></header>
+<nav aria-label="Documentation"><a href="#overview" data-page="overview">Recordings</a><a href="#algorithms" data-page="algorithms">Algorithms</a><a href="#oop" data-page="oop">OOP & C++</a><a href="#security" data-page="security">Security console</a><a href="#guide" data-page="guide">User guide</a><a href="#samples" data-page="samples">Samples</a><a href="#verification" data-page="verification">Verification</a></nav><main>
+<section id="overview"><div class="hero"><p class="eyebrow">OBJECT-ORIENTED PROGRAMMING PROJECT</p><h1>Computational geometry.<br><em>Spatial security analysis.</em></h1><p class="lead">A C++17 application for verified algorithm playback and source-linked security analysis.</p><p class="submission">Satyam Dhal · b425050 · Computer Science and Engineering (B)<br>Faculty: Dr. Srichandan Shobhanayak<br>International Institute of Information Technology, Bhubaneswar</p><div class="tags"><span>10 algorithm modes</span><span>60 editable scenes</span><span>9 security scenarios</span><span>Offline playback</span></div></div>
+<section class="player" aria-label="Recorded algorithm viewer"><div class="player-head"><div><p class="eyebrow">ENGINE RECORDINGS</p><h2>Verified algorithm recordings.</h2></div><label>Recording<select id="record" aria-label="Choose a recording"></select></label></div>
+<canvas id="stage" width="1200" height="570" aria-label="Algorithm recording; the explanation below describes each step"></canvas>
+<div class="explanation"><span id="step-number"></span><p id="explanation" aria-live="polite"></p></div>
+<div class="controls"><button id="rewind">↶ Rewind</button><button id="back">← Step</button><button id="play" class="primary">Play</button><button id="next">Step →</button><button id="final">Final</button><label class="speed">Speed<select id="speed"><option value="700">Slow</option><option value="240" selected>Normal</option><option value="65">Fast</option></select></label></div>
+<label class="timeline-label">Recording timeline<input id="timeline" type="range" min="0" value="0"></label><p id="verification-note" class="check"></p>
+</section>
+<div class="feature-grid"><article><span class="number">01</span><h3>Recorded execution</h3><p>Input edits invalidate old traces. Frozen snapshots preserve previous runs, parameters and answers.</p><a href="#algorithms">Read the algorithms →</a></article><article><span class="number">02</span><h3>Shared computational engine</h3><p>Geographic events use local metres. Device behaviour uses scaled fixed-window rates. Source records stay linked.</p><a href="#security">Follow the security pipeline →</a></article><article><span class="number">03</span><h3>Object-oriented design</h3><p>Encapsulated models, algorithm Strategies, interchangeable indexes and RAII keep responsibilities explicit.</p><a href="#oop">Inspect the OOP design →</a></article></div>
+<section class="comparison"><p class="eyebrow">SAME INPUT / MEASURED WORK</p><h2>Algorithm operation comparison</h2><div id="charts"></div><p class="caption">Algorithm-side counts from the recorded sample. Route expansion counts compare settled vertices. DBSCAN counts compare distance tests and exclude index construction and verification; they are not timing measurements.</p></section>
+<figure><img class="screenshot" src="media/security.png" alt="GeoViz security map with the permitted polygon, source observations and inspector"><figcaption>The desktop security map reuses the geometry engine and preserves source evidence.</figcaption></figure>
+<section class="download"><div><h2>Application setup</h2><p>Open <code>GeoViz.exe</code> in the repository root, choose Sample, then Run and Play.</p></div><a href="#guide">Controls & build instructions →</a></section></section>
+<section id="algorithms" class="document" hidden><h1>Algorithms and recorded decisions</h1>
+<p>Every run follows <strong>validate input → freeze scene → calculate and record → verify → inspect/export</strong>. Algorithm work counts exclude playback and independent reference checks. Open <a href="#overview">the offline guide</a> to play recordings exported directly by the C++ engine.</p>
+<h2>1. Convex hull: monotone chain</h2>
+<p><img src="media/hull.svg" alt="Convex hull construction"></p>
+<p>The convex hull is the smallest convex boundary containing all input points. Sort by exact <code>(x, y, input ID)</code>, remove duplicate coordinates, then build lower and upper chains. If the newest three vertices turn clockwise or remain collinear, remove the middle vertex. Join the two chains without repeating their endpoints.</p>
+<pre><code class="language-text">ids = sort_and_deduplicate(points)
+for order in [left_to_right, right_to_left]:
+    chain = []
+    for p in order:
+        while chain has two vertices and orientation(last_two, p) &lt;= 0:
+            remove last vertex
+        append p
+join lower and upper chains without duplicate endpoints
+</code></pre>
+<p>For <code>(0,0), (4,0), (4,3), (0,3), (2,1), (2,0)</code>, the hull is the four rectangle corners. The two additional points do not become hull vertices. Exact duplicates collapse; collinear sides keep only extreme endpoints. Empty, singleton and all-collinear inputs are valid.</p>
+<p><strong>Recorded:</strong> candidate, removed point and accepted chain; final closed boundary. <strong>Check:</strong> convex turns and containment of every input. <strong>Computation:</strong> O(n log n) time, O(n) auxiliary storage, excluding trace and verification. A hull can enclose empty space; it does not identify a density cluster.</p>
+<h2>2. Geofence: boundary-first ray casting</h2>
+<p><img src="media/geofence.svg" alt="Polygon ray crossing"></p>
+<p>Validate a simple nonzero-area polygon. First test whether the query lies on any closed edge. Otherwise cast a ray to the right and toggle parity at every crossing. The test <code>(a.y &gt; q.y) != (b.y &gt; q.y)</code> gives a half-open endpoint rule, preventing a vertex from being counted twice; horizontal edges do not divide by zero.</p>
+<pre><code class="language-text">for each polygon edge:
+    if query lies on edge: return BOUNDARY
+inside = false
+for each edge spanning query.y under the half-open rule:
+    x_cross = a.x + (query.y-a.y) * (b.x-a.x) / (b.y-a.y)
+    if x_cross &gt; query.x: inside = not inside
+return INSIDE if inside else OUTSIDE
+</code></pre>
+<p>In the rectangle <code>(0,0), (4,0), (4,3), (0,3)</code>, <code>(2,1)</code> is inside, <code>(4,1)</code> is boundary and <code>(5,1)</code> is outside. Concave gallery polygons demonstrate that bounding-box containment is insufficient.</p>
+<p><strong>Recorded:</strong> tested edges and ray crossings. <strong>Check:</strong> winding-number classification. <strong>Computation:</strong> O(m) per query and O(1) working storage; polygon validation separately costs O(m²). Geometry uses the common tolerance described below.</p>
+<h2>3. Dijkstra: nonnegative shortest paths</h2>
+<p><img src="media/routing.svg" alt="Shortest-path relaxation"></p>
+<p>Set the source distance to zero and all others to infinity. A min-heap selects the unsettled vertex with the least tentative cost. Relax an open edge when <code>g[u] + weight &lt; g[v]</code>, updating distance and predecessor. Stale heap entries are discarded. Once the goal is settled, follow predecessors back to the source.</p>
+<pre><code class="language-text">push (score=0, cost=0, source)
+while heap is not empty:
+    pop least (score, cost, ID)
+    skip stale or already-closed entry
+    close vertex; stop if goal
+    for each open neighbour:
+        if path through vertex improves neighbour:
+            update cost and parent; push new entry
+</code></pre>
+<p>For edges <code>A-B:2, A-C:3, B-D:2, C-D:2</code>, source A and goal D, the optimal route is A-B-D with cost 4. Blocking B-D forces A-C-D with cost 5. Blocking both incoming goal links returns <strong>NO PATH</strong>, not a fabricated route. The source equal to the goal costs zero. Graphs are simple, undirected and nonnegative; self-links and duplicate pairs are rejected.</p>
+<p><strong>Recorded:</strong> costs, predecessors, closed vertices and frontier. <strong>Check:</strong> Bellman-Ford optimal cost plus returned path edges and summed cost. <strong>Computation:</strong> O((V+E) log V) for the bounded simple graph with lazy binary-heap entries; O(V+E) graph/heap storage, excluding trace and checks.</p>
+<h2>4. A*: compatible goal-directed search</h2>
+<p>A* reuses the Dijkstra search and changes only the ranking to <code>f(v)=g(v)+h(v)</code>. Ordinary distance graphs use Euclidean distance to the goal. The regular grid uses Manhattan distance divided by its 60-unit spacing. Every open edge is checked: its cost must cover the corresponding geometric lower bound. If any edge is incompatible, the run uses <code>h=0</code> and reports the fallback.</p>
+<p>For A=(0,0), B=(2,0), C=(0,2), D=(2,2) with the preceding edge weights, A* prioritizes B, then D. Both algorithms return cost 4; A* can settle fewer vertices. The number saved depends on layout, obstacles, costs and ties. Moving grid points clears the grid assumption. An admissible estimate must use the same units as the edge costs.</p>
+<p><strong>Recorded/check:</strong> the route trace also includes f scores; Compare runs Dijkstra on the identical input. <strong>Computation:</strong> the same worst-case bound as Dijkstra here, with a consistent enabled heuristic. A* is not promised to be faster on every sample.</p>
+<h2>5. DBSCAN: density-connected groups</h2>
+<p><img src="media/dbscan.svg" alt="Core, border and noise"></p>
+<p>A point is <strong>core</strong> if its inclusive radius neighbourhood contains at least MinPts points, including itself. A non-core neighbour of a core point is <strong>border</strong>. Points not reached by any core component are <strong>noise</strong>. A queue expands through connected core neighbourhoods, so a cluster need not be circular or convex.</p>
+<pre><code class="language-text">visit points in ascending input order
+query neighbours of each unvisited point
+if too few: mark provisional noise
+otherwise start a cluster and queue its neighbours
+while queue is not empty:
+    pop point; query it once if unvisited
+    if core: enqueue its neighbours deterministically
+    if unassigned or provisional noise: assign this cluster
+</code></pre>
+<p>For A=(0,0), B=(1,0), C=(0,1), D=(1,1), E=(2,1), F=(6,6), radius 1.1 and MinPts 3, A-D are core, E is border and F is noise. A provisional noise point may later become border. When a border point touches multiple components, the first cluster in deterministic input order wins.</p>
+<p><strong>Recorded:</strong> radius query, active neighbours, labels, core/border/noise kind and expansion queue. <strong>Check:</strong> an independently constructed core-neighbour graph and border assignment. <strong>Direct computation:</strong> O(n²) distance work, O(n) working storage with per-query neighbourhoods, excluding trace and reference storage.</p>
+<h2>6. Indexed DBSCAN: shared expansion, different query Strategy</h2>
+<p>The cluster expansion above is unchanged. A <code>SpatialIndex</code> pointer selects either <code>LinearIndex</code> or <code>KDTree</code>. The tree skips boxes outside the radius before testing individual points. Returned neighbour IDs are sorted, preserving deterministic assignments and exact scan/indexed agreement.</p>
+<p>The build has expected O(n log n) time; query performance depends on data distribution and radius. Indexed DBSCAN can still perform O(n²) distance work when neighbourhoods cover most of the data. Compare reports distance tests; it excludes tree construction and verification and is not an elapsed-time benchmark. The sample catalogue records both implementations on the same scenes.</p>
+<h2>7. Closest pair: divide, solve and merge</h2>
+<p><img src="media/closest.svg" alt="Closest pair and dividing strip"></p>
+<p>Sort points by x once. Split at the midpoint; solve the left and right ranges; merge their y order using a temporary buffer. A globally best distance bounds a strip about the dividing line. In y order, compare each strip point with at most the next seven candidates, stopping earlier when the vertical separation is already too large.</p>
+<pre><code class="language-text">sort by x; check adjacent exact duplicates
+solve(range):
+    if at most three points: test all pairs; sort range by y
+    else:
+        remember x split; solve left; solve right
+        merge y-sorted ranges
+        collect points within best distance of split
+        test bounded following candidates in y order
+</code></pre>
+<p>For <code>(0,0), (3,0), (4,4), (4.2,4.1), (8,2)</code>, the best pair is <code>(4,4)</code> and <code>(4.2,4.1)</code> with distance √0.05 ≈ 0.223607. Duplicates give distance zero. Fewer than two points give no pair and an infinite distance. Equal-distance candidates are compared by their sorted input-ID pair.</p>
+<p><strong>Recorded:</strong> recursive region, strip, tested pair and current best. <strong>Check:</strong> exhaustive all-pairs distance. <strong>Computation:</strong> O(n log n) time and O(n) auxiliary storage plus recursion; maintaining y order avoids an extra logarithmic sorting factor.</p>
+<h2>8. Balanced k-d tree: nearest and radius</h2>
+<p><img src="media/kdtree.svg" alt="Median splits and pruning"></p>
+<p>Alternate x and y axes, select a median with <code>nth_element</code>, and recursively split both ranges. Nodes retain their axis-aligned regions. For nearest search, visit the side containing the query first. The squared distance from the query to a box is a lower bound for every point in it; a strictly worse box can be pruned. Equality remains searchable so the lowest-ID tie is retained.</p>
+<p>Radius search prunes when the box lower bound exceeds radius² and includes points at exact equality. Answers are returned in ascending ID order. A fresh tree is built for every input snapshot, so moving points cannot leave a stale index.</p>
+<p>For A=(0,0), B=(1,0), C=(0,1), D=(1,1), E=(2,1) and query <code>(2,0)</code>, B and E tie at distance 1; B has the lower ID. Radius 1.1 includes B and E. Empty input gives no nearest answer and an empty radius result.</p>
+<p><strong>Recorded:</strong> axis/median construction, visited regions, current best and dashed pruned regions. <strong>Check:</strong> exhaustive scan. <strong>Computation:</strong> expected O(n log n) build with median selection and O(n) storage. Nearest/radius queries can visit O(n) nodes in the worst case; radius output also costs O(k log k) here because IDs are sorted.</p>
+<h2>9. Segment collision and shared predicates</h2>
+<p><img src="media/collision.svg" alt="Closed segment intersections"></p>
+<p>The signed cross product determines orientation. Proper intersections require the endpoints to lie on opposite sides of each other&#39;s segment. Collinear on-segment tests additionally include endpoint touches, overlaps and zero-length segments lying on another segment.</p>
+<p>Collision mode interprets consecutive input pairs as independent segments and tests each unordered pair once. For <code>(0,0)-(4,4)</code> and <code>(0,4)-(4,0)</code>, there is one intersecting pair. Adding a disjoint segment does not change that count. An unmatched final point is unused.</p>
+<p><strong>Recorded:</strong> the two segments being tested and all intersecting segments found so far. <strong>Check:</strong> expected crossing/touch/overlap/degenerate tests; no separate runtime oracle is claimed. <strong>Computation:</strong> O(s²) time for s segments; O(1) working state excluding retained collision lines and trace.</p>
+<h2>Numeric, ordering and storage policies</h2>
+<p>World coordinates are finite doubles bounded to ±10,000,000. Orientation compares the cross product against <code>1e-9 × max(1, |AB| × |AC|)</code>; on-segment bounds use an edge-length-scaled pad. Sorting uses strict exact coordinates, never an approximate comparator. Radius membership is inclusive without an extra tolerance. These are floating-point predicates, not exact arithmetic.</p>
+<p>Scene bounds are 256 points, 256 polygon vertices and 4,096 graph edges. A trace stores at most 4,096 snapshots. When capped, it retains its prefix and final state and explicitly reports truncation. Snapshot creation, storage, rendering and reference verification have additional costs beyond the algorithm bounds above. Runtime verification may be quadratic; measured operation counts deliberately exclude it.</p>
+<h2>How security integrates these algorithms</h2>
+<p><code>SecurityConsole::scene()</code> creates an ordinary <code>Scene</code> from either projected events or scaled device rates. Geographic membership uses the same boundary predicates; proximity uses the same k-d tree; grouping uses the same direct/indexed DBSCAN strategies. Source linkage stays in the security model while the algorithm engine processes coordinates and parameters. <a href="#security">The security guide</a> defines the units, filtering and evidence contract.</p>
+</section>
+<section id="oop" class="document" hidden><h1>OOP and C++ design</h1>
+<p>GeoViz separates editable input, computation, recorded decisions, presentation and persistence. The engine is compiled without raylib, so tests can execute algorithms without opening a window.</p>
+<p>The desktop presentation is also composed from focused components. <code>SceneCanvas</code> receives a <code>CanvasContext</code> of const model references and renders surfaces, partitions, topology, highlights, points and queries as separate layers. It cannot edit input or advance playback. <code>SettingsPanel</code> owns its modal field buffer, parses values and validates detached candidate models. <code>App</code> commits a complete candidate only after validation succeeds, then coordinates history and execution. These components live in <code>src/ui_canvas.hpp</code> and <code>src/ui_settings.hpp</code>; procedural surface artwork is isolated in <code>src/canvas_art.hpp</code>.</p>
+<p><img src="media/classes.svg" alt="Class relationships"></p>
+<h2>Encapsulation and model invariants</h2>
+<p><code>Point</code> validates finite, bounded coordinates. <code>Scene</code> privately owns points, polygons, edges and parameters. Collection getters return const references. Mutators such as <code>removePoint()</code> preserve topology by deleting incident edges and remapping remaining endpoint indices. Setters advance the scene revision. <code>setEdges()</code> validates a candidate copy before replacing the current graph.</p>
+<p><code>Result</code> owns the answer, counters, verification status and trace. <code>Run</code> owns an independent input/result snapshot and exposes const access. Editing the active scene cannot silently alter a historical run. <code>Trace</code> caps stored frames and explicitly preserves the final frame when truncated.</p>
+<p>These are practical invariants: private fields and const access prevent UI code from creating untracked mutations or leaving graph references attached to deleted points.</p>
+<h2>Abstraction, inheritance and runtime polymorphism</h2>
+<p><code>Algorithm</code> defines <code>mode()</code> and the protected virtual <code>calculate()</code>. Its public <code>run()</code> validates input, dispatches calculation and verifies the result. This <strong>Template Method</strong> keeps the lifecycle consistent while each derived class implements its algorithm.</p>
+<p><code>Engine</code> implements the abstract <code>AlgorithmRunner</code> interface and owns concrete algorithms in <code>std::map&lt;Mode, std::unique_ptr&lt;Algorithm&gt;&gt;</code>. <code>App</code> stores an <code>AlgorithmRunner</code> pointer. Calling <code>execute()</code> selects a Strategy and calls the derived implementation through the base interface.</p>
+<pre><code class="language-cpp">std::unique_ptr&lt;AlgorithmRunner&gt; runner = std::make_unique&lt;Engine&gt;();
+Result result = runner-&gt;execute(scene, Mode::Hull);
+</code></pre>
+<p><code>RouteAlgorithm</code> shares heap search, relaxation, recording and route reconstruction. <code>DijkstraAlgorithm</code> supplies a zero heuristic; <code>AStarAlgorithm</code> supplies the distance estimate. This avoids duplicating a full search loop merely to change its ranking function.</p>
+<p><code>SpatialIndex</code> declares <code>nearest()</code> and <code>radius()</code>. <code>LinearIndex</code> and <code>KDTree</code> implement interchangeable query strategies. DBSCAN owns one index through <code>unique_ptr&lt;SpatialIndex&gt;</code> and shares its cluster-expansion code across scan/indexed modes. <code>LogAdapter</code> and <code>CsvLogAdapter</code> provide the same abstraction at the file-ingestion boundary.</p>
+<p>All owning polymorphic bases have virtual destructors. <code>override</code> makes signature mismatches a compiler error, and <code>final</code> marks implementations that are not extension points.</p>
+<h2>Composition and resource ownership</h2>
+<p><code>Scene</code> contains model objects; <code>Result</code> contains <code>Stats</code> and <code>Trace</code>; <code>Run</code> contains a <code>Scene</code> and <code>Result</code>; <code>App</code> contains the playback, view and security model. Composition expresses these ownership relationships without forcing unrelated types into an inheritance hierarchy.</p>
+<p><code>Window</code>, <code>Ui</code> and <code>DrawingSession</code> use <strong>RAII</strong> to pair graphics acquisition/release and begin/end operations. Copying resource owners is disabled to prevent double cleanup. <code>unique_ptr</code> expresses exclusive ownership; vectors and value snapshots manage their storage automatically. The code does not use owning raw <code>new</code>/<code>delete</code> pairs.</p>
+<h2>C++ features used with a purpose</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Concrete use and significance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Constructors and private state</td>
+<td>Establish valid points, graph edges and resource ownership</td>
+</tr>
+<tr>
+<td>Const references and const methods</td>
+<td>Inspect large collections without copying or permitting mutation</td>
+</tr>
+<tr>
+<td><code>std::unique_ptr</code>, <code>make_unique</code></td>
+<td>Own algorithm/index/adapter strategies and release them safely</td>
+</tr>
+<tr>
+<td>Move semantics</td>
+<td>Transfer vectors and completed results instead of repeatedly copying ownership</td>
+</tr>
+<tr>
+<td><code>enum class</code></td>
+<td>Keep mode and interaction-state values scoped and typed</td>
+</tr>
+<tr>
+<td>Virtual functions, <code>override</code>, <code>final</code></td>
+<td>Interchange behavior through checked public contracts</td>
+</tr>
+<tr>
+<td>STL containers</td>
+<td>Vectors for geometry, heaps for route frontiers, queues for density expansion, maps for devices/registry</td>
+</tr>
+<tr>
+<td>STL algorithms</td>
+<td>Exact sorting, median selection, merging and duplicate removal</td>
+</tr>
+<tr>
+<td>Lambdas and structured bindings</td>
+<td>Local comparison/trace helpers and readable heap/adjacency processing</td>
+</tr>
+<tr>
+<td><code>std::function</code></td>
+<td>Recursive local traversal for closest pair and tree queries</td>
+</tr>
+<tr>
+<td>Exceptions and candidate copies</td>
+<td>Reject malformed input while preserving usable current state</td>
+</tr>
+<tr>
+<td><code>std::filesystem</code> and streams</td>
+<td>Portable path handling, versioned input files and precise serialization</td>
+</tr>
+<tr>
+<td>Compile-time assertions</td>
+<td>Tests verify abstract interfaces, virtual destruction and read-only model access</td>
+</tr>
+</tbody></table>
+<h2>Follow one execution</h2>
+<p><code>App::execute()</code> calls <code>AlgorithmRunner::execute()</code> → <code>Engine</code> selects a concrete <code>Algorithm</code> → <code>Algorithm::run()</code> validates, calculates and verifies → <code>Run</code> freezes input/result → <code>Playback</code> selects a recorded <code>Frame</code> → the canvas draws it. The renderer never determines algorithm answers. <code>SceneIO</code> exports the same snapshot used for the display.</p>
+<p>The design intentionally remains a bounded desktop application. Algorithms, domain adaptation and presentation are separate; no service framework or additional algorithm family is needed to extend samples or improve visual presentation.</p>
+</section>
+<section id="security" class="document" hidden><h1>Spatial security console</h1>
+<p>The console turns source events into geometric observations, then reuses the lab&#39;s existing algorithms. Two views answer different questions and retain different units.</p>
+<p><img src="media/security-flow.svg" alt="Security analysis pipeline"></p>
+<h2>Geographic view</h2>
+<p>Each selected source event becomes one point. Latitude/longitude are projected to local east/north metres around the configured origin:</p>
+<pre><code class="language-text">x = R × (longitude - origin longitude) × pi/180 × cos(origin latitude × pi/180)
+y = R × (latitude  - origin latitude)  × pi/180
+R = 6,371,000 metres
+</code></pre>
+<p>The default origin is 20.2961° N, 85.8245° E. The local model supports a 50 km extent about the origin and origin latitude within ±80°. It is an approximate small-area projection. The offline campus CSV is an illustrative geographic layer with roads, buildings and open areas, rather than a surveyed campus map.</p>
+<p>The permitted polygon is separate from the map boundary. Geofence queries classify inside, boundary or outside. Boundary is permitted. Diamonds mark observations strictly outside the polygon. K-d nearest/radius queries inspect proximity in metres; DBSCAN groups nearby observations using the geographic radius.</p>
+<h2>Behavioural view</h2>
+<p>First apply the same time/user/device filters, then aggregate selected records by device. Every device uses the full selected window duration:</p>
+<pre><code class="language-text">minutes = (end - start) / 60
+request rate = sum(requests) / minutes
+failure rate = sum(failures) / minutes
+x = request rate / request scale
+y = failure rate / failure scale
+</code></pre>
+<p>Default scales are 10 requests/min and 1 failure/min; feature radius is 0.8 and MinPts is 3, including self. For example, 400 requests and 40 failures over ten minutes produce <code>(4, 4)</code> after scaling. A behavioural radius is a distance in this scaled plane, not metres or failure percentage.</p>
+<p><code>Observation::events()</code> preserves contributing source indices. A geographic point links to one record; a feature point may link to several. Selecting either view shows identities, neighbours, timestamps, raw counts, summaries and analyst verdicts in the inspector. Sample truth labels are used only for evaluation.</p>
+<h2>Investigate and reproduce</h2>
+<ol>
+<li>Choose <strong>Security map</strong> and press Sample to cycle through nine scenarios.</li>
+<li>Run indexed DBSCAN, inspect groups/outside observations and select a point.</li>
+<li>Open Settings to adjust the common <code>[start, end)</code> window, exact user/device filters (<code>*</code> means all), radii, MinPts or scales.</li>
+<li>Switch to <strong>Security features</strong>, run again, and inspect the device&#39;s raw rates and source records.</li>
+<li>Choose <strong>Benign</strong> or <strong>Suspect</strong> to record analyst judgement for the selected observation&#39;s contributing records.</li>
+<li>Export. The output contains source events, filters, projection/scales, parameters, query locations, labels, checks, review counts, both view scenes and a complete <code>.security</code> snapshot.</li>
+</ol>
+<p>Reloading the snapshot reproduces the analysis independently of the current CSV. New CSV imports clear source-linked reviews. Sample changes reset the analysis context; ordinary view switching keeps settings and review state.</p>
+<p>CSV imports retain the active window, filters and fence. Select a scenario with <strong>Sample / N</strong> to restore its preset configuration.</p>
+<h2>CSV schema and samples</h2>
+<pre><code class="language-csv">event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+example-01,1800000100,user-01,device-01,20.2961,85.8245,400,40,benign,Approved research transfer
+</code></pre>
+<p>IDs must be nonempty and event IDs unique. Counts are nonnegative integers with failures ≤ requests; request counts are bounded at one billion. Labels are <code>benign</code>, <code>suspicious</code>, or <code>unknown</code>. The parser supports quoted commas and doubled quotes, with single-line records and an exact header. Inputs are limited to 8 MiB, 4,096 source records and 256 displayed observations; narrow filters when necessary.</p>
+<p>The <a href="SAMPLES.md#security-datasets">sample catalogue</a> lists all nine datasets and their record counts. <code>data/security_samples.csv</code> is the common registry used by the application and documentation.</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Investigation procedure</th>
+<th>Expected behaviour</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Perimeter inspection</td>
+<td>Run Geofence in the map; inspect corners, edge points and observations 0.5 m from the fence</td>
+<td>The preset query is a boundary vertex. Boundary observations are permitted; exterior observations are marked for review.</td>
+</tr>
+<tr>
+<td>Authentication bursts</td>
+<td>Compare the map and feature clusters; inspect the interior burst and approved backup</td>
+<td>A coherent failure burst may form a cluster. Density alone does not identify malicious activity.</td>
+</tr>
+<tr>
+<td>Device movement</td>
+<td>Filter a device and inspect its chronologically linked source records</td>
+<td>Repeated locations retain distinct event identities and aggregate into one behavioural observation per device.</td>
+</tr>
+<tr>
+<td>Low-activity telemetry</td>
+<td>Run clustering and inspect the evaluation output</td>
+<td>Zero-count observations remain valid. Unknown labels are excluded from confusion-matrix denominators.</td>
+</tr>
+<tr>
+<td>Time-window boundaries</td>
+<td>Filter user <code>lab, &quot;night&quot;</code>; compare the full window with a start of <code>1800000300</code></td>
+<td>Start timestamps are included and end timestamps excluded. Rates use the complete selected window duration.</td>
+</tr>
+<tr>
+<td>Dense campus traffic</td>
+<td>Compare direct and indexed DBSCAN on the same filtered input</td>
+<td>Both implementations produce identical labels and core/border/noise classifications despite overlapping observations.</td>
+</tr>
+</tbody></table>
+<p>The original reference, campus and research datasets remain available. Sample selection restores preset parameters and clears source-linked reviews; changing views preserves the active analysis.</p>
+<h2>Review evaluation</h2>
+<p>The documented candidate rule is <strong>feature DBSCAN noise OR strictly outside the permitted polygon</strong>. It is evaluated per selected source event. A device noise flag propagates to that device&#39;s selected records. Known labels produce TP/FP/TN/FN counts; unknown labels are reported separately. Precision, recall and false-positive rate are <code>N/A</code> when their denominator is zero. Analyst review is counted separately and never overwrites sample truth.</p>
+<p>The compact reference produces <strong>TP=1, FP=1, TN=10, FN=0</strong> with the default parameters and supplied rectangular fence. The false positive is an approved backup outlier. This illustrates why geographic outliers and density noise require contextual review. These synthetic counts do not establish production accuracy.</p>
+<p>The adapter reads explicitly selected local exports. The application is an educational analysis console; it does not provide authentication, secure storage, live account ingestion or automated incident response.</p>
+</section>
+<section id="guide" class="document" hidden><h1>User guide</h1>
+<h2>Start a run</h2>
+<ol>
+<li>Open <code>GeoViz.exe</code> from the repository root.</li>
+<li>Select a mode. Click <strong>Sample</strong> to load a suitable input; repeat to cycle its six scenarios. Across ten modes, the catalogue contains 60 editable scenes, including tidal archipelago and terraced botanical families.</li>
+<li>Click <strong>Run</strong> or press Enter. The engine validates input, calculates a result and checks it against a reference or invariant.</li>
+<li>Use <strong>Play</strong>, <strong>Step</strong>, <strong>Rewind</strong>, or <strong>Final</strong>. The inspector explains the current decision and displays work counts.</li>
+<li>Edit the input and run again. The previous result is retained for comparison; its trace is no longer current.</li>
+</ol>
+<p><img src="media/lab.png" alt="Desktop algorithm workspace"></p>
+<h2>Controls</h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Control</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Add/select a point</td>
+<td>Left-click the canvas</td>
+</tr>
+<tr>
+<td>Move a point</td>
+<td>Drag it in Lab</td>
+</tr>
+<tr>
+<td>Set the query</td>
+<td>Right-click</td>
+</tr>
+<tr>
+<td>Delete selected point</td>
+<td>Delete</td>
+</tr>
+<tr>
+<td>Pan / zoom / fit</td>
+<td>Middle-drag / wheel / F or Fit</td>
+</tr>
+<tr>
+<td>Next sample</td>
+<td>Sample or N</td>
+</tr>
+<tr>
+<td>Record / play-pause</td>
+<td>Enter / Space</td>
+</tr>
+<tr>
+<td>Previous-next step</td>
+<td>Left / Right</td>
+</tr>
+<tr>
+<td>First-final frame</td>
+<td>Home / End</td>
+</tr>
+<tr>
+<td>Slower-faster playback</td>
+<td><code>[</code> / <code>]</code></td>
+</tr>
+<tr>
+<td>Polygon edit tool</td>
+<td>P; click vertices in boundary order; drag to adjust</td>
+</tr>
+<tr>
+<td>Create graph edge</td>
+<td>Shift-click two different existing points</td>
+</tr>
+<tr>
+<td>Set route endpoints</td>
+<td>Pick source / Pick destination, then click a point; or select and press R / T</td>
+</tr>
+<tr>
+<td>Block selected edge</td>
+<td>Click an edge, then B</td>
+</tr>
+<tr>
+<td>Parameters / edge cost</td>
+<td>Settings or O</td>
+</tr>
+<tr>
+<td>Same-input algorithm comparison</td>
+<td>Compare or C</td>
+</tr>
+<tr>
+<td>Compare and export two retained runs</td>
+<td>Prior or V</td>
+</tr>
+<tr>
+<td>Select next-previous point</td>
+<td>Period / comma</td>
+</tr>
+<tr>
+<td>Save / reload session</td>
+<td>S / L</td>
+</tr>
+<tr>
+<td>Export evidence</td>
+<td>E</td>
+</tr>
+<tr>
+<td>Help / dismiss overlay</td>
+<td>F1 / Esc</td>
+</tr>
+</tbody></table>
+<p>Scroll the inspector for source records and instructions. Dense scenes omit crowded labels; select points or use period/comma to inspect their identities. Resize the window as needed; the minimum is 960 × 640.</p>
+<p>Security mode provides nine scenarios through <strong>Sample / N</strong>. The canvas identifies the active dataset. The <a href="SECURITY.md#csv-schema-and-samples">security guide</a> describes the scenario procedures.</p>
+<h2>Laboratory workflows</h2>
+<p><strong>Routes:</strong> load a Dijkstra/A* sample or choose Grid. Pick source and destination, run, and use Compare to check optimal-cost agreement. Blocking a link changes the input and requires a fresh run. Settings edits a selected edge&#39;s cost.</p>
+<p><strong>Geofence:</strong> use a sample or add polygon vertices with P. Return to the point tool with P, right-click a query and run. Inside, boundary and outside are distinct outcomes. Self-intersecting or zero-area polygons are rejected.</p>
+<p><strong>Clustering:</strong> choose scan or indexed DBSCAN. Set radius and MinPts in Settings. Filled circles are core points; squares are border points; crosses are noise. MinPts includes the point itself. Compare uses the same input and parameters for both implementations.</p>
+<p><strong>Proximity and collision:</strong> right-click a query for k-d nearest/radius modes. For collision, points 0-1 form one segment, 2-3 the next, and so on; an unmatched last point has no segment.</p>
+<h2>Files and reproducibility</h2>
+<p>Drag a <code>.scene</code>, <code>.csv</code>, or <code>.security</code> file into the window to import it. Choose the matching algorithm after loading a scene. <strong>Load</strong> reloads <code>output/session.scene</code> or <code>output/session.security</code>; it is not a file picker.</p>
+<p><strong>Save</strong> writes the current input to <code>output/</code>. <strong>Export</strong> writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. <strong>Prior</strong> exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.</p>
+<p>Scene snapshots also preserve polygon drafts, including one or two vertices and crossings that are still being edited. Reloading restores those vertices exactly. A geofence run requires a completed simple polygon and explains invalid geometry before calculating; other algorithms can use the remaining scene while the polygon is unfinished. Save and Load apply the same structural checks, including source/goal indices.</p>
+<p>The plaintext <code>GEOVIZ 1</code> scene format contains point count/coordinates, polygon count/coordinates, edge count/rows, then query x/y, radius, MinPts, source, goal and grid flag. Edge rows are <code>endpointA endpointB weight blocked</code>. Boolean fields are 0 or 1. Coordinates use full-precision doubles; counts and trailing content are validated. See existing scenes before editing manually.</p>
+<h2>Build from source</h2>
+<p>Use Windows, a C++17 compiler and a matching raylib installation. The tested installation uses GCC 15.2.0 and the headers/static library under <code>C:\raylib\w64devkit</code>. Raylib headers and binary must match the compiler architecture.</p>
+<pre><code class="language-powershell">.\build.ps1                 # Isolated tests, then the application
+.\build.ps1 -Run            # Build, test and launch
+.\build.ps1 -Smoke          # Build plus 70 offscreen UI captures
+.\build.ps1 -DebugBuild     # Debug information and standard-library assertions
+</code></pre>
+<p><code>-CompilerPath</code> and <code>-RaylibRoot</code> override the defaults. The script fails immediately if compilation or a required check fails. It copies the finished program to <code>GeoViz.exe</code>; intermediate executables stay in <code>build/</code>.</p>
+<p>An engine-only build needs CMake and a C++17 compiler, with no raylib dependency:</p>
+<pre><code class="language-powershell">cmake -S . -B build/core -DGEOVIZ_BUILD_APP=OFF
+cmake --build build/core --config Release
+ctest --test-dir build/core -C Release --output-on-failure
+</code></pre>
+<p>On Windows, use the compiler&#39;s terminal environment so its build tool is on PATH. A full CMake desktop build also accepts <code>-DRAYLIB_ROOT=...</code>; the supplied PowerShell script is the shortest Windows path.</p>
+<p>Documentation can be regenerated with <code>build.ps1 -Docs</code> after installing Python&#39;s Pillow package and Node&#39;s <code>marked</code> package (<code>python -m pip install Pillow</code>, <code>npm install --no-save marked</code>). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.</p>
+<p>The printable report is generated separately with <code>python tools/build_report.py</code> and requires ReportLab. Run <code>node tools/verify_docs.mjs</code> first with Playwright and Chrome available; this verifies the guide and renders its diagrams for the report. Both Node tools accept an absolute dependency-module path as their first argument when using an external authoring environment.</p>
+<p>Normal tests read the supplied data and write their scenes, reports and temporary inputs beneath a separate test-output directory. They do not rewrite <code>data/</code>. Use the explicit sample exporter when preparing a release, then <code>python tools/build_catalogue.py --source-root &quot;C:\path\to\exports&quot;</code> to read its checked <code>output/</code> reports and regenerate the catalogue and linked run snapshots. Omitting <code>--source-root</code> reads the project&#39;s own exports.</p>
+<h2>Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Program cannot find data or fonts</td>
+<td>Keep the executable, <code>data/</code> and <code>assets/</code> together; extract the complete folder</td>
+</tr>
+<tr>
+<td>Script execution is blocked</td>
+<td>Use the process-only PowerShell invocation in the README</td>
+</tr>
+<tr>
+<td>Invalid polygon</td>
+<td>Remove crossings, repeated adjacent vertices or folded edges; use boundary order</td>
+</tr>
+<tr>
+<td>No path</td>
+<td>Inspect blocked links and chosen endpoints; an unreachable result is valid</td>
+</tr>
+<tr>
+<td>Too many observations</td>
+<td>Narrow time/user/device filters to at most 256 displayed observations</td>
+</tr>
+<tr>
+<td>A* reports h=0 fallback</td>
+<td>Costs are below geometric lower bounds; the safe result still matches Dijkstra</td>
+</tr>
+<tr>
+<td>Nothing moves after an edit</td>
+<td>Edits invalidate the old trace; Run again</td>
+</tr>
+<tr>
+<td>Text or points seem outside the view</td>
+<td>Fit; scroll the inspector for full explanations</td>
+</tr>
+<tr>
+<td>Exports cannot be written</td>
+<td>Place the folder in a writable location and keep <code>output/</code> writable</td>
+</tr>
+</tbody></table>
+<p>The application runs offline and reads local input files. It does not require a service account or install a background process.</p>
+</section>
+<section id="samples" class="document" hidden><h1>Sample catalogue</h1>
+<p>The laboratory contains 60 deterministic, editable scenes, arranged as six inputs per algorithm. <strong>Sample / N</strong> cycles the selected mode. Import a scene, select its listed mode and run the calculation. Each checked report links to its corresponding input.</p>
+<p>The <a href="#overview">offline guide</a> includes checked algorithm and security recordings. Operation counts exclude verification and playback.</p>
+<table>
+<thead>
+<tr>
+<th>Tidal and lagoon family</th>
+<th>Terrace and mosaic family</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><img src="media/tidal-gallery.png" alt="Lagoon rings with a tidal surface"></td>
+<td><img src="media/terrace-gallery.png" alt="Terraced route with a limestone surface"></td>
+</tr>
+</tbody></table>
+<h2>1. Compact reference</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>Hull has 7 vertices.</td>
+<td><a href="../data/sample_0.scene">Scene</a> · <a href="runs/sample_0.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>INSIDE</td>
+<td><a href="../data/sample_1.scene">Scene</a> · <a href="runs/sample_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>Optimal cost 403.434; expanded 9 vertices.</td>
+<td><a href="../data/sample_2.scene">Scene</a> · <a href="runs/sample_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>Optimal cost 403.434; expanded 5 vertices.</td>
+<td><a href="../data/sample_3.scene">Scene</a> · <a href="runs/sample_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">26</td>
+<td>45 / 4</td>
+<td>2 clusters; 2 noise points.</td>
+<td><a href="../data/sample_4.scene">Scene</a> · <a href="runs/sample_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>Closest distance 82.462</td>
+<td><a href="../data/sample_5.scene">Scene</a> · <a href="runs/sample_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>Nearest distance 53.852</td>
+<td><a href="../data/sample_6.scene">Scene</a> · <a href="runs/sample_6.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">12</td>
+<td>75 / 4</td>
+<td>1 point inside radius.</td>
+<td><a href="../data/sample_7.scene">Scene</a> · <a href="runs/sample_7.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">26</td>
+<td>45 / 4</td>
+<td>2 clusters; 2 noise points.</td>
+<td><a href="../data/sample_8.scene">Scene</a> · <a href="runs/sample_8.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">8</td>
+<td>75 / 4</td>
+<td>2 intersecting segment pairs.</td>
+<td><a href="../data/sample_9.scene">Scene</a> · <a href="runs/sample_9.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>2. Coastal survey / campus deliveries / festival courtyards</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Hull has 10 vertices.</td>
+<td><a href="../data/gallery/mode_0_1.scene">Scene</a> · <a href="runs/mode_0_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>INSIDE</td>
+<td><a href="../data/gallery/mode_1_1.scene">Scene</a> · <a href="runs/mode_1_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 982.884; expanded 24 vertices.</td>
+<td><a href="../data/gallery/mode_2_1.scene">Scene</a> · <a href="runs/mode_2_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 982.884; expanded 21 vertices.</td>
+<td><a href="../data/gallery/mode_3_1.scene">Scene</a> · <a href="runs/mode_3_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">52</td>
+<td>43 / 4</td>
+<td>3 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_4_1.scene">Scene</a> · <a href="runs/mode_4_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">38</td>
+<td>82 / 4</td>
+<td>Closest distance 5.000</td>
+<td><a href="../data/gallery/mode_5_1.scene">Scene</a> · <a href="runs/mode_5_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Nearest distance 42.944</td>
+<td><a href="../data/gallery/mode_6_1.scene">Scene</a> · <a href="runs/mode_6_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>6 points inside radius.</td>
+<td><a href="../data/gallery/mode_7_1.scene">Scene</a> · <a href="runs/mode_7_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">52</td>
+<td>43 / 4</td>
+<td>3 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_8_1.scene">Scene</a> · <a href="runs/mode_8_1.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">12</td>
+<td>82 / 4</td>
+<td>9 intersecting segment pairs.</td>
+<td><a href="../data/gallery/mode_9_1.scene">Scene</a> · <a href="runs/mode_9_1.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>3. Orbital sensors / warehouse aisles / curved swarms</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Hull has 8 vertices.</td>
+<td><a href="../data/gallery/mode_0_2.scene">Scene</a> · <a href="runs/mode_0_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>OUTSIDE</td>
+<td><a href="../data/gallery/mode_1_2.scene">Scene</a> · <a href="runs/mode_1_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 966.200; expanded 22 vertices.</td>
+<td><a href="../data/gallery/mode_2_2.scene">Scene</a> · <a href="runs/mode_2_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 966.200; expanded 16 vertices.</td>
+<td><a href="../data/gallery/mode_3_2.scene">Scene</a> · <a href="runs/mode_3_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">48</td>
+<td>35 / 3</td>
+<td>2 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_4_2.scene">Scene</a> · <a href="runs/mode_4_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">38</td>
+<td>82 / 4</td>
+<td>Closest distance 5.000</td>
+<td><a href="../data/gallery/mode_5_2.scene">Scene</a> · <a href="runs/mode_5_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Nearest distance 34.381</td>
+<td><a href="../data/gallery/mode_6_2.scene">Scene</a> · <a href="runs/mode_6_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>6 points inside radius.</td>
+<td><a href="../data/gallery/mode_7_2.scene">Scene</a> · <a href="runs/mode_7_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">48</td>
+<td>35 / 3</td>
+<td>2 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_8_2.scene">Scene</a> · <a href="runs/mode_8_2.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">12</td>
+<td>82 / 4</td>
+<td>3 intersecting segment pairs.</td>
+<td><a href="../data/gallery/mode_9_2.scene">Scene</a> · <a href="runs/mode_9_2.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>4. Orchard inspection / valley detour / mixed-density survey</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Hull has 13 vertices.</td>
+<td><a href="../data/gallery/mode_0_3.scene">Scene</a> · <a href="runs/mode_0_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>INSIDE</td>
+<td><a href="../data/gallery/mode_1_3.scene">Scene</a> · <a href="runs/mode_1_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 956.556; expanded 17 vertices.</td>
+<td><a href="../data/gallery/mode_2_3.scene">Scene</a> · <a href="runs/mode_2_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">24</td>
+<td>82 / 4</td>
+<td>Optimal cost 956.556; expanded 15 vertices.</td>
+<td><a href="../data/gallery/mode_3_3.scene">Scene</a> · <a href="runs/mode_3_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">52</td>
+<td>40 / 4</td>
+<td>2 clusters; 22 noise points.</td>
+<td><a href="../data/gallery/mode_4_3.scene">Scene</a> · <a href="runs/mode_4_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">38</td>
+<td>82 / 4</td>
+<td>Closest distance 5.000</td>
+<td><a href="../data/gallery/mode_5_3.scene">Scene</a> · <a href="runs/mode_5_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>Nearest distance 58.063</td>
+<td><a href="../data/gallery/mode_6_3.scene">Scene</a> · <a href="runs/mode_6_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">36</td>
+<td>82 / 4</td>
+<td>4 points inside radius.</td>
+<td><a href="../data/gallery/mode_7_3.scene">Scene</a> · <a href="runs/mode_7_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">52</td>
+<td>40 / 4</td>
+<td>2 clusters; 22 noise points.</td>
+<td><a href="../data/gallery/mode_8_3.scene">Scene</a> · <a href="runs/mode_8_3.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">16</td>
+<td>82 / 4</td>
+<td>28 intersecting segment pairs.</td>
+<td><a href="../data/gallery/mode_9_3.scene">Scene</a> · <a href="runs/mode_9_3.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>5. Tidal archipelago / lagoon survey / island bridges</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">48</td>
+<td>72 / 4</td>
+<td>Hull has 11 vertices.</td>
+<td><a href="../data/gallery/mode_0_4.scene">Scene</a> · <a href="runs/mode_0_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">48</td>
+<td>72 / 4</td>
+<td>BOUNDARY</td>
+<td><a href="../data/gallery/mode_1_4.scene">Scene</a> · <a href="runs/mode_1_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">18</td>
+<td>72 / 4</td>
+<td>Optimal cost 1070.000; expanded 14 vertices.</td>
+<td><a href="../data/gallery/mode_2_4.scene">Scene</a> · <a href="runs/mode_2_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">18</td>
+<td>72 / 4</td>
+<td>Optimal cost 1070.000; expanded 14 vertices.</td>
+<td><a href="../data/gallery/mode_3_4.scene">Scene</a> · <a href="runs/mode_3_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">67</td>
+<td>35 / 4</td>
+<td>2 clusters; 3 noise points.</td>
+<td><a href="../data/gallery/mode_4_4.scene">Scene</a> · <a href="runs/mode_4_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">50</td>
+<td>72 / 4</td>
+<td>Closest distance 5.000</td>
+<td><a href="../data/gallery/mode_5_4.scene">Scene</a> · <a href="runs/mode_5_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">41</td>
+<td>72 / 4</td>
+<td>Nearest distance 72.000</td>
+<td><a href="../data/gallery/mode_6_4.scene">Scene</a> · <a href="runs/mode_6_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">41</td>
+<td>72 / 4</td>
+<td>4 points inside radius.</td>
+<td><a href="../data/gallery/mode_7_4.scene">Scene</a> · <a href="runs/mode_7_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">67</td>
+<td>35 / 4</td>
+<td>2 clusters; 3 noise points.</td>
+<td><a href="../data/gallery/mode_8_4.scene">Scene</a> · <a href="runs/mode_8_4.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">16</td>
+<td>72 / 4</td>
+<td>6 intersecting segment pairs.</td>
+<td><a href="../data/gallery/mode_9_4.scene">Scene</a> · <a href="runs/mode_9_4.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>6. Terraced botanical garden / planted corridors / mosaic survey</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th align="right">Points</th>
+<th>Radius / MinPts</th>
+<th>Checked result</th>
+<th>Input / report</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Convex hull</td>
+<td align="right">35</td>
+<td>72 / 4</td>
+<td>Hull has 9 vertices.</td>
+<td><a href="../data/gallery/mode_0_5.scene">Scene</a> · <a href="runs/mode_0_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td align="right">35</td>
+<td>72 / 4</td>
+<td>INSIDE</td>
+<td><a href="../data/gallery/mode_1_5.scene">Scene</a> · <a href="runs/mode_1_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td align="right">20</td>
+<td>72 / 4</td>
+<td>Optimal cost 861.540; expanded 17 vertices.</td>
+<td><a href="../data/gallery/mode_2_5.scene">Scene</a> · <a href="runs/mode_2_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>A*</td>
+<td align="right">20</td>
+<td>72 / 4</td>
+<td>Optimal cost 861.540; expanded 15 vertices.</td>
+<td><a href="../data/gallery/mode_3_5.scene">Scene</a> · <a href="runs/mode_3_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN scan</td>
+<td align="right">76</td>
+<td>29 / 4</td>
+<td>4 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_4_5.scene">Scene</a> · <a href="runs/mode_4_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>Closest pair</td>
+<td align="right">37</td>
+<td>72 / 4</td>
+<td>Closest distance 5.000</td>
+<td><a href="../data/gallery/mode_5_5.scene">Scene</a> · <a href="runs/mode_5_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD nearest</td>
+<td align="right">36</td>
+<td>60 / 4</td>
+<td>Nearest distance 60.000</td>
+<td><a href="../data/gallery/mode_6_5.scene">Scene</a> · <a href="runs/mode_6_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>KD radius</td>
+<td align="right">36</td>
+<td>60 / 4</td>
+<td>4 points inside radius.</td>
+<td><a href="../data/gallery/mode_7_5.scene">Scene</a> · <a href="runs/mode_7_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>DBSCAN indexed</td>
+<td align="right">76</td>
+<td>29 / 4</td>
+<td>4 clusters; 4 noise points.</td>
+<td><a href="../data/gallery/mode_8_5.scene">Scene</a> · <a href="runs/mode_8_5.txt">Run</a></td>
+</tr>
+<tr>
+<td>Segment collision</td>
+<td align="right">16</td>
+<td>72 / 4</td>
+<td>14 intersecting segment pairs.</td>
+<td><a href="../data/gallery/mode_9_5.scene">Scene</a> · <a href="runs/mode_9_5.txt">Run</a></td>
+</tr>
+</tbody></table>
+<h2>Security datasets</h2>
+<p>In either security view, <strong>Sample / N</strong> cycles the catalogue. Each selection restores its documented radii, MinPts, fence and default window. Changing views preserves the current settings and reviews. All records are synthetic.</p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th align="right">File / selected records</th>
+<th align="right">Devices</th>
+<th>Scenario</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="../data/security_sample.csv">Compact reference</a></td>
+<td align="right">12 / 12</td>
+<td align="right">12</td>
+<td>Normal use, approved backup and an isolated failure burst</td>
+</tr>
+<tr>
+<td><a href="../data/security_campus.csv">Campus operations</a></td>
+<td align="right">50 / 48</td>
+<td align="right">16</td>
+<td>Repeated records, remote transfers and excluded time endpoints</td>
+</tr>
+<tr>
+<td><a href="../data/security_research.csv">Research network</a></td>
+<td align="right">42 / 40</td>
+<td align="right">20</td>
+<td>Mixed device groups and observations with unknown labels</td>
+</tr>
+<tr>
+<td><a href="../data/security_perimeter.csv">Perimeter inspection</a></td>
+<td align="right">16 / 16</td>
+<td align="right">16</td>
+<td>Corner, edge, interior and exterior observations</td>
+</tr>
+<tr>
+<td><a href="../data/security_authentication.csv">Authentication bursts</a></td>
+<td align="right">36 / 36</td>
+<td align="right">12</td>
+<td>Clustered failures, an interior burst and an approved backup</td>
+</tr>
+<tr>
+<td><a href="../data/security_movement.csv">Device movement</a></td>
+<td align="right">48 / 48</td>
+<td align="right">8</td>
+<td>Repeated device locations crossing the permitted boundary</td>
+</tr>
+<tr>
+<td><a href="../data/security_quiet.csv">Low-activity telemetry</a></td>
+<td align="right">9 / 9</td>
+<td align="right">9</td>
+<td>Zero-count observations and unknown-label evaluation</td>
+</tr>
+<tr>
+<td><a href="../data/security_windows.csv">Time-window boundaries</a></td>
+<td align="right">27 / 24</td>
+<td align="right">12</td>
+<td>Inclusive start, exclusive end and quoted identity filters</td>
+</tr>
+<tr>
+<td><a href="../data/security_crowd.csv">Dense campus traffic</a></td>
+<td align="right">128 / 128</td>
+<td align="right">64</td>
+<td>Overlapping observations and several activity-density groups</td>
+</tr>
+</tbody></table>
+<p>Use the source-linked inspector to review a device, then export evidence. <a href="#security">Security processing</a> explains the metric, filters, labels and review rule.</p>
+<h2>Additional grid</h2>
+<p><strong>Grid</strong> loads 70 vertices with unit-cost four-neighbour connections and a barrier opening. Source 0 to goal 69 has optimal cost <strong>15</strong> in both Dijkstra and A*. Block another passage to test detours or unreachable results.</p>
+<h2>Deliberate edge cases</h2>
+<p>The tests also construct duplicates, collinear hulls, exact-radius queries, nearest ties, overlapping segments, zero-length segments, unreachable graphs and noise-to-border transitions. These cases are separate from the larger visual samples so their expected answers stay easy to inspect.</p>
+</section>
+<section id="verification" class="document" hidden><h1>Verification and scope</h1>
+<p>Verification date: <strong>24 October 2026</strong>. Verification applies to the supplied build configuration and documented input limits.</p>
+<h2>Executed checks</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Method</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Release build</td>
+<td>GCC 15.2.0, C++17, <code>-Wall -Wextra -Wpedantic -Werror</code>, static link</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Engine suite</td>
+<td>1766 assertions, fixed seed 425050</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Second compiler</td>
+<td>Clang, warnings treated as errors and library assertions</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Undefined-behaviour instrumentation</td>
+<td>Clang <code>-fsanitize=undefined -fsanitize-trap=all</code> on the engine suite</td>
+<td>Passed, no trap</td>
+</tr>
+<tr>
+<td>Independent build path</td>
+<td>Full desktop CMake build, reusable engine target and isolated CTest</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Application state</td>
+<td>Run/history, edits, settings transactions, six-sample cycling, filters, source review, queries, snapshots, exports and endpoint picking</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Rendered UI</td>
+<td>70 states at 960×640, 1440×900 and 1920×1080</td>
+<td>Passed; captures visually reviewed</td>
+</tr>
+<tr>
+<td>Offline guide</td>
+<td>24 recordings, step/play/rewind/final, timeline, navigation and narrow layout</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Delivery</td>
+<td>Clean-folder launch, source/executable hashes, local links and archive integrity</td>
+<td>Passed</td>
+</tr>
+</tbody></table>
+<p>Concise logs are supplied in <code>docs/verification/</code>. Build scripts stop on compiler errors and failed engine assertions. The CI workflow runs the engine suite on repository pushes and pull requests; its remote result is available only after a push.</p>
+<h2>What the engine suite checks</h2>
+<ul>
+<li>Geometry: crossing, endpoint touch, overlap, disjoint and zero-length segments; inside/outside/edge/vertex queries; invalid and folded polygons.</li>
+<li>Hull/proximity: empty, singleton, duplicate and collinear inputs; nearest ties and inclusive radius boundaries; exhaustive pair/query comparisons.</li>
+<li>Routes: weighted alternatives, blocking, unreachable goals, source=goal, negative-cost rejection, safe A* fallback and grid optimality.</li>
+<li>Density: self-counting, core/border/noise, provisional-noise reassignment and direct/indexed agreement.</li>
+<li>Reproducibility: one-vertex, two-vertex and self-crossing polygon drafts round-trip without loss; geofence execution rejects incomplete regions. Precise scene and security snapshot round trips, frozen historical inputs, operation counts, query locations and analyst verdicts.</li>
+<li>Inputs: CSV quoting/rejection, duplicate identities, invalid windows/scales and projection extent.</li>
+<li>Bounds: capped traces preserve the final result; the maximum 256-point input is checked; a 257th point is rejected; 128 mutually crossing segments retain 8,128 pair intersections with unique highlights and a capped trace.</li>
+<li>Samples: all 60 scenes are verified; added gallery scenes are reloaded and rerun; extended security datasets check window exclusion, aggregation and source linkage.</li>
+<li>Test isolation: ordinary and CTest runs write to a separate output root; a repeat run preserves every source-data hash, and the source root is rejected as the output destination. An explicit exporter handles release fixtures.</li>
+<li>Security scenarios: all nine presets are checked in both views. Tests cover corner/edge membership, device trajectories, zero counts, unknown labels, quoted filters, one-second and partial windows, 256/257 observations, 4096/4097 source records, invalid scales/radii, CSV rejection and preservation of existing evidence after a rejected export.</li>
+<li>Design contracts: abstract interfaces, virtual destructors and read-only collection/snapshot access are checked at compile time.</li>
+</ul>
+<p>Eighty seeded scenes exercise multiple algorithms against references, including random weighted graphs. Tests use a fixed seed so failures can be reproduced. References use Bellman-Ford, exhaustive distance/query scans, winding classification, hull invariants and an independent DBSCAN core-component construction. Segment collision uses expected cases rather than claiming a separate runtime oracle.</p>
+<h2>Implementation coverage</h2>
+<table>
+<thead>
+<tr>
+<th>Component group</th>
+<th>Delivered implementation and evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Geometry kernel, hull, geofence and collision demonstrations</td>
+<td><code>GeometryKernel</code>, concrete algorithm classes; expected cases, invariant/reference checks and recordings</td>
+</tr>
+<tr>
+<td>Dijkstra, A*, weighted/blocked graphs and grid navigation</td>
+<td>Shared route Strategy with heuristic specializations; same-input optimal-cost/exploration comparisons</td>
+</tr>
+<tr>
+<td>Direct and indexed DBSCAN</td>
+<td>Shared expansion with <code>LinearIndex</code> / <code>KDTree</code>; queue/core/border/noise recordings and agreement checks</td>
+</tr>
+<tr>
+<td>Divide-and-conquer closest pair</td>
+<td>x-sort, recursive ranges, merged y order and strip comparisons; exhaustive verification</td>
+</tr>
+<tr>
+<td>Balanced k-d construction, nearest and radius queries</td>
+<td>Alternating median splits, visited/pruned regions, inclusive queries and fresh rebuilds</td>
+</tr>
+<tr>
+<td>Editing, playback, rewind, comparisons and persistence</td>
+<td><code>Scene</code>, <code>Run</code>, <code>Trace</code>, <code>Playback</code>, <code>SceneIO</code>; edit invalidation and saved-input tests</td>
+</tr>
+<tr>
+<td>Geographic and behavioural security views</td>
+<td>Offline geographic layer, local projection, scaled device rates, common filters and source-linked inspector</td>
+</tr>
+<tr>
+<td>Event ingestion and review evidence</td>
+<td>Abstract log adapter plus local CSV implementation; labelled samples, separate analyst verdicts and reproducible exports</td>
+</tr>
+<tr>
+<td>Bounded input, accessible labels and checks</td>
+<td>Explicit limits, shape/line cues, readable inspector, validation and capped-trace disclosure</td>
+</tr>
+<tr>
+<td>OOP/C++ design and deliverables</td>
+<td>Encapsulation, polymorphic Strategies, RAII, source/test separation; focused design guide and portable executable</td>
+</tr>
+</tbody></table>
+<p>The console reads local exports through the CSV adapter. It does not integrate a live production service.</p>
+<h2>Presentation and maintainability</h2>
+<p><code>SceneCanvas</code> consumes a const frame context and separates rendering into surface, region, topology, highlight, point, query and annotation layers. <code>SettingsPanel</code> owns modal input and validates detached candidate models. <code>App</code> coordinates commits and history. The 70-state smoke sequence covers both components, failed settings transactions and every added sample.</p>
+<h2>Practical limits</h2>
+<p>Floating-point geometry uses documented tolerances rather than exact predicates. Geographic distances are approximate within a local study area. Runtime reference checks add work beyond the displayed algorithm counts. A k-d tree can visit all points; indexed DBSCAN can still be quadratic. Trace storage can omit middle decisions when capped, while retaining the final result.</p>
+<p>UI verification combines programmatic state checks and offscreen rendering; physical mouse/keyboard sequences and display configurations are not exhaustively covered. The supplied executable targets Windows x64. Synthetic security labels demonstrate reproducibility and false-positive accounting, not production detection accuracy.</p>
+</section>
+</main><footer>GeoViz · Satyam Dhal (b425050) · International Institute of Information Technology, Bhubaneswar</footer>
+<script src="media/traces.js"></script><script src="player.js"></script></body></html>

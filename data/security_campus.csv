@@ -1,0 +1,51 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+campus-00-0,1800000030,user-00,device-00,20.2949308819,85.8223905202,100,0,benign,Library learning portal
+campus-00-1,1800000200,user-00,device-00,20.2950747734,85.8226014682,107,0,benign,Library learning portal
+campus-00-2,1800000370,user-00,device-00,20.2952186648,85.8228124162,114,0,benign,Library learning portal
+campus-01-0,1800000033,user-01,device-01,20.2959201357,85.8242123437,413,26,benign,Scheduled research data transfer
+campus-01-1,1800000203,user-01,device-01,20.2960640271,85.8244232916,420,26,benign,Scheduled research data transfer
+campus-01-2,1800000373,user-01,device-01,20.2962079186,85.8246342396,427,26,benign,Scheduled research data transfer
+campus-02-0,1800000036,user-02,device-02,20.2969093894,85.8260341671,104,2,benign,Residence network session
+campus-02-1,1800000206,user-02,device-02,20.2970532809,85.8262451151,111,2,benign,Residence network session
+campus-02-2,1800000376,user-02,device-02,20.2971971724,85.8264560630,118,2,benign,Residence network session
+campus-03-0,1800000039,user-03,device-03,20.2950927598,85.8225247599,106,0,benign,Library learning portal
+campus-03-1,1800000209,user-03,device-03,20.2952366513,85.8227357078,113,0,benign,Library learning portal
+campus-03-2,1800000379,user-03,device-03,20.2953805427,85.8229466558,120,0,benign,Library learning portal
+campus-04-0,1800000042,user-04,device-04,20.2960820136,85.8243465833,422,29,benign,Scheduled research data transfer
+campus-04-1,1800000212,user-04,device-04,20.2962259050,85.8245575313,429,29,benign,Scheduled research data transfer
+campus-04-2,1800000382,user-04,device-04,20.2963697965,85.8247684792,436,29,benign,Scheduled research data transfer
+campus-05-0,1800000045,user-00,device-05,20.2970712673,85.8261684067,110,2,benign,Residence network session
+campus-05-1,1800000215,user-00,device-05,20.2972151588,85.8263793547,117,2,benign,Residence network session
+campus-05-2,1800000385,user-00,device-05,20.2973590502,85.8265903027,124,2,benign,Residence network session
+campus-06-0,1800000048,user-01,device-06,20.2952546377,85.8226589995,112,0,benign,Library learning portal
+campus-06-1,1800000218,user-01,device-06,20.2953985291,85.8228699475,119,0,benign,Library learning portal
+campus-06-2,1800000388,user-01,device-06,20.2955424206,85.8230808954,126,0,benign,Library learning portal
+campus-07-0,1800000051,user-02,device-07,20.2962438915,85.8244808229,431,32,benign,Scheduled research data transfer
+campus-07-1,1800000221,user-02,device-07,20.2963877829,85.8246917709,438,32,benign,Scheduled research data transfer
+campus-07-2,1800000391,user-02,device-07,20.2965316744,85.8249027189,445,32,benign,Scheduled research data transfer
+campus-08-0,1800000054,user-03,device-08,20.2972331452,85.8263026463,116,2,benign,Residence network session
+campus-08-1,1800000224,user-03,device-08,20.2973770367,85.8265135943,123,2,benign,Residence network session
+campus-08-2,1800000394,user-03,device-08,20.2975209281,85.8267245423,130,2,benign,Residence network session
+campus-09-0,1800000057,user-04,device-09,20.2954165156,85.8227932391,118,0,benign,Library learning portal
+campus-09-1,1800000227,user-04,device-09,20.2955604070,85.8230041871,125,0,benign,Library learning portal
+campus-09-2,1800000397,user-04,device-09,20.2957042985,85.8232151351,132,0,benign,Library learning portal
+campus-10-0,1800000060,user-00,device-10,20.2964057693,85.8246150625,440,35,benign,Scheduled research data transfer
+campus-10-1,1800000230,user-00,device-10,20.2965496608,85.8248260105,447,35,benign,Scheduled research data transfer
+campus-10-2,1800000400,user-00,device-10,20.2966935523,85.8250369585,454,35,benign,Scheduled research data transfer
+campus-11-0,1800000063,user-01,device-11,20.2973950231,85.8264368860,122,2,benign,Residence network session
+campus-11-1,1800000233,user-01,device-11,20.2975389146,85.8266478339,129,2,benign,Residence network session
+campus-11-2,1800000403,user-01,device-11,20.2976828060,85.8268587819,136,2,benign,Residence network session
+campus-12-0,1800000066,user-02,device-12,20.2931322387,85.8289107304,1944,0,benign,Approved remote backup; high volume requires contextual review
+campus-12-1,1800000236,user-02,device-12,20.2932761302,85.8291216784,1951,0,benign,Approved remote backup; high volume requires contextual review
+campus-12-2,1800000406,user-02,device-12,20.2934200216,85.8293326264,1958,0,benign,Approved remote backup; high volume requires contextual review
+campus-13-0,1800000069,user-03,device-13,20.2992476256,85.8297736994,810,619,suspicious,Labelled repeated authentication failures at external gateway
+campus-13-1,1800000239,user-03,device-13,20.2993915171,85.8299846474,817,619,suspicious,Labelled repeated authentication failures at external gateway
+campus-13-2,1800000409,user-03,device-13,20.2995354085,85.8301955953,824,619,suspicious,Labelled repeated authentication failures at external gateway
+campus-14-0,1800000072,user-04,device-14,20.2931322387,85.8306366684,2018,0,benign,Approved remote backup; high volume requires contextual review
+campus-14-1,1800000242,user-04,device-14,20.2932761302,85.8308476164,2025,0,benign,Approved remote backup; high volume requires contextual review
+campus-14-2,1800000412,user-04,device-14,20.2934200216,85.8310585643,2032,0,benign,Approved remote backup; high volume requires contextual review
+campus-15-0,1800000075,user-00,device-15,20.2992476256,85.8314996374,850,645,suspicious,Labelled repeated authentication failures at external gateway
+campus-15-1,1800000245,user-00,device-15,20.2993915171,85.8317105854,857,645,suspicious,Labelled repeated authentication failures at external gateway
+campus-15-2,1800000415,user-00,device-15,20.2995354085,85.8319215333,864,645,suspicious,Labelled repeated authentication failures at external gateway
+campus-before,1799999999,user-00,device-00,20.2961,85.8245,10,0,benign,Outside the default analysis window
+campus-after,1800000600,user-00,device-00,20.2961,85.8245,10,0,benign,Outside the default analysis window

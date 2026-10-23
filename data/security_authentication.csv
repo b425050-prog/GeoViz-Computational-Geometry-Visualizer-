@@ -1,0 +1,37 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+authentication-00-0,1800000020,user-00,device-00,20.297179185927,85.822965832904,65,0,benign,Normal portal use
+authentication-00-1,1800000105,user-00,device-00,20.297260124872,85.822965832904,65,0,benign,Normal portal use
+authentication-00-2,1800000190,user-00,device-00,20.297341063816,85.822965832904,65,0,benign,Normal portal use
+authentication-01-0,1800000021,user-01,device-01,20.297179185927,85.823128838158,66,0,benign,Normal portal use
+authentication-01-1,1800000106,user-01,device-01,20.297260124872,85.823128838158,66,0,benign,Normal portal use
+authentication-01-2,1800000191,user-01,device-01,20.297341063816,85.823128838158,66,0,benign,Normal portal use
+authentication-02-0,1800000022,user-02,device-02,20.297179185927,85.823291843412,67,0,benign,Normal portal use
+authentication-02-1,1800000107,user-02,device-02,20.297260124872,85.823291843412,67,0,benign,Normal portal use
+authentication-02-2,1800000192,user-02,device-02,20.297341063816,85.823291843412,67,0,benign,Normal portal use
+authentication-03-0,1800000023,user-03,device-03,20.297179185927,85.823454848666,68,0,benign,Normal portal use
+authentication-03-1,1800000108,user-03,device-03,20.297260124872,85.823454848666,68,0,benign,Normal portal use
+authentication-03-2,1800000193,user-03,device-03,20.297341063816,85.823454848666,68,0,benign,Normal portal use
+authentication-04-0,1800000024,user-00,device-04,20.297179185927,85.823617853920,69,0,benign,Normal portal use
+authentication-04-1,1800000109,user-00,device-04,20.297260124872,85.823617853920,69,0,benign,Normal portal use
+authentication-04-2,1800000194,user-00,device-04,20.297341063816,85.823617853920,69,0,benign,Normal portal use
+authentication-05-0,1800000025,user-01,device-05,20.297179185927,85.823780859174,70,0,benign,Normal portal use
+authentication-05-1,1800000110,user-01,device-05,20.297260124872,85.823780859174,70,0,benign,Normal portal use
+authentication-05-2,1800000195,user-01,device-05,20.297341063816,85.823780859174,70,0,benign,Normal portal use
+authentication-06-0,1800000026,user-02,device-06,20.297179185927,85.823943864428,71,0,benign,Normal portal use
+authentication-06-1,1800000111,user-02,device-06,20.297260124872,85.823943864428,71,0,benign,Normal portal use
+authentication-06-2,1800000196,user-02,device-06,20.297341063816,85.823943864428,71,0,benign,Normal portal use
+authentication-07-0,1800000027,user-03,device-07,20.297179185927,85.824106869682,72,0,benign,Normal portal use
+authentication-07-1,1800000112,user-03,device-07,20.297260124872,85.824106869682,72,0,benign,Normal portal use
+authentication-07-2,1800000197,user-03,device-07,20.297341063816,85.824106869682,72,0,benign,Normal portal use
+authentication-08-0,1800000028,user-00,device-08,20.297179185927,85.824269874936,100,70,suspicious,Repeated failed authentication
+authentication-08-1,1800000113,user-00,device-08,20.297260124872,85.824269874936,100,70,suspicious,Repeated failed authentication
+authentication-08-2,1800000198,user-00,device-08,20.297341063816,85.824269874936,100,70,suspicious,Repeated failed authentication
+authentication-09-0,1800000029,user-01,device-09,20.296999321606,85.830176418255,100,70,suspicious,Repeated failed authentication
+authentication-09-1,1800000114,user-01,device-09,20.297179185927,85.830176418255,100,70,suspicious,Repeated failed authentication
+authentication-09-2,1800000199,user-01,device-09,20.297359050248,85.830176418255,100,70,suspicious,Repeated failed authentication
+authentication-10-0,1800000030,user-02,device-10,20.296999321606,85.830253126610,100,70,suspicious,Repeated failed authentication
+authentication-10-1,1800000115,user-02,device-10,20.297179185927,85.830253126610,100,70,suspicious,Repeated failed authentication
+authentication-10-2,1800000200,user-02,device-10,20.297359050248,85.830253126610,100,70,suspicious,Repeated failed authentication
+authentication-11-0,1800000031,user-03,device-11,20.296999321606,85.830329834965,1800,0,benign,Approved backup
+authentication-11-1,1800000116,user-03,device-11,20.297179185927,85.830329834965,1800,0,benign,Approved backup
+authentication-11-2,1800000201,user-03,device-11,20.297359050248,85.830329834965,1800,0,benign,Approved backup
