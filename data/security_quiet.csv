@@ -1,0 +1,10 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+quiet-00-0,1800000020,user-00,device-00,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-01-0,1800000021,user-01,device-01,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-02-0,1800000022,user-02,device-02,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-03-0,1800000023,user-03,device-03,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-04-0,1800000024,user-00,device-04,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-05-0,1800000025,user-01,device-05,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-06-0,1800000026,user-02,device-06,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-07-0,1800000027,user-03,device-07,20.296100000000,85.824500000000,0,0,unknown,Unlabelled low-activity observation
+quiet-08-0,1800000028,user-00,device-08,20.299607354263,85.831020210158,2000,0,unknown,Unlabelled low-activity observation

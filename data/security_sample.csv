@@ -1,0 +1,13 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+event-00,1800000100,user-00,device-00,20.2952006784,85.8227740620,100,2,benign,Routine authorized activity
+event-01,1800000110,user-01,device-01,20.2952006784,85.8235890883,102,3,benign,Routine authorized activity
+event-02,1800000120,user-02,device-02,20.2952006784,85.8244041146,104,2,benign,Routine authorized activity
+event-03,1800000130,user-00,device-03,20.2952006784,85.8252191408,106,3,benign,Routine authorized activity
+event-04,1800000140,user-01,device-04,20.2952006784,85.8260341671,108,2,benign,Routine authorized activity
+event-05,1800000150,user-02,device-05,20.2962798643,85.8227740620,400,40,benign,Approved service automation
+event-06,1800000160,user-00,device-06,20.2962798643,85.8235890883,403,41,benign,Approved service automation
+event-07,1800000170,user-01,device-07,20.2962798643,85.8244041146,406,42,benign,Approved service automation
+event-08,1800000180,user-02,device-08,20.2962798643,85.8252191408,409,43,benign,Approved service automation
+event-09,1800000190,user-00,device-09,20.2962798643,85.8260341671,412,44,benign,Approved service automation
+event-10,1800000200,user-01,device-10,20.3001469472,85.8307325538,1700,0,benign,Legitimate high-volume backup over VPN; analyst should review benign
+event-11,1800000210,user-02,device-11,20.2920530528,85.8326502627,900,700,suspicious,Synthetic suspicious failed-login burst for labelled evaluation

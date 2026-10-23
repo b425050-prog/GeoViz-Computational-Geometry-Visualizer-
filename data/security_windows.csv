@@ -1,0 +1,28 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+windows-00-0,1800000000,"lab, ""night""","device,""edge""",20.296819457285,85.823541145565,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-00-1,1800000599,"lab, ""night""","device,""edge""",20.296909389445,85.823541145565,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-01-0,1800000000,user-01,device-01,20.296819457285,85.823684973730,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-01-1,1800000599,user-01,device-01,20.296909389445,85.823684973730,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-02-0,1800000000,user-02,device-02,20.296819457285,85.823828801895,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-02-1,1800000599,user-02,device-02,20.296909389445,85.823828801895,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-03-0,1800000000,user-03,device-03,20.296819457285,85.823972630061,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-03-1,1800000599,user-03,device-03,20.296909389445,85.823972630061,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-04-0,1800000000,user-00,device-04,20.296819457285,85.824116458226,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-04-1,1800000599,user-00,device-04,20.296909389445,85.824116458226,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-05-0,1800000000,user-01,device-05,20.296819457285,85.824260286391,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-05-1,1800000599,user-01,device-05,20.296909389445,85.824260286391,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-06-0,1800000000,user-02,device-06,20.296819457285,85.824404114557,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-06-1,1800000599,user-02,device-06,20.296909389445,85.824404114557,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-07-0,1800000000,user-03,device-07,20.296819457285,85.824547942722,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-07-1,1800000599,user-03,device-07,20.296909389445,85.824547942722,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-08-0,1800000000,user-00,device-08,20.296819457285,85.824691770887,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-08-1,1800000599,user-00,device-08,20.296909389445,85.824691770887,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-09-0,1800000000,user-01,device-09,20.296819457285,85.824835599052,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-09-1,1800000599,user-01,device-09,20.296909389445,85.824835599052,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-10-0,1800000000,user-02,device-10,20.296819457285,85.824979427217,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-10-1,1800000599,user-02,device-10,20.296909389445,85.824979427217,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-11-0,1800000000,user-03,device-11,20.296819457285,85.825123255383,40,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-11-1,1800000599,user-03,device-11,20.296909389445,85.825123255383,80,0,benign,"Quoted identity, exact filter and fixed-window rate"
+windows-00-2,1799999999,"lab, ""night""","device,""edge""",20.296100000000,85.824500000000,999,0,benign,Excluded time endpoint
+windows-00-3,1800000600,"lab, ""night""","device,""edge""",20.296100000000,85.824500000000,999,0,benign,Excluded time endpoint
+windows-00-4,1800000601,"lab, ""night""","device,""edge""",20.296100000000,85.824500000000,999,0,benign,Excluded time endpoint

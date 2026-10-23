@@ -1,0 +1,17 @@
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
+perimeter-00-0,1800000020,user-00,device-00,20.293851695985,85.821623436695,100,0,benign,Fence corner or edge
+perimeter-01-0,1800000021,user-01,device-01,20.293851695985,85.827855990523,100,0,benign,Fence corner or edge
+perimeter-02-0,1800000022,user-02,device-02,20.298797964818,85.827855990523,100,0,benign,Fence corner or edge
+perimeter-03-0,1800000023,user-03,device-03,20.298797964818,85.821623436695,100,0,benign,Fence corner or edge
+perimeter-04-0,1800000024,user-00,device-04,20.293851695985,85.824500000000,100,0,benign,Fence corner or edge
+perimeter-05-0,1800000025,user-01,device-05,20.296100000000,85.827855990523,100,0,benign,Fence corner or edge
+perimeter-06-0,1800000026,user-02,device-06,20.298797964818,85.824500000000,100,0,benign,Fence corner or edge
+perimeter-07-0,1800000027,user-03,device-07,20.296100000000,85.821623436695,100,0,benign,Fence corner or edge
+perimeter-08-0,1800000028,user-00,device-08,20.296100000000,85.821628230967,100,0,benign,Near-boundary classification
+perimeter-09-0,1800000029,user-01,device-09,20.296100000000,85.827851196250,100,0,benign,Near-boundary classification
+perimeter-10-0,1800000030,user-02,device-10,20.298793468210,85.824500000000,100,0,benign,Near-boundary classification
+perimeter-11-0,1800000031,user-03,device-11,20.293856192593,85.824500000000,100,0,benign,Near-boundary classification
+perimeter-12-0,1800000032,user-00,device-12,20.296100000000,85.821618642423,100,40,benign,Near-boundary classification
+perimeter-13-0,1800000033,user-01,device-13,20.296100000000,85.827860784795,100,40,suspicious,Near-boundary classification
+perimeter-14-0,1800000034,user-02,device-14,20.298802461426,85.824500000000,100,40,suspicious,Near-boundary classification
+perimeter-15-0,1800000035,user-03,device-15,20.293847199377,85.824500000000,100,40,suspicious,Near-boundary classification

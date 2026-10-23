@@ -1,0 +1,10 @@
+file,name,purpose,geo_radius,feature_radius,min_pts,fence
+security_sample.csv,Compact reference,"Normal use, approved backup and an isolated failure burst",150,0.8,3,campus
+security_campus.csv,Campus operations,"Repeated records, remote transfers and excluded time endpoints",150,0.8,3,campus
+security_research.csv,Research network,Mixed device groups and observations with unknown labels,150,0.8,3,campus
+security_perimeter.csv,Perimeter inspection,"Corner, edge, interior and exterior observations",110,0.8,3,event_corners
+security_authentication.csv,Authentication bursts,"Clustered failures, an interior burst and an approved backup",120,0.8,3,campus
+security_movement.csv,Device movement,Repeated device locations crossing the permitted boundary,110,0.8,3,campus
+security_quiet.csv,Low-activity telemetry,Zero-count observations and unknown-label evaluation,150,0.8,3,campus
+security_windows.csv,Time-window boundaries,"Inclusive start, exclusive end and quoted identity filters",150,0.8,3,campus
+security_crowd.csv,Dense campus traffic,Overlapping observations and several activity-density groups,100,0.8,3,campus
