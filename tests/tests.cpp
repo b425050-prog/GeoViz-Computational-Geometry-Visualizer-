@@ -337,8 +337,8 @@ int main(int argc, char **argv) {
                 "projection round trip");
         require(!sec.loadMap((root / "data/campus_map.csv").string()).empty(),
                 "geographic map integration");
-        sec.settings().setGeoQuery({75, -25});
-        sec.settings().setFeatureQuery({1.5, 0.3});
+        sec.updateSettings([&](SecuritySettings &draft) { draft.setGeoQuery({75, -25}); });
+        sec.updateSettings([&](SecuritySettings &draft) { draft.setFeatureQuery({1.5, 0.3}); });
         sec.setReview(sec.events()[10].id(), "benign");
         sec.save((outputRoot / "output/test.security").string());
         auto restored = SecurityConsole::load((outputRoot / "output/test.security").string());
@@ -355,26 +355,31 @@ int main(int argc, char **argv) {
         require(sec.evaluation().find("analyst-reviewed=1 reviewed benign=1") != std::string::npos,
                 "actual benign analyst review retained");
         auto filtered = sec;
-        filtered.settings().setDevice("device-00");
+        filtered.updateSettings([&](SecuritySettings &draft) { draft.setDevice("device-00"); });
         require(filtered.observations(true).size() == 1, "device filter");
-        filtered.settings().setUser("absent");
+        filtered.updateSettings([&](SecuritySettings &draft) { draft.setUser("absent"); });
         require(filtered.observations(false).empty(), "combined user filter");
         filtered = sec;
-        filtered.settings().setEnd(filtered.settings().start());
-        rejects([&] { filtered.validate(); }, "empty time window");
+        rejects(
+            [&] {
+                filtered.updateSettings(
+                    [&](SecuritySettings &draft) { draft.setEnd(filtered.settings().start()); });
+            },
+            "empty time window");
         filtered = sec;
-        filtered.settings().setRequestScale(0);
-        rejects([&] { filtered.validate(); }, "zero feature scale");
+        rejects(
+            [&] {
+                filtered.updateSettings([&](SecuritySettings &draft) { draft.setRequestScale(0); });
+            },
+            "zero feature scale");
         filtered = sec;
         auto duplicateEvents = filtered.events();
         duplicateEvents.push_back(duplicateEvents[0]);
-        filtered.setEvents(std::move(duplicateEvents));
-        rejects([&] { filtered.validate(); }, "duplicate source IDs");
+        rejects([&] { filtered.setEvents(std::move(duplicateEvents)); }, "duplicate source IDs");
         filtered = sec;
         auto distantEvents = filtered.events();
         distantEvents[0].setLat(0);
-        filtered.setEvents(std::move(distantEvents));
-        rejects([&] { filtered.validate(); }, "projection extent limit");
+        rejects([&] { filtered.setEvents(std::move(distantEvents)); }, "projection extent limit");
         // Generated scenes and summaries are test artifacts, never source fixtures.
         for (int i = 0; i < 10; ++i) {
             auto m = static_cast<Mode>(i);

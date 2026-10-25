@@ -9,3 +9,5 @@
 *.ttf binary
 # Retain the bundled font license verbatim.
 assets/OFL.txt -whitespace
+
+*.sh text eol=lf

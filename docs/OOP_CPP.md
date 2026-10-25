@@ -60,3 +60,28 @@ All owning polymorphic bases have virtual destructors. `override` makes signatur
 `App::execute()` calls `AlgorithmRunner::execute()` → `Engine` selects a concrete `Algorithm` → `Algorithm::run()` validates, calculates and verifies → `Run` freezes input/result → `Playback` selects a recorded `Frame` → the canvas draws it. The renderer never determines algorithm answers. `SceneIO` exports the same snapshot used for the display.
 
 The design intentionally remains a bounded desktop application. Algorithms, domain adaptation and presentation are separate; no service framework or additional algorithm family is needed to extend samples or improve visual presentation.
+
+## Version 2 responsibility map
+
+| Responsibility | Interface or component |
+| --- | --- |
+| Coordinates, topology and validated edits | `scene.hpp`, `geometry.hpp` |
+| Immutable answers, recorded pseudocode lines, timeline | `trace.hpp` |
+| Algorithm and spatial-query Strategies | `algorithms.hpp` |
+| Scene persistence and deterministic samples | `persistence.hpp` |
+| Security settings, records, observations, reviews | `security.hpp` |
+| Memento input history and prepared view transaction | `workspace.hpp` |
+| Flush/close, staging, rollback and composed export commit | `atomic_files.hpp` |
+| Bounded stream parsing / CSV / analysis / security persistence | `io_detail.hpp`, `csv.cpp`, `security.cpp`, `security_io.cpp` |
+| Coordinator / commands / input / inspector / widgets / smoke harness | `app.hpp`, `app_commands.hpp`, `app_input.hpp`, `app_inspector.hpp`, `app_render.hpp`, `app_smoke.hpp` |
+
+`geoviz.hpp` remains a compatibility aggregate. New engine clients can include focused interfaces.
+The application headers containing member definitions are implementation sections of App; they do
+not pretend to be independently reusable services. Testable input/history and view-preparation logic
+lives in graphics-independent classes. This keeps the architecture appropriate for an OOP course.
+
+Security settings are const to callers. `setSettings`, `updateSettings` and `replace` validate detached
+candidates before committing. Event replacement clears stale reviews. Dataset/settings revisions
+invalidate observation/evaluation caches; review notes/times remain independent of truth labels.
+Polymorphism remains concentrated in algorithms, indexes and adapters, rather than being added to
+passive records solely to increase the number of classes.

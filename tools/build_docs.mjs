@@ -10,12 +10,22 @@ const documents = [
   ['security', 'Security console', 'SECURITY.md'], ['guide', 'User guide', 'USER_GUIDE.md'],
   ['samples', 'Samples', 'SAMPLES.md'], ['verification', 'Verification', 'VERIFICATION.md']
 ];
-function render(source) {
-  let html = marked.parse(source, {gfm:true});
-  for (const [id, , file] of documents) html = html.replaceAll(`href="${file}"`, `href="#${id}"`);
-  return html.replaceAll('href="index.html"', 'href="#overview"');
+const slug = text => text.toLowerCase().replace(/<[^>]+>/g,'').replace(/[^\p{L}\p{N}\s_-]/gu,'').trim().replace(/\s/g,'-');
+function render(source, section) {
+  const seen=new Map();
+  const renderer=new marked.Renderer();
+  renderer.heading=function({tokens, depth, text}) {
+    const base=slug(text),n=seen.get(base)||0;seen.set(base,n+1);
+    return `<h${depth} id="${section}--${base}${n?'-'+n:''}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
+  };
+  let html=marked.parse(source,{gfm:true,renderer});
+  for(const [id,,file] of documents){
+    const escaped=file.replace(/\./g,'\\.');
+    html=html.replace(new RegExp(`href="${escaped}(?:#([^"]+))?"`,'g'),(_,anchor)=>`href="#${id}${anchor?'--'+anchor:''}"`);
+  }
+  return html.replaceAll('href="index.html"','href="#overview"');
 }
-const sections = documents.map(([id,,file]) => `<section id="${id}" class="document" hidden>${render(fs.readFileSync(path.join(root,'docs',file),'utf8'))}</section>`).join('\n');
+const sections = documents.map(([id,,file]) => `<section id="${id}" class="document" hidden>${render(fs.readFileSync(path.join(root,'docs',file),'utf8'),id)}</section>`).join('\n');
 const nav = [['overview','Recordings'], ...documents.map(([id,title])=>[id,title])].map(([id,title])=>`<a href="#${id}" data-page="${id}">${title}</a>`).join('');
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

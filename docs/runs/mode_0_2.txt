@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: Convex hull
 Result: Hull has 8 vertices.
-PASS: Checked convexity and containment of every input point.
+PASS [INVARIANT-CHECKED]: Checked convexity and containment of every input point.
 Operations: 348
 Range queries: 0
 Visited/expanded: 0

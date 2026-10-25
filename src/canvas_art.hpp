@@ -24,8 +24,8 @@ inline void surface(const View &v, Mode mode, int variant, bool geographic, bool
             Vector2 last{}, lastHighlight{};
             for (int k = 0; k <= 80; ++k) {
                 const float x = k * a.width / 80;
-                const float drift = 17 * std::sin(x / 155 + band * 0.19f) +
-                                    7 * std::sin(x / 67 - band * 0.27f);
+                const float drift =
+                    17 * std::sin(x / 155 + band * 0.19f) + 7 * std::sin(x / 67 - band * 0.27f);
                 const float y = a.y + band * 34.0f + drift;
                 const Vector2 next{a.x + x, y};
                 const Vector2 highlight{a.x + x, y + 5 + 2 * std::sin(x / 91)};
@@ -43,8 +43,7 @@ inline void surface(const View &v, Mode mode, int variant, bool geographic, bool
             for (int col = 0; col < a.width / 43 + 1; ++col) {
                 const float x = a.x + col * 43.0f + (row % 2) * 19;
                 const float y = a.y + row * 23.0f + (col % 3) * 3;
-                DrawLineEx({x, y}, {x + 8 + (col % 3) * 2.0f, y - 1}, 1,
-                           Color{121, 171, 174, 24});
+                DrawLineEx({x, y}, {x + 8 + (col % 3) * 2.0f, y - 1}, 1, Color{121, 171, 174, 24});
             }
         return;
     }
@@ -58,8 +57,8 @@ inline void surface(const View &v, Mode mode, int variant, bool geographic, bool
             Vector2 last{}, lastInset{};
             for (int k = 0; k <= 80; ++k) {
                 const float x = k * a.width / 80;
-                const float bend = 13 * std::sin(x / 183 + course * 0.29f) +
-                                   5 * std::cos(x / 79 + course * 0.41f);
+                const float bend =
+                    13 * std::sin(x / 183 + course * 0.29f) + 5 * std::cos(x / 79 + course * 0.41f);
                 const float y = a.y + course * 45.0f + bend;
                 const Vector2 next{a.x + x, y};
                 const Vector2 inset{a.x + x, y + 9 + 2 * std::sin(x / 113)};
@@ -78,8 +77,7 @@ inline void surface(const View &v, Mode mode, int variant, bool geographic, bool
                 const float y = a.y + row * 29.0f + (col % 3) * 2;
                 const float lean = (row + col) % 2 ? 5.0f : -5.0f;
                 DrawLineEx({x, y}, {x + lean, y + 7}, 1, Color{182, 151, 118, 28});
-                DrawLineEx({x + 4, y}, {x + 4 + lean, y + 7}, 1,
-                           Color{255, 251, 237, 120});
+                DrawLineEx({x + 4, y}, {x + 4 + lean, y + 7}, 1, Color{255, 251, 237, 120});
             }
         return;
     }

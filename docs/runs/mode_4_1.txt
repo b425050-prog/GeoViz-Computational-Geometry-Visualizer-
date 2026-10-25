@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: DBSCAN scan
 Result: 3 clusters; 4 noise points.
-PASS: Compared with independent core-component/border reference.
+PASS [REFERENCE-VERIFIED]: Compared with independent core-component/border reference.
 Operations: 2704
 Range queries: 52
 Visited/expanded: 0

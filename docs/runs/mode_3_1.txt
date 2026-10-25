@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: A*
 Result: Optimal cost 982.884; expanded 21 vertices.
-PASS: Compared cost with Bellman-Ford and checked returned path edges/cost.
+PASS [REFERENCE-VERIFIED]: Compared cost with Bellman-Ford and checked returned path edges/cost.
 Operations: 86
 Range queries: 0
 Visited/expanded: 21

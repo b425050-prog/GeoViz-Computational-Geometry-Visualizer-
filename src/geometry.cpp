@@ -1,4 +1,6 @@
-#include "geoviz.hpp"
+#include "geometry.hpp"
+#include "algorithms.hpp"
+#include "trace.hpp"
 #include <iomanip>
 #include <sstream>
 namespace gv {
@@ -109,7 +111,11 @@ std::string number(double x, int precision) {
     if (!std::isfinite(x))
         return "INF";
     std::ostringstream out;
-    out << std::fixed << std::setprecision(precision) << x;
+    if (x != 0 && std::abs(x) < std::pow(10.0, -precision))
+        out << std::scientific;
+    else
+        out << std::fixed;
+    out << std::setprecision(precision) << x;
     return out.str();
 }
 // Check scoped-enum values before indexing the display-name table.
@@ -202,7 +208,8 @@ int GeometryKernel::membership(Point q, const std::vector<Point> &p) {
 void GeometryKernel::validatePolygon(const std::vector<Point> &p) {
     if (p.size() < 3)
         throw std::runtime_error("A polygon needs at least 3 vertices.");
-    double area = 0;
+    long double area = 0, compensation = 0;
+    const long double ox = p.front().x(), oy = p.front().y();
     for (std::size_t i = 0; i < p.size(); ++i) {
         if (distance2(p[i], p[(i + 1) % p.size()]) < TOL * TOL)
             throw std::runtime_error("Repeated adjacent polygon vertex.");
@@ -211,7 +218,13 @@ void GeometryKernel::validatePolygon(const std::vector<Point> &p) {
         if (orientation(a, b, c) == 0 &&
             ((a.x() - b.x()) * (c.x() - b.x()) + (a.y() - b.y()) * (c.y() - b.y())) > 0)
             throw std::runtime_error("Adjacent polygon edges overlap.");
-        area += a.x() * b.y() - a.y() * b.x();
+        const long double term =
+            (static_cast<long double>(a.x()) - ox) * (static_cast<long double>(b.y()) - oy) -
+            (static_cast<long double>(a.y()) - oy) * (static_cast<long double>(b.x()) - ox);
+        const long double corrected = term - compensation;
+        const long double next = area + corrected;
+        compensation = (next - area) - corrected;
+        area = next;
         for (std::size_t j = i + 1; j < p.size(); ++j) {
             if (j == (i + 1) % p.size() || i == (j + 1) % p.size())
                 continue;

@@ -57,7 +57,7 @@ class Report:
         c.drawString(76, 284, 'Dr. Srichandan Shobhanayak')
         c.setFont('Lato', 11)
         c.drawString(76, 260, 'Department of Computer Science and Engineering')
-        c.setFillColor(MUTED); c.drawCentredString(297.638, 159, '24 October 2026')
+        c.setFillColor(MUTED); c.drawCentredString(297.638, 159, '25 October 2026')
 
     def page(self, title, subtitle):
         if self.number:
@@ -65,7 +65,7 @@ class Report:
         self.number += 1
         c = self.c
         c.setFillColor(ACCENT); c.setFont('LatoBold', 11); c.drawString(46, 803, 'GEOVIZ')
-        c.setFillColor(MUTED); c.setFont('Lato', 9); c.drawRightString(549, 803, 'PROJECT REPORT  /  24 OCTOBER 2026')
+        c.setFillColor(MUTED); c.setFont('Lato', 9); c.drawRightString(549, 803, 'PROJECT REPORT  /  25 OCTOBER 2026')
         c.setStrokeColor(HexColor('#ccd6cc')); c.line(46, 790, 549, 790)
         c.setFillColor(INK); c.setFont('LatoBold', 25); c.drawString(46, 750, title)
         c.setFillColor(MUTED); c.setFont('Lato', 10); c.drawString(46, 729, subtitle)
@@ -110,9 +110,10 @@ class Report:
         self.c.setStrokeColor(HexColor('#ccd6cc')); self.c.line(46, 47, 549, 47)
         self.c.setFillColor(MUTED); self.c.setFont('Lato', 8)
         self.c.drawString(46, 32, 'Computational Geometry Visualizer & Spatial Security Console')
-        self.c.drawRightString(549, 32, f'{self.number:02} / 11'); self.c.showPage()
+        self.c.drawRightString(549, 32, f'{self.number:02} / 12'); self.c.showPage()
 
     def save(self):
+        if self.number!=12:raise RuntimeError('Update report page total after changing sections')
         self.finish(); self.c.save(); copy2(OUT, ROOT / 'docs/GeoViz_Project_Report.pdf')
 
 
@@ -131,17 +132,17 @@ def main():
              ['Source','Encapsulated domain models, polymorphic algorithms and indexes, tests and build scripts'],
              ['Documentation','Focused Markdown guides, interactive engine recordings and this print report']], [115,388])
     r.h('Run and review')
-    r.p('Open <b>GeoViz.exe</b> from the repository root. Select a mode, choose <b>Sample</b>, then <b>Run</b> and <b>Play</b>. Sample cycles six inputs per mode, including tidal archipelago and terraced botanical families. Keep the executable beside assets/ and data/. The application works offline and requires no account or installation.')
+    r.p('Open <b>GeoViz.exe</b> from the repository root. Select a mode, choose a named input with <b>Samples / F2</b>, then <b>Run</b> and <b>Play</b>. N cycles six inputs per mode, including tidal archipelago and terraced botanical families. Keep the executable beside assets/ and data/. The application works offline and requires no account or installation.')
     r.p('Open <b>docs/index.html</b> for interactive recordings. The source guides separately cover algorithms, OOP/C++, security, controls, sample inputs and verification.', small=True)
 
     r.page('From input to checked run', 'Editing, execution, recorded playback and reproducible outputs')
     r.h('Execution contract')
     r.p('<b>Validate -> freeze scene -> calculate and record -> verify -> inspect/export.</b> Algorithm answers do not depend on animation timing. Editing an input invalidates its current trace. A retained Run owns an independent input/result snapshot for historical comparison.')
     r.table([['Action','Control'], ['Run / play-pause','Enter / Space'],['Step / first-final frame','Left-Right / Home-End'],
-             ['Next sample / parameters','Sample or N / Settings or O'], ['Add, select, move / query','Left-click, drag / right-click'],
+             ['Named sample / parameters','F2 or Samples; N cycles / Settings or O'], ['Add, select, move / query','Left-click, drag / right-click'],
              ['Pan, zoom, fit','Middle-drag, wheel, F'], ['Polygon / graph links','P for boundary vertices / Shift-click two points'],
              ['Route endpoints / block link','Pick source-destination or R-T / click edge then B'],
-             ['Save, load, export / compare','S, L, E / C for same input; V for historical runs']], [175,328])
+             ['Named sessions / edit history','Ctrl+S, Ctrl+O / Ctrl+Z, Ctrl+Y']], [175,328])
     r.h('Persistence and separation')
     r.p('SceneIO stores versioned plaintext scenes using full-precision doubles. Polygon drafts reload exactly; a geofence run requires a valid completed boundary. A checked-run report retains its adjacent scene. Security exports preserve both views, source events, settings and reviews. Drag an input file into the application to import it.')
     r.p('The engine contains no raylib dependency. The presentation layer transforms world coordinates to the screen and reads recorded Frames. Playback changes a cursor; it never recomputes an answer or changes work counters.')
@@ -210,10 +211,21 @@ def main():
              ['Modern C++','Move semantics, const access, enum class, override/final, STL containers/algorithms, lambdas and structured bindings serve concrete model/search tasks.']], [143,360])
     r.p('SceneCanvas renders a const frame context in separate layers. SettingsPanel owns draft fields and validates candidate models before App commits. Tests enforce abstract interfaces, virtual destruction and read-only ownership boundaries.', small=True)
 
+    r.page('Recoverable OOP workspaces', 'Version 2: validated transitions, Memento history and reproducible evidence')
+    r.h('Preserve and explain input changes')
+    r.p('Lab geometry, mode, view and selections survive security workspace switches. EditHistory uses the Memento pattern for bounded undo/redo, separate from completed Run history. A drag is one edit. Named Windows sessions, recent files, dirty markers and local recovery generations protect investigations during replacement or restart.')
+    r.h('Validated state and transactional files')
+    r.p('Settings use round-trip precision and contextual UTC fields. Security settings/events are replaced through validated candidates. PreparedSecurity builds both views and treats the campus map as optional before committing an import. AtomicFiles closes and flushes staged streams, then publishes the generation with rollback on ordinary filesystem errors. Recovery backups remain if restoration itself fails; this is not a power-loss journal.')
+    r.h('Teaching and analysis')
+    r.p('The desktop timeline seeks recorded pseudocode line IDs and route tables. Frozen comparison shows equivalent algorithms side by side; presentation mode hides editing bars. Keyboard focus, text sizing and point tables supplement shape and colour cues. Structured evidence declares parameters, units, source revision, consistency hashes and per-event candidate reasons. Notes and UTC review times remain separate from synthetic truth. Parameter sensitivity is a teaching comparison, not a detection-accuracy claim.')
+    r.h('Focused responsibilities')
+    r.p('Engine interfaces are split by geometry, scenes, traces, algorithms, persistence and security. CSV parsing, security analysis and snapshot/evidence I/O occupy separate translation units. App has focused implementation sections, while EditHistory, PreparedSecurity and AtomicFiles expose testable graphics-independent responsibilities. Existing Strategy, Template Method, const snapshots and RAII remain central.')
+    r.p('The complete 40-item implementation and evidence checklist is docs/REVIEW_RESOLUTION.md. Source builds, authoring locks, CI configurations and release provenance are documented in docs/BUILD_RELEASE.md.', small=True)
+
     r.page('Verification and delivery', 'Executed checks, implementation coverage and practical limits')
     r.table([['Check','Result'],['GCC 15.2.0 release, C++17, strict warnings as errors','Passed'],['Engine suite; fixed seed 425050',f'{engine_checks} assertions passed'],
-             ['Clang second compiler and library assertions','Passed'],['Undefined-behaviour trap instrumentation','Passed; no trap'],['CMake desktop build / isolated CTest','Passed'],
-             ['UI state and rendered scenarios','70 states at 960x640, 1440x900 and 1920x1080'],['Offline guide','24 recordings, controls, navigation and narrow layout verified']], [295,208])
+             ['Focused regressions','Numerics, writes, transitions and structured evidence'],['GCC/Clang ASan+UBSan','Exact-revision CI artifacts linked from repository'],['CMake desktop build / isolated CTest','Passed'],
+             ['UI state and rendered scenarios','77 states at 960x640 and 1440x900'],['Offline guide','24 recordings, controls, navigation and narrow layout verified']], [295,208])
     r.h('Acceptance coverage')
     r.p('Hull containment/convexity, polygon boundary classification, Dijkstra/A* optimal-cost agreement, unreachable routes, density labels, closest-pair/query references, edit invalidation and persistence are checked. Coverage includes indexed DBSCAN, k-d queries, closest pair and both security views. All 60 laboratory scenes and nine security scenarios are included.')
     r.h('Reproducible evidence')
@@ -222,7 +234,7 @@ def main():
     r.p('Automated engine, application-state and rendering checks support the documented behaviour; they are not a proof for all inputs and display configurations. The executable targets Windows x64. Floating-point geometry and local projection are approximate. Trace memory is capped. Indexed search can still be linear and density expansion quadratic. Synthetic security evaluation does not establish production accuracy.')
     r.p('The console reads selected local exports and provides no authentication, secure storage, live production account connector or automatic incident response. Review candidates require context. The source and documentation remain editable for repository review.', small=True)
     r.save()
-    print(f'Built 11-page report: {OUT}')
+    print(f'Built project report: {OUT}')
 
 
 if __name__ == '__main__':

@@ -136,8 +136,9 @@ int main(int argc, char **argv) {
             const bool feature = i == 4 || i == 6 || i == 7;
             const Mode mode = i == 3 ? Mode::Geofence : i == 5 ? Mode::Hull : Mode::IndexedDBSCAN;
             if (i == 7) {
-                sample.settings().setUser("lab, \"night\"");
-                sample.settings().setStart(1800000300);
+                sample.updateSettings(
+                    [&](SecuritySettings &draft) { draft.setUser("lab, \"night\""); });
+                sample.updateSettings([&](SecuritySettings &draft) { draft.setStart(1800000300); });
             }
             out << ',';
             item(out, sample.scene(feature), mode, "Security / " + catalogue[i].name);

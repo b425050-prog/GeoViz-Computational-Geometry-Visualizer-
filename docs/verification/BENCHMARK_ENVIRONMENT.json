@@ -1,0 +1,7 @@
+{
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 204 Stepping 2, GenuineIntel",
+  "compiler": "g++.exe (GCC) 15.2.0",
+  "configuration": "CMake Release",
+  "phase_contract": "index_build_us includes one radius query; checked runs include validation, calculation and verification; reference_repeat_us times a separate oracle invocation; trace payload is a lower-bound estimate, excluding allocator overhead and some drawing vectors; no UI timing included"
+}

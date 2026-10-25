@@ -1,0 +1,474 @@
+// Included inside App: app commands.
+Rectangle sidebarBounds() const {
+    float width = presentation ? 334.0f : std::clamp(Ui::width() * 0.27f, 360.0f, 440.0f);
+    return {Ui::width() - width - 16, presentation ? 56.0f : 142.0f, width,
+            Ui::height() - (presentation ? 150.0f : 314.0f)};
+}
+// Recompute logical bounds after resize; screen scaling is applied once by Ui.
+void updateLayout() {
+    auto panel = sidebarBounds();
+    if (presentation) {
+        panel.x = Ui::width() - 350;
+        panel.width = 334;
+    }
+    view.area = {16, panel.y, panel.x - 32, panel.height};
+}
+// Source/destination picking is an explicit tool state, separate from point dragging.
+bool pickEndpoint(int id) {
+    if (routePick == RoutePick::None || securityView || id < 0 ||
+        id >= static_cast<int>(scene.points().size()))
+        return false;
+    bool source = routePick == RoutePick::Source;
+    if (source)
+        scene.setSource(id);
+    else
+        scene.setGoal(id);
+    selected = id;
+    routePick = RoutePick::None;
+    invalidate();
+    status = std::string(source ? "Source" : "Destination") + " set to point #" +
+             std::to_string(id) + ". Run to calculate the route.";
+    return true;
+}
+
+bool feature() const {
+    return securityView == 2;
+}
+// Move the old result to history before resetting playback; stale evidence is never current.
+void invalidate() {
+    scene.touch();
+    comparison.reset();
+    compareVisible = false;
+    if (run)
+        previous = std::move(run);
+    playback.reset();
+    status = "Input changed. Old trace invalidated; Run again.";
+}
+// The geographic editor is the authority for its fence; the feature view has no polygon.
+void syncFence(bool required = false) {
+    if (securityView != 1)
+        return;
+    fenceDraft = scene.polygon();
+    try {
+        security.setFence(fenceDraft);
+        evaluationDirty = true;
+    } catch (const std::exception &) {
+        if (required)
+            throw;
+        status = "Geofence draft is unfinished/invalid. Complete it before running, saving or "
+                 "exporting security.";
+    }
+}
+// Rebuild derived observations and map positions after a source/filter/scaling change.
+void refreshSecurity() {
+    auto prepared =
+        PreparedSecurity::prepare(security, feature(), (root / "data/campus_map.csv").u8string());
+    evaluationDirty = true;
+    scene = std::move(prepared.scene);
+    observations = std::move(prepared.observations);
+    map = std::move(prepared.map);
+    invalidate();
+    resetInteractions();
+    view.fit(scene, feature());
+}
+void resetInteractions() {
+    selected = selectedEdge = edgeStart = drag = polygonDrag = -1;
+    routePick = RoutePick::None;
+    polygonTool = false;
+}
+WorkspaceState workspace() const {
+    return {securityView ? labScene : scene, security,
+            securityView == 1 ? scene.polygon() : fenceDraft};
+}
+std::string labKey() const {
+    return workspaceKey({securityView ? labScene : scene, SecurityConsole{}});
+}
+std::string securityKey() const {
+    return workspaceKey({Scene{}, security, securityView == 1 ? scene.polygon() : fenceDraft});
+}
+bool dirty() const {
+    return labKey() != savedLabKey || securityKey() != savedSecurityKey;
+}
+void markSaved(bool laboratory) {
+    if (laboratory)
+        savedLabKey = labKey();
+    else
+        savedSecurityKey = securityKey();
+}
+void recover() {
+    auto state = workspace();
+    AtomicFiles files;
+    SceneIO::save(state.lab, (root / "output/recovery.scene").u8string(), &files);
+    state.security.save((root / "output/recovery.security").u8string(), &files);
+    Scene draft;
+    draft.setPolygon(state.fenceDraft);
+    SceneIO::save(draft, (root / "output/recovery.fence.scene").u8string(), &files);
+    files.commit();
+}
+void protectWork() {
+    if (smoke || !dirty())
+        return;
+    auto dir = root / "output/recovery-history";
+    std::filesystem::create_directories(dir);
+    auto token = std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+    auto state = workspace();
+    AtomicFiles files;
+    SceneIO::save(state.lab, (dir / (token + ".scene")).u8string(), &files);
+    state.security.save((dir / (token + ".security")).u8string(), &files);
+    Scene draft;
+    draft.setPolygon(state.fenceDraft);
+    SceneIO::save(draft, (dir / (token + ".fence.scene")).u8string(), &files);
+    files.commit();
+}
+void recordEdit() {
+    if (drag >= 0 || polygonDrag >= 0)
+        return;
+    if (edits.record(workspace()) && !smoke)
+        recover();
+}
+void restoreEdit(bool redo) {
+    if (redo ? !edits.canRedo() : !edits.canUndo()) {
+        status = "No further edit history.";
+        return;
+    }
+    auto state = redo ? edits.redo() : edits.undo();
+    labScene = state.lab;
+    fenceDraft = state.fenceDraft;
+    security = state.security;
+    if (securityView) {
+        refreshSecurity();
+        if (securityView == 1)
+            scene.setPolygon(fenceDraft);
+    } else {
+        scene = labScene;
+        invalidate();
+        view.fit(scene);
+    }
+    resetInteractions();
+    if (!smoke)
+        recover();
+    status = redo ? "Edit redone." : "Edit undone.";
+}
+void chooseSample(int index) {
+    protectWork();
+    resetInteractions();
+    sidebarScroll = 0;
+    if (securityView) {
+        const auto &sample = securityCatalogue.at(index);
+        auto next = loadSecuritySample((root / "data").u8string(), sample);
+        auto prepared =
+            PreparedSecurity::prepare(next, feature(), (root / "data/campus_map.csv").u8string());
+        security = std::move(next);
+        fenceDraft = security.fence();
+        securitySample = index;
+        securityDataset = sample.name;
+        scene = std::move(prepared.scene);
+        observations = std::move(prepared.observations);
+        map = std::move(prepared.map);
+        invalidate();
+        view.fit(scene, feature());
+        status = sample.name + ": " + sample.purpose;
+    } else {
+        sampleVariant = index;
+        scene = sampleScene(mode, index);
+        invalidate();
+        view.fit(scene);
+        status = sampleName(mode, index);
+    }
+    samplePicker = false;
+}
+// Sample replaces the complete input context, including stale selections.
+void nextSample() {
+    chooseSample(securityView ? (securitySample + 1) % static_cast<int>(securityCatalogue.size())
+                              : (sampleVariant + 1) % SampleVariantCount);
+}
+// Clear view-specific interaction and history before changing the coordinate units.
+void setView(int v) {
+    if (v == securityView)
+        return;
+    syncFence();
+    PreparedSecurity prepared;
+    if (v)
+        prepared =
+            PreparedSecurity::prepare(security, v == 2, (root / "data/campus_map.csv").u8string());
+    if (!securityView) {
+        labScene = scene;
+        labMode = mode;
+        labView = view;
+        labSelected = selected;
+        labEdge = selectedEdge;
+    }
+    if (!securityView)
+        labSessionPath = sessionPath;
+    else
+        securitySessionPath = sessionPath;
+    securityView = v;
+    sessionPath = v ? securitySessionPath : labSessionPath;
+    resetInteractions();
+    sidebarScroll = 0;
+    run.reset();
+    previous.reset();
+    comparison.reset();
+    compareVisible = false;
+    playback.reset();
+    if (v) {
+        mode = Mode::IndexedDBSCAN;
+        scene = std::move(prepared.scene);
+        if (v == 1)
+            scene.setPolygon(fenceDraft);
+        observations = std::move(prepared.observations);
+        map = std::move(prepared.map);
+        view.fit(scene, feature());
+    } else {
+        scene = labScene;
+        mode = labMode;
+        view = labView;
+        updateLayout();
+        selected = labSelected;
+        selectedEdge = labEdge;
+    }
+    status = v ? "Security workspace. Settings controls filters, UTC window and scales."
+               : "Laboratory edits restored.";
+}
+// Freeze input and result together; playback reads this Run while later edits invalidate it.
+void execute() {
+    syncFence(true);
+    Result r = engine->execute(scene, mode, true);
+    if (run)
+        previous = std::move(run);
+    run = std::make_unique<Run>(Run{scene, std::move(r)});
+    playback.reset();
+    status = run->result().summary() + " " + run->result().check();
+}
+// Dispatch by input format and validate temporary security state before replacing current data.
+void loadFile(const std::string &path) {
+    protectWork();
+    auto ext = std::filesystem::u8path(path).extension().u8string();
+    if (ext == ".csv" || ext == ".security") {
+        auto next = ext == ".security" ? SecurityConsole::load(path) : security;
+        if (ext == ".csv")
+            next.replace(CsvLogAdapter{}.load(path), next.settings(), next.fence());
+        auto prepared =
+            PreparedSecurity::prepare(next, false, (root / "data/campus_map.csv").u8string());
+        if (!securityView) {
+            labScene = scene;
+            labMode = mode;
+            labView = view;
+            labSelected = selected;
+            labEdge = selectedEdge;
+        }
+        security = std::move(next);
+        fenceDraft = security.fence();
+        securityView = 1;
+        mode = Mode::IndexedDBSCAN;
+        scene = std::move(prepared.scene);
+        observations = std::move(prepared.observations);
+        map = std::move(prepared.map);
+        securityDataset = std::filesystem::path(path).filename().u8string();
+        evaluationDirty = true;
+    } else {
+        auto next = SceneIO::load(path);
+        securityView = 0;
+        scene = std::move(next);
+        labScene = scene;
+    }
+    resetInteractions();
+    invalidate();
+    view.fit(scene, feature());
+    sessionPath = std::filesystem::u8path(path);
+    if (securityView)
+        securitySessionPath = sessionPath;
+    else
+        labSessionPath = sessionPath;
+    recentFiles.erase(std::remove(recentFiles.begin(), recentFiles.end(), path), recentFiles.end());
+    recentFiles.insert(recentFiles.begin(), path);
+    if (recentFiles.size() > 8)
+        recentFiles.resize(8);
+    std::ofstream recent(root / "output/recent.txt");
+    for (const auto &f : recentFiles)
+        recent << f << '\n';
+    markSaved(!securityView);
+    status = "Loaded " + path;
+}
+void openNamed() {
+    auto path = chooseSessionFile(false, securityView != 0, sessionPath.u8string());
+    if (!path.empty())
+        loadFile(path);
+}
+void saveNamed() {
+    auto path = chooseSessionFile(
+        true, securityView != 0,
+        sessionPath.empty()
+            ? (root / "output" / (securityView ? "session.security" : "session.scene")).u8string()
+            : sessionPath.u8string());
+    if (!path.empty()) {
+        sessionPath = std::filesystem::u8path(path);
+        save();
+    }
+}
+// Save only input state; exported evidence separately includes checked results.
+void save() {
+    syncFence(true);
+    auto path = sessionPath.empty()
+                    ? root / (securityView ? "output/session.security" : "output/session.scene")
+                    : sessionPath;
+    if (securityView && path.extension() != ".security")
+        path.replace_extension(".security");
+    if (!securityView && path.extension() != ".scene")
+        path.replace_extension(".scene");
+    if (securityView)
+        security.save(path.u8string());
+    else
+        SceneIO::save(scene, path.u8string());
+    sessionPath = path;
+    if (securityView)
+        securitySessionPath = path;
+    else
+        labSessionPath = path;
+    markSaved(!securityView);
+    status = "Saved " + path.u8string();
+}
+// Keep evidence beside its exact reproducible snapshots in the generated output directory.
+void exportEvidence() {
+    syncFence(true);
+    if (securityView) {
+        AtomicFiles files;
+        security.evidence((root / "output/evidence.txt").u8string(), &files);
+        if (run)
+            SceneIO::summary(*run, (root / "output/security_selected_run.txt").u8string(), &files);
+        files.commit();
+        status = "Exported evidence, full security snapshot and both view scenes "
+                 "in output/.";
+    } else {
+        if (!run)
+            throw std::runtime_error("Run an algorithm before exporting a checked summary.");
+        SceneIO::summary(*run, (root / "output/run.txt").u8string());
+        status = "Exported output/run.txt and its exact scene snapshot.";
+    }
+}
+// Compare equivalent algorithms on the same scene, never on a previous edited input.
+void compare() {
+    if (compareVisible) {
+        compareVisible = false;
+        return;
+    }
+    if (!run)
+        throw std::runtime_error("Run first.");
+    if (mode == Mode::Dijkstra || mode == Mode::AStar || mode == Mode::DBSCAN ||
+        mode == Mode::IndexedDBSCAN) {
+        Mode other = mode == Mode::Dijkstra ? Mode::AStar
+                     : mode == Mode::AStar  ? Mode::Dijkstra
+                     : mode == Mode::DBSCAN ? Mode::IndexedDBSCAN
+                                            : Mode::DBSCAN;
+        auto result = engine->execute(scene, other, true);
+        comparison = std::make_unique<Run>(scene, result);
+        compareVisible = true;
+        bool same =
+            (mode == Mode::DBSCAN || mode == Mode::IndexedDBSCAN)
+                ? result.labels() == run->result().labels()
+                : ((!std::isfinite(result.value()) && !std::isfinite(run->result().value())) ||
+                   equivalentCost(result.value(), run->result().value()));
+        status = "Same input: " + modeName(other) + " value=" + number(result.value()) +
+                 " ops=" + std::to_string(result.stats().operations()) +
+                 " expanded=" + std::to_string(result.stats().expanded()) +
+                 " agree=" + (same ? "YES" : "NO");
+    } else if (previous)
+        status = "Previous " + modeName(previous->result().mode()) +
+                 " value=" + number(previous->result().value()) +
+                 " ops=" + std::to_string(previous->result().stats().operations()) +
+                 "; current value=" + number(run->result().value()) +
+                 " ops=" + std::to_string(run->result().stats().operations());
+    else
+        status = "No previous run yet. Edit or rerun to retain one.";
+}
+// Historical comparison preserves both input snapshots and their separate result summaries.
+void comparePrevious() {
+    if (!run || !previous)
+        throw std::runtime_error("Keep two completed runs before comparing history.");
+    status = "Previous " + modeName(previous->result().mode()) + ": " +
+             previous->result().summary() +
+             " ops=" + std::to_string(previous->result().stats().operations()) + "; current " +
+             modeName(run->result().mode()) + ": " + run->result().summary() +
+             " ops=" + std::to_string(run->result().stats().operations());
+    AtomicFiles files;
+    SceneIO::summary(*previous, (root / "output/previous.txt").u8string(), &files);
+    SceneIO::summary(*run, (root / "output/current.txt").u8string(), &files);
+    files.commit();
+}
+void openSettings() {
+    settings.open(scene, security, selectedEdge, securityView, mode);
+}
+// Commit only after the component has validated every candidate field.
+void applySettings() {
+    auto candidate = settings.candidate(scene, security, selectedEdge, securityView);
+    if (securityView) {
+        auto prepared = PreparedSecurity::prepare(candidate.security, feature(),
+                                                  (root / "data/campus_map.csv").u8string());
+        security = std::move(candidate.security);
+        scene = std::move(prepared.scene);
+        observations = std::move(prepared.observations);
+        map = std::move(prepared.map);
+        evaluationDirty = true;
+        invalidate();
+        resetInteractions();
+        view.fit(scene, feature());
+    } else {
+        scene = std::move(candidate.scene);
+        invalidate();
+    }
+    settings.close();
+    status = "Settings applied. Run again.";
+}
+// The Scene remaps topology; the UI only clears interaction indices after deletion.
+void removeSelected() {
+    if (securityView)
+        throw std::runtime_error("Source observations are inspected through filters; edit the "
+                                 "CSV to change records.");
+    if (selected < 0)
+        return;
+    scene.removePoint(selected);
+    selected = -1;
+    selectedEdge = -1;
+    edgeStart = -1;
+    invalidate();
+}
+void review(const std::string &verdict, const std::string &note = "") {
+    evaluationDirty = true;
+    if (!securityView || selected < 0 || selected >= static_cast<int>(observations.size()))
+        return;
+    for (int id : observations[selected].events())
+        security.setReview(security.events()[id].id(), verdict, note);
+    status = "Analyst review set to " + verdict +
+             " for this observation's source records. Export to retain evidence.";
+}
+
+void clearScene() {
+    if (securityView)
+        throw std::runtime_error("Use filters or import a new security dataset.");
+    protectWork();
+    scene = Scene{};
+    resetInteractions();
+    invalidate();
+}
+void loadGrid() {
+    protectWork();
+    setView(0);
+    mode = Mode::AStar;
+    scene = gridScene();
+    resetInteractions();
+    invalidate();
+    view.fit(scene);
+}
+void clearFence() {
+    scene.setPolygon({});
+    fenceDraft.clear();
+    resetInteractions();
+    invalidate();
+    syncFence();
+}
+
+void togglePresentation() {
+    presentation = !presentation;
+    updateLayout();
+    view.fit(scene, feature());
+}

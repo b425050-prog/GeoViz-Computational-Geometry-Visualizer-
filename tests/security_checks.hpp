@@ -47,8 +47,9 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
                         "scenario geofence reference");
         }
         console.setReview(console.events()[0].id(), "benign");
-        console.settings().setGeoQuery({12.5, -5.25});
-        console.settings().setFeatureQuery({0.25, 0.75});
+        console.updateSettings([&](SecuritySettings &draft) { draft.setGeoQuery({12.5, -5.25}); });
+        console.updateSettings(
+            [&](SecuritySettings &draft) { draft.setFeatureQuery({0.25, 0.75}); });
         const auto snapshot =
             (outputRoot / "output" / ("scenario_" + std::to_string(index) + ".security")).string();
         console.save(snapshot);
@@ -60,7 +61,7 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
                     restored.scene(true).query().y() == 0.75,
                 "scenario view queries round trip");
         auto empty = console;
-        empty.settings().setDevice("no-such-device");
+        empty.updateSettings([&](SecuritySettings &draft) { draft.setDevice("no-such-device"); });
         require(empty.observations(false).empty() && empty.observations(true).empty(),
                 "empty identity selection");
         require(
@@ -85,17 +86,17 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
                 quiet.evaluation().find("Candidate precision=N/A") != std::string::npos,
             "unknown truth does not enter confusion denominators");
     auto window = loadSecuritySample(directory, catalogue[7]);
-    window.settings().setUser("lab, \"night\"");
-    window.settings().setDevice("device,\"edge\"");
+    window.updateSettings([&](SecuritySettings &draft) { draft.setUser("lab, \"night\""); });
+    window.updateSettings([&](SecuritySettings &draft) { draft.setDevice("device,\"edge\""); });
     require(window.observations(false).size() == 2 && window.observations(true).size() == 1,
             "quoted exact identity filters");
     require(window.observations(true)[0].requestRate() == 12, "two records over ten-minute window");
-    window.settings().setStart(1800000300);
+    window.updateSettings([&](SecuritySettings &draft) { draft.setStart(1800000300); });
     require(window.observations(false).size() == 1 &&
                 window.observations(true)[0].requestRate() == 16,
             "partial window recalculates denominator");
-    window.settings().setStart(1800000000);
-    window.settings().setEnd(1800000001);
+    window.updateSettings([&](SecuritySettings &draft) { draft.setStart(1800000000); });
+    window.updateSettings([&](SecuritySettings &draft) { draft.setEnd(1800000001); });
     require(window.observations(false).size() == 1 &&
                 window.observations(true)[0].requestRate() == 2400,
             "one-second window is supported");
@@ -126,8 +127,8 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
             auto extra = seed;
             extra.setId("bound-extra");
             excessive.push_back(extra);
-            bounded.setEvents(std::move(excessive));
-            rejects([&] { bounded.validate(); }, "4097 source records rejected");
+            rejects([&] { bounded.setEvents(std::move(excessive)); },
+                    "4097 source records rejected");
         }
     }
     for (int count : {1, 2}) {
@@ -142,26 +143,42 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
     }
     for (const double scale : {0.0, -1.0, INF, std::numeric_limits<double>::quiet_NaN(), 1e9 + 1}) {
         auto invalid = base;
-        invalid.settings().setRequestScale(scale);
-        rejects([&] { invalid.validate(); }, "invalid request scale");
+        rejects(
+            [&] {
+                invalid.updateSettings(
+                    [&](SecuritySettings &draft) { draft.setRequestScale(scale); });
+            },
+            "invalid request scale");
         invalid = base;
-        invalid.settings().setFailureScale(scale);
-        rejects([&] { invalid.validate(); }, "invalid failure scale");
+        rejects(
+            [&] {
+                invalid.updateSettings(
+                    [&](SecuritySettings &draft) { draft.setFailureScale(scale); });
+            },
+            "invalid failure scale");
     }
     for (const int minimum : {0, 257}) {
         auto invalid = base;
-        invalid.settings().setMinPts(minimum);
-        rejects([&] { invalid.validate(); }, "invalid security MinPts");
+        rejects(
+            [&] {
+                invalid.updateSettings([&](SecuritySettings &draft) { draft.setMinPts(minimum); });
+            },
+            "invalid security MinPts");
     }
     auto invalid = base;
-    invalid.settings().setEnd(invalid.settings().start() + 31LL * 86400);
+    invalid.updateSettings(
+        [&](SecuritySettings &draft) { draft.setEnd(invalid.settings().start() + 31LL * 86400); });
     invalid.validate();
     require(true, "31-day window accepted");
-    invalid.settings().setEnd(invalid.settings().end() + 1);
-    rejects([&] { invalid.validate(); }, "overlong window rejected");
+    rejects(
+        [&] {
+            invalid.updateSettings(
+                [&](SecuritySettings &draft) { draft.setEnd(invalid.settings().end() + 1); });
+        },
+        "overlong window rejected");
     invalid = base;
-    invalid.settings().setStart(-1);
-    rejects([&] { invalid.validate(); }, "negative window rejected");
+    rejects([&] { invalid.updateSettings([&](SecuritySettings &draft) { draft.setStart(-1); }); },
+            "negative window rejected");
     rejects([&] { base.setReview("missing-event", "benign"); }, "unknown review source rejected");
     rejects([&] { base.setReview(seed.id(), "invalid"); }, "invalid review verdict rejected");
     base.setReview(seed.id(), "suspicious");
@@ -206,27 +223,36 @@ void securityChecks(const std::filesystem::path &root, const std::filesystem::pa
         for (const double radius : {0.0, -1.0, INF, std::numeric_limits<double>::quiet_NaN(),
                                     feature ? 1e7 + 1 : 100001.0}) {
             auto rejected = base;
-            if (feature)
-                rejected.settings().setFeatureRadius(radius);
-            else
-                rejected.settings().setGeoRadius(radius);
-            rejects([&] { rejected.validate(); }, "security radius limits");
+            rejects(
+                [&] {
+                    rejected.updateSettings([&](SecuritySettings &draft) {
+                        if (feature)
+                            draft.setFeatureRadius(radius);
+                        else
+                            draft.setGeoRadius(radius);
+                    });
+                },
+                "security radius limits");
         }
     }
     auto emptyOrigin = base;
     emptyOrigin.setEvents({});
-    rejects([&] { emptyOrigin.validate(); }, "stale source-linked review rejected");
+    require(emptyOrigin.reviews().empty(), "record replacement clears stale reviews");
     emptyOrigin.clearReviews();
     for (double latitude : {-80.0, 80.0}) {
-        emptyOrigin.settings().setOriginLat(latitude);
+        emptyOrigin.updateSettings([&](SecuritySettings &draft) { draft.setOriginLat(latitude); });
         emptyOrigin.validate();
         require(emptyOrigin.observations(false).empty(), "projection latitude boundary accepted");
     }
-    emptyOrigin.settings().setOriginLat(80.001);
-    rejects([&] { emptyOrigin.validate(); }, "projection latitude limit");
+    rejects(
+        [&] {
+            emptyOrigin.updateSettings(
+                [&](SecuritySettings &draft) { draft.setOriginLat(80.001); });
+        },
+        "projection latitude limit");
     auto invalidFence = base;
-    invalidFence.setFence({{0, 0}, {2, 2}, {0, 2}, {2, 0}});
-    rejects([&] { invalidFence.validate(); }, "self-crossing security fence rejected");
+    rejects([&] { invalidFence.setFence({{0, 0}, {2, 2}, {0, 2}, {2, 0}}); },
+            "self-crossing security fence rejected");
     auto changedTruth = base;
     auto truthEvents = changedTruth.events();
     for (auto &event : truthEvents)

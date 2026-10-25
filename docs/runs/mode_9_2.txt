@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: Segment collision
 Result: 3 intersecting segment pairs.
-PASS: Collision predicate covered by independent expected-case tests (no separate runtime oracle).
+PASS [TEST-COVERED (no runtime oracle)]: Collision predicate covered by independent expected-case tests (no separate runtime oracle).
 Operations: 15
 Range queries: 0
 Visited/expanded: 0

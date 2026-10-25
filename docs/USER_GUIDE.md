@@ -3,7 +3,7 @@
 ## Start a run
 
 1. Open `GeoViz.exe` from the repository root.
-2. Select a mode. Click **Sample** to load a suitable input; repeat to cycle its six scenarios. Across ten modes, the catalogue contains 60 editable scenes, including tidal archipelago and terraced botanical families.
+2. Select a mode. Click **Samples** (F2), then select a named input directly; N still cycles its six scenarios. Across ten modes, the catalogue contains 60 editable scenes, including tidal archipelago and terraced botanical families.
 3. Click **Run** or press Enter. The engine validates input, calculates a result and checks it against a reference or invariant.
 4. Use **Play**, **Step**, **Rewind**, or **Final**. The inspector explains the current decision and displays work counts.
 5. Edit the input and run again. The previous result is retained for comparison; its trace is no longer current.
@@ -104,3 +104,49 @@ Normal tests read the supplied data and write their scenes, reports and temporar
 | Exports cannot be written | Place the folder in a writable location and keep `output/` writable |
 
 The application runs offline and reads local input files. It does not require a service account or install a background process.
+
+## Version 2 keyboard and recovery controls
+
+| Task | Keyboard |
+| --- | --- |
+| Workspace / next compatible algorithm | F3 / F4 |
+| Named sample picker / select scenario | F2 / number 1-9 |
+| Run / play / step / seek endpoints | Enter / Space / Left-Right / Home-End |
+| Input undo / redo | Ctrl+Z / Ctrl+Y |
+| Named Save As / Open | Ctrl+S / Ctrl+O |
+| Quick save / reload default session | S / L |
+| Settings, fields, caret and paste | O, Tab, arrows/Home/End, Ctrl+A to replace, Ctrl+V |
+| Point selection / edge selection | comma-period / F6 |
+| Move selected Lab point / move query | Ctrl+arrows / Shift+arrows |
+| Insert point or polygon vertex at query | Ctrl+I (P selects polygon tool) |
+| Route source / destination / blocked edge | R / T / B |
+| Polygon editing / fit / presentation | P / F / F5 |
+| Inspector/help scroll | PageUp / PageDown |
+| Text size / keyboard button focus | Ctrl+plus-minus / Tab, Shift+Tab, Enter |
+| Compare equivalent frozen runs / close comparison | C / C again |
+| Security reset identity filters / sensitivity panel | F7 / F8 |
+| Help / dismiss modal | F1 / Escape |
+
+Click the desktop timeline to seek directly. The inspector labels the recorded pseudocode line and
+shows queue/frontier data, per-vertex g/f/parent rows and a point table. Scroll the inspector for all
+rows. Comparison maps relative progress across different trace lengths; these are equivalent stages,
+not identical decisions. Editing input invalidates both comparison displays.
+
+Save As and Open use native Windows dialogs and support multiple independent `.scene` or `.security`
+files. Recent files are listed in Samples. A CSV is imported using the current security origin; load a
+`.security` snapshot first to configure an origin elsewhere. The campus map is optional there.
+
+Recovery writes Lab, security and unfinished-fence snapshots as one transaction. Closing normally
+retains them too. Replacement by Sample, Clear, Grid or Open preserves an earlier generation in
+`output/recovery-history/` when input is unsaved. Reopen a `.scene` or `.security` file from that
+folder to restore it. Keep `.fence.scene` drafts if the polygon is incomplete; they can be opened in
+Lab. Recovery is local working data and is excluded from releases and Git.
+
+Security review buttons open a note editor. Notes and UTC review times remain separate from sample
+truth labels. Export emits text, JSON, full security snapshot, both view scenes and sensitivity text
+as one checked generation. Invalid/unfinished geofences must be completed or cleared before a
+security run, save or evidence export. Drafts remain recoverable.
+
+A reported write/flush/close/publication failure restores the prior export. AtomicFiles rollback
+covers ordinary filesystem errors and keeps recovery backups if restoration itself fails; it is
+not a power-loss journal or a concurrent multi-process locking protocol.

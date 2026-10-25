@@ -226,8 +226,11 @@ class SceneCanvas final {
                  static_cast<int>(i) == context_.scene.goal())) {
                 bool source = static_cast<int>(i) == context_.scene.source();
                 DrawCircleLinesV(p, 13, source ? ACCENT : DESTINATION);
-                text(source ? "SOURCE" : "DESTINATION", p.x - 24, p.y + 15, 12,
-                     source ? ACCENT : DESTINATION);
+                const char *endpoint = source ? "SOURCE" : "DESTINATION";
+                const auto &area = context_.view.bounds();
+                float labelX = std::clamp(p.x - 24, area.x + 4,
+                                          area.x + area.width - Ui::measure(endpoint, 12) - 4);
+                text(endpoint, labelX, p.y + 15, 12, source ? ACCENT : DESTINATION);
             }
         }
     }

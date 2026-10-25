@@ -1,4 +1,5 @@
-#include "geoviz.hpp"
+#include "algorithms.hpp"
+#include "persistence.hpp"
 #include <numeric>
 #include <sstream>
 #include <tuple>
@@ -34,6 +35,7 @@ Result HullAlgorithm::calculate(const Scene &s, bool record) const {
             int i = ids[reverse ? ids.size() - 1 - k : k];
             f.setFocus(i);
             f.setChain(out);
+            f.setPseudocodeLine(2);
             f.setExplanation(reverse ? "Upper chain: consider candidate."
                                      : "Lower chain: consider candidate.");
             r.trace().add(f);
@@ -45,12 +47,14 @@ Result HullAlgorithm::calculate(const Scene &s, bool record) const {
                 f.setActive({out.back()});
                 out.pop_back();
                 f.setChain(out);
+                f.setPseudocodeLine(3);
                 f.setExplanation("Remove a clockwise/collinear middle vertex.");
                 r.trace().add(f);
             }
             out.push_back(i);
             f.setChain(out);
             f.clearActive();
+            f.setPseudocodeLine(4);
             f.setExplanation("Accept candidate into this chain.");
             r.trace().add(f);
         }
@@ -70,6 +74,7 @@ Result HullAlgorithm::calculate(const Scene &s, bool record) const {
     f.setChain(r.answer());
     f.setFocus(-1);
     f.clearActive();
+    f.setPseudocodeLine(5);
     f.setExplanation("Hull complete: extreme endpoints retained on collinear sides.");
     if (r.answer().size() > 2)
         f.appendChain(r.answer().front());
@@ -90,6 +95,7 @@ Result GeofenceAlgorithm::calculate(const Scene &s, bool record) const {
     for (std::size_t i = 0; i < s.polygon().size(); ++i) {
         r.stats().countOperation();
         f.setFocus(static_cast<int>(i));
+        f.setPseudocodeLine(1);
         f.setExplanation("Boundary test on polygon edge " + std::to_string(i) + ".");
         r.trace().add(f);
         if (G::onSegment(s.query(), s.polygon()[i], s.polygon()[(i + 1) % s.polygon().size()])) {
@@ -111,6 +117,7 @@ Result GeofenceAlgorithm::calculate(const Scene &s, bool record) const {
                 f.appendActive(static_cast<int>(i));
             }
             f.setFocus(static_cast<int>(i));
+            f.setPseudocodeLine(2);
             f.setExplanation(crossing ? "Rightward ray crosses: toggle parity."
                                       : "No rightward crossing; parity unchanged.");
             r.trace().add(f);
@@ -119,6 +126,7 @@ Result GeofenceAlgorithm::calculate(const Scene &s, bool record) const {
     }
     r.setValue(classification);
     r.setSummary(classification == 0 ? "BOUNDARY" : (classification == 1 ? "INSIDE" : "OUTSIDE"));
+    f.setPseudocodeLine(3);
     f.setExplanation("Query classification: " + r.summary());
     r.trace().finish(f);
     return r;
@@ -146,7 +154,9 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
         if (!e.blocked()) {
             adj[e.a()].push_back({e.b(), e.weight()});
             adj[e.b()].push_back({e.a(), e.weight()});
-            if (e.weight() + TOL < estimate(s, e.a(), e.b()))
+            if (e.weight() < estimate(s, e.a(), e.b()) ||
+                estimate(s, e.a(), s.goal()) > e.weight() + estimate(s, e.b(), s.goal()) ||
+                estimate(s, e.b(), s.goal()) > e.weight() + estimate(s, e.a(), s.goal()))
                 compatible = false;
         }
     for (auto &v : adj)
@@ -159,7 +169,10 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
     d[s.source()] = 0;
     heap.emplace((useH ? estimate(s, s.source(), s.goal()) : 0.0), 0, s.source());
     Frame f;
-    auto snapshot = [&](int focus, const std::string &explanation) {
+    auto snapshot = [&](int focus, const char *explanation, int codeLine) {
+        if (!record || r.trace().truncated())
+            return;
+        f.setPseudocodeLine(codeLine);
         f.setFocus(focus);
         f.setCosts(d);
         f.setParents(parent);
@@ -174,7 +187,7 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
         f.setExplanation(explanation);
         r.trace().add(f);
     };
-    snapshot(s.source(), "Initialize source cost to zero.");
+    snapshot(s.source(), "Initialize source cost to zero.", 1);
     while (!heap.empty()) {
         auto [fv, gv, u] = heap.top();
         heap.pop();
@@ -184,7 +197,7 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
             continue;
         closed[u] = 1;
         r.stats().countExpansion();
-        snapshot(u, "Settle least-score frontier vertex.");
+        snapshot(u, "Settle least-score frontier vertex.", 2);
         if (u == s.goal())
             break;
         for (auto [v, w] : adj[u]) {
@@ -193,7 +206,7 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
                 d[v] = d[u] + w;
                 parent[v] = u;
                 heap.emplace(d[v] + (useH ? estimate(s, v, s.goal()) : 0.0), d[v], v);
-                snapshot(v, "Relax edge: improve cost and predecessor.");
+                snapshot(v, "Relax edge: improve cost and predecessor.", 3);
             }
         }
     }
@@ -211,7 +224,21 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
         r.setSummary("NO PATH: goal is unreachable.");
     if (selectedMode == Mode::AStar && !compatible)
         r.setSummary(r.summary() + (" Incompatible weights: safe h=0 fallback."));
+    // A capped prefix skips intermediate allocations; the final table must still be current.
+    if (record) {
+        f.setCosts(d);
+        f.setParents(parent);
+        f.setLabels(closed);
+        f.resizeScores(n);
+        f.clearActive();
+        for (int i = 0; i < n; ++i) {
+            f.setScore(i, d[i] + (useH ? estimate(s, i, s.goal()) : 0.0));
+            if (!closed[i] && std::isfinite(d[i]))
+                f.appendActive(i);
+        }
+    }
     f.setChain(r.answer());
+    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
     f.setExplanation(r.summary());
     r.trace().finish(f);
     return r;
@@ -235,12 +262,17 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
         std::vector<int> out;
         r.stats().countQuery();
         out = index->radius(s.points()[i], s.radius(), r.stats());
-        f.setFocus(i);
-        f.setRadius(s.radius());
-        f.setActive(out);
+        if (record) {
+            f.setFocus(i);
+            f.setRadius(s.radius());
+            f.setActive(out);
+        }
         return out;
     };
-    auto snap = [&](const std::string &text, const std::queue<int> &q) {
+    auto snap = [&](const char *text, const std::queue<int> &q, int codeLine) {
+        if (!record || r.trace().truncated())
+            return;
+        f.setPseudocodeLine(codeLine);
         f.setLabels(labels);
         f.setKind(kind);
         f.clearQueue();
@@ -261,7 +293,7 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
         std::queue<int> q;
         if (static_cast<int>(ns.size()) < s.minPts()) {
             labels[i] = -1;
-            snap("Too few neighbours: provisional noise.", q);
+            snap("Too few neighbours: provisional noise.", q, 2);
             continue;
         }
         labels[i] = cluster;
@@ -272,7 +304,7 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
                 q.push(j);
                 queued[j] = 1;
             }
-        snap("Core point: start deterministic cluster expansion.", q);
+        snap("Core point: start deterministic cluster expansion.", q, 3);
         while (!q.empty()) {
             int j = q.front();
             q.pop();
@@ -293,7 +325,7 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
                 if (kind[j] != 2)
                     kind[j] = 1;
             }
-            snap("Expand queue; earlier noise may become border.", q);
+            snap("Expand queue; earlier noise may become border.", q, 4);
         }
         ++cluster;
     }
@@ -306,6 +338,7 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
     const auto noise = std::count(labels.begin(), labels.end(), -1);
     r.setSummary(std::to_string(cluster) + (cluster == 1 ? " cluster; " : " clusters; ") +
                  std::to_string(noise) + (noise == 1 ? " noise point." : " noise points."));
+    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
     f.setExplanation(r.summary());
     r.trace().finish(f);
     return r;
@@ -335,6 +368,7 @@ Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
         }
         f.setActive({a, b});
         f.setChain(r.answer());
+        f.setPseudocodeLine(2);
         f.setExplanation("Compare candidate pair; best distance " + number(std::sqrt(best)));
         r.trace().add(f);
     };
@@ -355,6 +389,7 @@ Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
         double split = s.points()[ids[m]].x();
         double lo = s.points()[ids[l]].x(), hi = s.points()[ids[h - 1]].x();
         f.setRegions({{lo, -1000000, hi, 1000000}});
+        f.setPseudocodeLine(1);
         f.setExplanation("Divide x-sorted region at x=" + number(split));
         r.trace().add(f);
         solve(l, m);
@@ -371,6 +406,7 @@ Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
         }
         double delta = std::sqrt(best);
         f.setRegions({{split - delta, -1000000, split + delta, 1000000}});
+        f.setPseudocodeLine(3);
         f.setExplanation("Merge y-order and compare points in the dividing strip.");
         r.trace().add(f);
         // At most seven following points suffice in 2D once each half is solved.
@@ -394,6 +430,7 @@ Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
     f.setChain(r.answer());
     f.clearActive();
     f.clearRegions();
+    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
     f.setExplanation(r.summary());
     r.trace().finish(f);
     return r;
@@ -423,6 +460,7 @@ Result CollisionAlgorithm::calculate(const Scene &s, bool record) const {
                         f.appendLines({endpoint, endpoint + 1});
                     }
             }
+            f.setPseudocodeLine(1);
             f.setExplanation(hit ? "Segments intersect (touching and overlap included)."
                                  : "Segments do not intersect.");
             r.trace().add(f);
@@ -430,6 +468,7 @@ Result CollisionAlgorithm::calculate(const Scene &s, bool record) const {
     r.setValue(count);
     r.setSummary(std::to_string(count) +
                  (count == 1 ? " intersecting segment pair." : " intersecting segment pairs."));
+    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
     f.setExplanation(r.summary());
     f.clearActive();
     r.trace().finish(f);
@@ -463,6 +502,7 @@ int KDTree::build(std::vector<int> &ids, int l, int r, int depth, Box box, Trace
             partition.setX1(split);
         }
         f.appendRegions(partition);
+        f.setPseudocodeLine(1);
         f.setExplanation(std::string("Median split on ") + (axis ? "y" : "x") + " at " +
                          number(split));
         trace->add(f);
@@ -515,6 +555,7 @@ int KDTree::nearest(Point q, Stats &stats, Trace *trace) const {
             if (trace) {
                 Frame f;
                 f.setPruned({node.box});
+                f.setPseudocodeLine(3);
                 f.setExplanation("Prune region: its lower-bound distance exceeds best.");
                 trace->add(f);
             }
@@ -532,6 +573,7 @@ int KDTree::nearest(Point q, Stats &stats, Trace *trace) const {
             f.setFocus(node.point);
             f.setActive({best});
             f.setRegions({node.box});
+            f.setPseudocodeLine(2);
             f.setExplanation("Visit node; current nearest ID " + std::to_string(best));
             trace->add(f);
         }
@@ -553,6 +595,7 @@ std::vector<int> KDTree::radius(Point q, double r, Stats &stats, Trace *trace) c
             if (trace) {
                 Frame f;
                 f.setPruned({node.box});
+                f.setPseudocodeLine(3);
                 f.setExplanation("Prune box outside radius.");
                 trace->add(f);
             }
@@ -567,6 +610,7 @@ std::vector<int> KDTree::radius(Point q, double r, Stats &stats, Trace *trace) c
             f.setFocus(node.point);
             f.setActive(out);
             f.setRegions({node.box});
+            f.setPseudocodeLine(2);
             f.setExplanation("Visit node and test radius membership.");
             trace->add(f);
         }
@@ -633,6 +677,7 @@ Result SpatialQueryAlgorithm::calculate(const Scene &s, bool record) const {
                                                                 : " points inside radius."));
     Frame f;
     f.setActive(r.answer());
+    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
     f.setExplanation(r.summary());
     r.trace().finish(f);
     return r;
@@ -698,6 +743,7 @@ std::vector<int> LinearIndex::radius(Point query, double radius, Stats &stats, T
 bool Engine::verify(const Scene &s, Result &r) {
     bool ok = true;
     std::string reason;
+    const auto sameCost = equivalentCost;
     if (r.mode() == Mode::Dijkstra || r.mode() == Mode::AStar) {
         std::vector<double> d(s.points().size(), INF);
         d[s.source()] = 0;
@@ -709,7 +755,7 @@ bool Engine::verify(const Scene &s, Result &r) {
                     d[e.a()] = std::min(d[e.a()], b + e.weight());
                 }
         ok = (!std::isfinite(d[s.goal()]) && !std::isfinite(r.value())) ||
-             std::abs(d[s.goal()] - r.value()) < 1e-7 * std::max(1.0, d[s.goal()]);
+             sameCost(d[s.goal()], r.value());
         if (std::isfinite(r.value())) {
             bool pathOk = !r.answer().empty() && r.answer().front() == s.source() &&
                           r.answer().back() == s.goal();
@@ -723,8 +769,7 @@ bool Engine::verify(const Scene &s, Result &r) {
                         weight = std::min(weight, edge.weight());
                 sum += weight;
             }
-            ok = ok && pathOk && std::isfinite(sum) &&
-                 std::abs(sum - r.value()) < 1e-7 * std::max(1.0, r.value());
+            ok = ok && pathOk && std::isfinite(sum) && sameCost(sum, r.value());
         } else
             ok = ok && r.answer().empty();
         reason = "Compared cost with Bellman-Ford and checked returned path edges/cost.";
@@ -838,7 +883,10 @@ bool Engine::verify(const Scene &s, Result &r) {
         reason = "Collision predicate covered by independent expected-case tests (no separate "
                  "runtime oracle).";
     r.setChecked(ok);
-    r.setCheck((ok ? "PASS: " : "FAIL: ") + reason);
+    const std::string strength = r.mode() == Mode::Collision ? "TEST-COVERED (no runtime oracle)"
+                                 : r.mode() == Mode::Hull    ? "INVARIANT-CHECKED"
+                                                             : "REFERENCE-VERIFIED";
+    r.setCheck((ok ? "PASS [" + strength + "]: " : "FAIL: ") + reason);
     return ok;
 }
 } // namespace gv

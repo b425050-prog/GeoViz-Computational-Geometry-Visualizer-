@@ -76,3 +76,23 @@ The documented candidate rule is **feature DBSCAN noise OR strictly outside the 
 The compact reference produces **TP=1, FP=1, TN=10, FN=0** with the default parameters and supplied rectangular fence. The false positive is an approved backup outlier. This illustrates why geographic outliers and density noise require contextual review. These synthetic counts do not establish production accuracy.
 
 The adapter reads explicitly selected local exports. The application is an educational analysis console; it does not provide authentication, secure storage, live account ingestion or automated incident response.
+
+## Version 2 evidence schema and sensitivity
+
+`GEOVIZ_SECURITY 2` adds quoted analyst notes and integer UTC review times after each verdict.
+Version 1 snapshots still load. New settings/event/fence replacements validate a candidate first;
+CSV ingestion validates schema independently of the projection origin. Out-of-region event data
+is rejected against the configured origin. An unavailable/out-of-region campus background leaves
+an empty background without rejecting valid events.
+
+Evidence JSON uses `geoviz.evidence.v1` and contains app/source revision, declared units, parameters,
+a canonical source-record `fnv1a64` consistency hash, reference-check status, source identities,
+cluster/noise data and event-level `feature_noise`, `outside_region`, and `candidate` flags. The rule
+is always feature noise OR outside region; geographic noise is separately displayed. JSON retains
+review note/time and sample truth in separate fields. The adjacent `.security` file retains all
+source data and the fence needed to reproduce the result. The JSON is an index into that snapshot,
+not a replacement for it. Unsigned hashes do not authenticate an investigator or an export.
+
+F8 opens a sensitivity panel comparing radius factors 0.75/1/1.25 and MinPts +/-1, plus measurement
+scale factors 0.75/1.25. Exports retain the same comparison. Changed noise status helps explain
+parameter sensitivity and is not a production detection-accuracy estimate.

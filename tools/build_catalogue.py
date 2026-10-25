@@ -17,7 +17,7 @@ def main():
     target = ROOT / 'docs/runs'
     target.mkdir(parents=True, exist_ok=True)
     lines = ['# Sample catalogue', '',
-             'The laboratory contains 60 deterministic, editable scenes, arranged as six inputs per algorithm. **Sample / N** cycles the selected mode. Import a scene, select its listed mode and run the calculation. Each checked report links to its corresponding input.', '',
+             'The laboratory contains 60 deterministic, editable scenes, arranged as six inputs per algorithm. **Samples / F2** selects a named scenario; **N** cycles the selected mode. Import a scene, select its listed mode and run the calculation. Each checked report links to its corresponding input.', '',
              'The [offline guide](index.html) includes checked algorithm and security recordings. Operation counts exclude verification and playback.', '',
              '| Tidal and lagoon family | Terrace and mosaic family |',
              '| --- | --- |',

@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: Dijkstra
 Result: Optimal cost 982.884; expanded 24 vertices.
-PASS: Compared cost with Bellman-Ford and checked returned path edges/cost.
+PASS [REFERENCE-VERIFIED]: Compared cost with Bellman-Ford and checked returned path edges/cost.
 Operations: 95
 Range queries: 0
 Visited/expanded: 24

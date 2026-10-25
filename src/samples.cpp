@@ -1,4 +1,5 @@
-#include "geoviz.hpp"
+#include "geometry.hpp"
+#include "persistence.hpp"
 
 namespace gv {
 using G = GeometryKernel;

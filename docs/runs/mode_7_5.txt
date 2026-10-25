@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: KD radius
 Result: 4 points inside radius.
-PASS: Compared query with exhaustive scan.
+PASS [REFERENCE-VERIFIED]: Compared query with exhaustive scan.
 Operations: 16
 Range queries: 0
 Visited/expanded: 16

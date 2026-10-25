@@ -60,3 +60,23 @@ The console reads local exports through the CSV adapter. It does not integrate a
 Floating-point geometry uses documented tolerances rather than exact predicates. Geographic distances are approximate within a local study area. Runtime reference checks add work beyond the displayed algorithm counts. A k-d tree can visit all points; indexed DBSCAN can still be quadratic. Trace storage can omit middle decisions when capped, while retaining the final result.
 
 UI verification combines programmatic state checks and offscreen rendering; physical mouse/keyboard sequences and display configurations are not exhaustively covered. The supplied executable targets Windows x64. Synthetic security labels demonstrate reproducibility and false-positive accounting, not production detection accuracy.
+
+## Version 2 verification gates
+
+The 40-item review response is in [REVIEW_RESOLUTION.md](REVIEW_RESOLUTION.md). The focused CTest
+cases cover geometry, routing, clustering, persistence, security, edit transitions and structured
+evidence; the original broad suite remains. The desktop harness now captures 77 states at 960x640
+and 1440x900, including new sample/settings/review/comparison/presentation/text layouts. See
+[small-window report](verification/DESKTOP_960.txt), [normal-window report](verification/DESKTOP_1440.txt),
+[text contrast ratios](verification/CONTRAST.json), [benchmark phases](verification/BENCHMARK.csv),
+and [measurement environment](verification/BENCHMARK_ENVIRONMENT.json).
+
+The [CI workflow](../.github/workflows/engine.yml) runs GCC/Clang Debug/Release, supported ASan/UBSan,
+coverage, cppcheck, Windows desktop/resource builds, Linux graphics and OS input, and pinned guide
+regeneration. It preserves logs/screenshots and publishes release assets only after required jobs
+succeed. Local Windows checks do not imply Linux sanitizer success; inspect CI for the exact commit.
+
+Regression checks assert path identities, topology, cache invalidation, reference failures, complete
+export rollback and hash reconstruction. The bounded parser campaign uses seed 425050 and does not
+claim exhaustive fuzz coverage. Collision is test-covered without a distinct runtime oracle; hull
+is invariant-checked; other listed modes declare their independent runtime reference checks.

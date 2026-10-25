@@ -1,0 +1,30 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "engine-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/engine-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "GEOVIZ_BUILD_APP": "OFF"
+      }
+    },
+    {
+      "name": "engine-debug",
+      "inherits": "engine-release",
+      "binaryDir": "${sourceDir}/build/engine-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "sanitizers",
+      "inherits": "engine-debug",
+      "binaryDir": "${sourceDir}/build/sanitizers",
+      "cacheVariables": {
+        "GEOVIZ_SANITIZERS": "ON"
+      }
+    }
+  ]
+}

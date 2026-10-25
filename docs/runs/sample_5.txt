@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: Closest pair
 Result: Closest distance 82.462
-PASS: Compared with exhaustive all-pairs distance.
+PASS [REFERENCE-VERIFIED]: Compared with exhaustive all-pairs distance.
 Operations: 124
 Range queries: 0
 Visited/expanded: 0

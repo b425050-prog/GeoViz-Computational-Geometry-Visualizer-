@@ -1,7 +1,7 @@
 GEOVIZ CHECKED RUN
 Algorithm: Geofence
 Result: INSIDE
-PASS: Compared ray parity with winding-number classification.
+PASS [REFERENCE-VERIFIED]: Compared ray parity with winding-number classification.
 Operations: 16
 Range queries: 0
 Visited/expanded: 0

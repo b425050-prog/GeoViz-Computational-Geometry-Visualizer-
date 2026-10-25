@@ -1,6 +1,9 @@
-# GeoViz
+# GeoViz 2.0
 
 ### Computational Geometry Visualizer & Spatial Security Console
+
+[![Verified builds](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/actions/workflows/engine.yml/badge.svg)](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/actions/workflows/engine.yml)
+[Download the portable Windows release](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/releases/latest) · [40-item resolution](docs/REVIEW_RESOLUTION.md) · [Build and release](docs/BUILD_RELEASE.md)
 
 An offline C++17 desktop laboratory that makes algorithm decisions visible. Edit a scene, record a checked run, and inspect every step. The security console applies the same geometry engine to geographic events and device behaviour.
 
@@ -21,9 +24,9 @@ An offline C++17 desktop laboratory that makes algorithm decisions visible. Edit
 
 ## Run
 
-Double-click **`GeoViz.exe`** in this folder. Keep `assets/` and `data/` beside it. No installation, account, or network connection is needed.
+Download and extract the versioned portable release, then double-click **`GeoViz.exe`** in its GeoViz folder. Source checkouts build it with `build.ps1`; binaries are release assets. Keep `assets/` and `data/` beside it. No installation, account, or network connection is needed.
 
-Choose an algorithm → **Sample** → **Run** → **Play**. **Sample / N** cycles through six inputs per algorithm, including tidal archipelago and terraced botanical scenarios. **Final** jumps to the answer; **Step** and **Rewind** inspect the reasoning.
+Choose an algorithm → **Samples** → a named scenario → **Run** → **Play**. **F2** opens the sample picker; **N** cycles the six inputs per algorithm, including tidal archipelago and terraced botanical scenarios. **Final** jumps to the answer; **Step** and **Rewind** inspect the reasoning.
 
 To build from source on Windows with the matching raylib/GCC installation:
 
@@ -67,7 +70,7 @@ The campus layer and event records are synthetic study data. Geographic distance
 ## Repository
 
 ```text
-GeoViz.exe               Portable Windows application
+GeoViz.exe               Generated portable application (release archive only)
 include/                 Engine interfaces and domain models
 src/                     Engine, sample generators and raylib interface
 tests/                   Expected-case and deterministic reference checks
@@ -81,3 +84,23 @@ CMakeLists.txt           Desktop or engine-only build
 Generated builds and runtime exports are ignored by Git.
 
 The interface uses raylib and the Lato typeface. Their notices are included in [raylib license](assets/RAYLIB_LICENSE.txt) and [Lato license](assets/OFL.txt).
+
+## Recoverable investigations
+
+Lab edits survive security workspace switches. Ctrl+Z/Y undo and redo input changes; one drag is one
+history entry. Ctrl+S opens Save As and Ctrl+O opens a named file. Recent sessions appear in Samples.
+An UNSAVED marker distinguishes live edits. Recovery snapshots are written after edits and restored
+on restart; before Sample, Clear, Grid or Open replaces unsaved input, a generation is retained in
+`output/recovery-history/`. The Windows Open dialog can open those scenes or security snapshots.
+
+Settings shows applicable parameters and accepts UTC calendar text or epoch seconds. A direct desktop
+timeline, recorded pseudocode line IDs, route tables, text point tables and C for synchronized frozen
+comparison support teaching. F5 toggles the presentation layout; Ctrl+plus/minus adjusts text. F1 lists
+keyboard controls. Security exports include structured JSON reasons, review notes/times and parameter
+sensitivity; hashes are unsigned consistency checks.
+
+## Reuse and contributions
+
+Project code and documentation use the [MIT license](LICENSE). Retain the dependency notices in
+assets/. Read [contributing](CONTRIBUTING.md), the [changelog](CHANGELOG.md), and the
+[three-minute demonstration script](docs/DEMO_SCRIPT.md).

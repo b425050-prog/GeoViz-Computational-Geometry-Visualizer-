@@ -1,4 +1,4 @@
-#include "geoviz.hpp"
+#include "security.hpp"
 #include <filesystem>
 #include <fstream>
 
@@ -21,7 +21,7 @@ double numeric(const std::string &value) {
 
 // The catalogue is shared by the application and documentation authoring tools.
 std::vector<SecuritySample> securitySamples(const std::string &dataDirectory) {
-    std::ifstream in(std::filesystem::path(dataDirectory) / "security_samples.csv");
+    std::ifstream in(std::filesystem::u8path(dataDirectory) / "security_samples.csv");
     std::string row;
     if (!std::getline(in, row))
         throw std::runtime_error("Cannot read security sample catalogue.");
@@ -67,10 +67,12 @@ SecurityConsole loadSecuritySample(const std::string &dataDirectory, const Secur
         throw std::runtime_error("Invalid security sample filename.");
     SecurityConsole result;
     result.setEvents(
-        CsvLogAdapter{}.load((std::filesystem::path(dataDirectory) / sample.file).string()));
-    result.settings().setGeoRadius(sample.geographicRadius);
-    result.settings().setFeatureRadius(sample.featureRadius);
-    result.settings().setMinPts(sample.minPts);
+        CsvLogAdapter{}.load((std::filesystem::u8path(dataDirectory) / sample.file).u8string()));
+    result.updateSettings(
+        [&](SecuritySettings &draft) { draft.setGeoRadius(sample.geographicRadius); });
+    result.updateSettings(
+        [&](SecuritySettings &draft) { draft.setFeatureRadius(sample.featureRadius); });
+    result.updateSettings([&](SecuritySettings &draft) { draft.setMinPts(sample.minPts); });
     if (sample.eventFence) {
         if (result.events().size() < 4)
             throw std::runtime_error("Boundary sample requires four corner observations.");
@@ -79,7 +81,8 @@ SecurityConsole loadSecuritySample(const std::string &dataDirectory, const Secur
             fence.push_back(SecurityConsole::project(result.events()[i].lat(),
                                                      result.events()[i].lon(), result.settings()));
         result.setFence(std::move(fence));
-        result.settings().setGeoQuery(result.fence().front());
+        result.updateSettings(
+            [&](SecuritySettings &draft) { draft.setGeoQuery(result.fence().front()); });
     } else
         result.setFence({{-300, -250}, {350, -250}, {350, 300}, {-300, 300}});
     result.validate();
