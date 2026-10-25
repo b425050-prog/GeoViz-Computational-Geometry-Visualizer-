@@ -72,7 +72,7 @@ class KDTree final : public SpatialIndex {
     std::vector<Node> nodes_;
     int root_ = -1;
     int build(std::vector<int> &ids, int l, int r, int depth, Box box, Trace *trace);
-    static double boxDistance2(Point q, Box box);
+    static double boxDistance2(Point q, const Box &box);
 
   public:
     explicit KDTree(const std::vector<Point> &points, Trace *trace = nullptr);

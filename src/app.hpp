@@ -41,6 +41,7 @@ class App {
     std::string status = "Click to add/select points; drag to move. Run records decisions.";
     std::filesystem::path root;
     bool smoke = false;
+    bool closeRequested = false;
     int smokeFrame = 0;
     double frameMilliseconds = 0, maximumFrameMilliseconds = 0;
     std::size_t measuredFrames = 0;
@@ -109,7 +110,7 @@ class App {
         if (smoke) {
             smokeInteractions();
         }
-        while (!WindowShouldClose()) {
+        while (!WindowShouldClose() && !closeRequested) {
             try {
                 ui.refresh();
                 updateLayout();

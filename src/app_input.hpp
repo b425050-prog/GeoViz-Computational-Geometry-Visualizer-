@@ -65,6 +65,10 @@ void input() {
     bool control = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ||
                    IsKeyReleased(KEY_LEFT_CONTROL) || IsKeyReleased(KEY_RIGHT_CONTROL) ||
                    pressed(KEY_LEFT_CONTROL) || pressed(KEY_RIGHT_CONTROL);
+    if (control && pressed(KEY_Q)) {
+        closeRequested = true;
+        return;
+    }
     if (control && pressed(KEY_Z))
         restoreEdit(false);
     if (control && pressed(KEY_Y))

@@ -113,6 +113,7 @@ The application runs offline and reads local input files. It does not require a 
 | Named sample picker / select scenario | F2 / number 1-9 |
 | Run / play / step / seek endpoints | Enter / Space / Left-Right / Home-End |
 | Input undo / redo | Ctrl+Z / Ctrl+Y |
+| Close with recovery | Ctrl+Q |
 | Named Save As / Open | Ctrl+S / Ctrl+O |
 | Quick save / reload default session | S / L |
 | Settings, fields, caret and paste | O, Tab, arrows/Home/End, Ctrl+A to replace, Ctrl+V |

@@ -69,7 +69,7 @@ class Ui final {
         return size >= 20 ? active_->bold_ : active_->regular_;
     }
     static Font load(const std::filesystem::path &path) {
-        Font result = LoadFontEx(path.string().c_str(), 96, nullptr, 0);
+        Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
         if (!result.texture.id || result.texture.id == GetFontDefault().texture.id)
             throw std::runtime_error("Cannot load font: " + path.string());
         SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);

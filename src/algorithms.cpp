@@ -150,7 +150,7 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
     r.trace().setEnabled(record);
     std::vector<std::vector<std::pair<int, double>>> adj(n);
     bool compatible = true;
-    for (auto e : s.edges())
+    for (const auto &e : s.edges())
         if (!e.blocked()) {
             adj[e.a()].push_back({e.b(), e.weight()});
             adj[e.b()].push_back({e.a(), e.weight()});
@@ -538,7 +538,7 @@ KDTree::KDTree(const std::vector<Point> &p, Trace *trace) : points_(p) {
     root_ = build(ids, 0, static_cast<int>(p.size()), 0, b, trace);
 }
 // Clamp each query coordinate to the box to obtain a lower bound on any contained distance.
-double KDTree::boxDistance2(Point q, Box b) {
+double KDTree::boxDistance2(Point q, const Box &b) {
     double dx = std::max({b.x0() - q.x(), 0.0, q.x() - b.x1()}),
            dy = std::max({b.y0() - q.y(), 0.0, q.y() - b.y1()});
     return dx * dx + dy * dy;
@@ -643,13 +643,13 @@ void Engine::validate(const Scene &s) {
     if (!std::isfinite(s.radius()) || s.radius() <= 0 || s.radius() > 1e7 || s.minPts() < 1 ||
         s.minPts() > static_cast<int>(MAX_POINTS))
         throw std::runtime_error("Radius/MinPts is outside its allowed range.");
-    for (auto e : s.edges())
+    for (const auto &e : s.edges())
         if (e.a() < 0 || e.b() < 0 || e.a() >= static_cast<int>(s.points().size()) ||
             e.b() >= static_cast<int>(s.points().size()) || e.a() == e.b() ||
             !std::isfinite(e.weight()) || e.weight() < 0 || e.weight() > 1e12)
             throw std::runtime_error("Invalid edge endpoints or non-negative cost.");
     std::set<std::pair<int, int>> uniqueEdges;
-    for (auto e : s.edges())
+    for (const auto &e : s.edges())
         if (!uniqueEdges.insert({std::min(e.a(), e.b()), std::max(e.a(), e.b())}).second)
             throw std::runtime_error("Only one edge per undirected vertex pair is supported.");
 }
@@ -748,7 +748,7 @@ bool Engine::verify(const Scene &s, Result &r) {
         std::vector<double> d(s.points().size(), INF);
         d[s.source()] = 0;
         for (std::size_t k = 1; k < s.points().size(); ++k)
-            for (auto e : s.edges())
+            for (const auto &e : s.edges())
                 if (!e.blocked()) {
                     double a = d[e.a()], b = d[e.b()];
                     d[e.b()] = std::min(d[e.b()], a + e.weight());
@@ -763,7 +763,7 @@ bool Engine::verify(const Scene &s, Result &r) {
             for (std::size_t i = 1; i < r.answer().size(); ++i) {
                 int a = r.answer()[i - 1], b = r.answer()[i];
                 double weight = INF;
-                for (auto edge : s.edges())
+                for (const auto &edge : s.edges())
                     if (!edge.blocked() &&
                         ((edge.a() == a && edge.b() == b) || (edge.a() == b && edge.b() == a)))
                         weight = std::min(weight, edge.weight());

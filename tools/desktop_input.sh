@@ -53,6 +53,7 @@ assert (root/'output/input_dragged.scene').read_bytes()==(root/'output/session.s
 assert (root/'output/input_added.scene').read_bytes()!=(root/'output/input_dragged.scene').read_bytes(),'Physical drag must move the point'
 (root/'output/INPUT_SMOKE_REPORT.txt').write_text('PASS: OS sample selection, click/add, drag, run/play/step, undo/redo, workspace roundtrip, Tab focus, save/recovery.\n')
 PY
-xdotool windowclose "$window"
+xdotool key --window "$window" ctrl+q
+timeout 10 tail --pid="$pid" -f /dev/null
 wait "$pid"
 trap - EXIT

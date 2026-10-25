@@ -15,7 +15,7 @@ void SceneIO::save(const Scene &s, const std::string &path, AtomicFiles *externa
     for (auto p : s.polygon())
         out << p.x() << ' ' << p.y() << '\n';
     out << s.edges().size() << '\n';
-    for (auto e : s.edges())
+    for (const auto &e : s.edges())
         out << e.a() << ' ' << e.b() << ' ' << e.weight() << ' ' << e.blocked() << '\n';
     out << s.query().x() << ' ' << s.query().y() << ' ' << s.radius() << ' ' << s.minPts() << ' '
         << s.source() << ' ' << s.goal() << ' ' << s.grid() << '\n';
