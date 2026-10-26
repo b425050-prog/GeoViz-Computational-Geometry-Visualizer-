@@ -16,6 +16,7 @@ Scope: repair and verify the existing second-year BTech OOP project. No new end-
 - Route endpoint buttons accept keyboard activation independently of mouse location. Help takes precedence over underlying modal input; review dialogs block timeline changes.
 - Save As uses the matching format filter, rejects mismatched extensions before writing, and preserves the prior destination after a failed save.
 - User-guide file controls and smoke counts now match the application.
+- The Linux OS-input harness separates gestures across frames and holds a click long enough to be observed. Its old zero-duration click was missed, and consecutive F3 events could collapse within one frame. Snapshot assertions remain, with an additional check immediately after point insertion.
 
 ## Verification
 

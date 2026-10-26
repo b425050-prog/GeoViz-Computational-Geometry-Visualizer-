@@ -8,39 +8,52 @@ pid=$!
 trap 'kill "$pid" 2>/dev/null || true' EXIT
 window=$(timeout 20 xdotool search --sync --name 'GeoViz | Geometry' | head -n1)
 xdotool windowfocus "$window"
-xdotool key --window "$window" F2
-sleep .2
-xdotool key --window "$window" 2
-sleep .2
-xdotool key --window "$window" s
-sleep .3
+# This is a frame-driven UI: separate gestures must cross a rendered frame.
+# xdotool's default click and repeated-key sequence can complete within one
+# frame, losing the click or collapsing several F3 presses into one key set.
+key() {
+    xdotool key --window "$window" "$1"
+    sleep .25
+}
+key F2
+key 2
+key s
 cp "$base/output/session.scene" "$base/output/input_before.scene"
-xdotool mousemove --window "$window" 400 300 click 1
+xdotool mousemove --window "$window" 400 300 mousedown 1
+sleep .15
+xdotool mouseup 1
 sleep .2
-xdotool key --window "$window" s
-sleep .2
+key s
 cp "$base/output/session.scene" "$base/output/input_added.scene"
+python3 - "$base" <<'PY'
+from pathlib import Path
+import sys
+root=Path(sys.argv[1])/'output'
+before=(root/'input_before.scene').read_text().split()
+added=(root/'input_added.scene').read_text().split()
+assert int(added[2])==int(before[2])+1,'Physical click must add exactly one point before dragging'
+PY
 xdotool mousemove --window "$window" 400 300 mousedown 1
 sleep .2
 xdotool mousemove --window "$window" 450 340
 sleep .2
 xdotool mouseup 1
 sleep .2
-xdotool key --window "$window" Return Right space space
-xdotool key --window "$window" s
-sleep .2
+key Return
+key Right
+key space
+key space
+key s
 cp "$base/output/session.scene" "$base/output/input_dragged.scene"
-xdotool key --window "$window" ctrl+z
-sleep .2
-xdotool key --window "$window" s
-sleep .2
+key ctrl+z
+key s
 cp "$base/output/session.scene" "$base/output/input_undo.scene"
-xdotool key --window "$window" ctrl+y
-sleep .2
-xdotool key --window "$window" F3 F3 F3
-xdotool key --window "$window" Tab
-xdotool key --window "$window" s
-sleep .3
+key ctrl+y
+key F3
+key F3
+key F3
+key Tab
+key s
 python3 - "$base" <<'PY'
 from pathlib import Path
 import sys
