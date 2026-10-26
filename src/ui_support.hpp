@@ -6,6 +6,7 @@
 #include "numeric_text.hpp"
 #include "raylib.h"
 #include "workspace.hpp"
+#include <cctype>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -277,8 +278,11 @@ class View {
                 area.y + area.height / 2 - static_cast<float>((p.y() - centre.y()) * zoom)};
     }
     Point world(Vector2 p) const {
-        return {centre.x() + (p.x - area.x - area.width / 2) / zoom,
-                centre.y() - (p.y - area.y - area.height / 2) / zoom};
+        return {bounded(centre.x() + (p.x - area.x - area.width / 2) / zoom),
+                bounded(centre.y() - (p.y - area.y - area.height / 2) / zoom)};
+    }
+    static double bounded(double coordinate) {
+        return std::clamp(coordinate, -1e7, 1e7);
     }
     void fit(const Scene &s, bool feature = false) {
         std::vector<Point> all = s.points();
@@ -302,8 +306,8 @@ class View {
         if (feature)
             zoom = std::min((area.width - 40) / std::max(2.0, (x1 - x0) * 1.3 + 1),
                             (area.height - 150) / std::max(2.0, (y1 - y0) * 1.3 + 1));
-        zoom = std::clamp(zoom, 0.001, 200.0);
-        centre.setY(centre.y() + 45 / zoom); // Reserve a header above all data.
+        zoom = std::clamp(zoom, 1e-8, 200.0);
+        centre.setY(bounded(centre.y() + 45 / zoom)); // Reserve a header above all data.
     }
 };
 class ButtonFocus final {
@@ -311,6 +315,10 @@ class ButtonFocus final {
     inline static bool enter_ = false, blocked_ = false;
 
   public:
+    static void reset() {
+        focus_ = -1;
+        enter_ = false;
+    }
     static bool allowsInput() {
         return !blocked_;
     }
@@ -336,7 +344,10 @@ class ButtonFocus final {
         bool focus = id == focus_;
         if (focus)
             DrawRectangleLinesEx(r, 3, FOCUS);
-        return focus && enter_;
+        bool activated = focus && enter_;
+        if (activated)
+            enter_ = false;
+        return activated;
     }
     static void finish() {
         previous_ = count_;

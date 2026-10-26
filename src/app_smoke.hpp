@@ -1,6 +1,7 @@
 // Included inside App: app smoke.
 // Exercise model/UI coordination through the same handlers used by interactive controls.
 void smokeInteractions() {
+    featureChecks();
     auto expect = [](bool yes, const std::string &message) {
         if (!yes)
             throw std::runtime_error("App smoke regression: " + message);

@@ -19,7 +19,7 @@
 | Set the query | Right-click |
 | Delete selected point | Delete |
 | Pan / zoom / fit | Middle-drag / wheel / F or Fit |
-| Next sample | Sample or N |
+| Choose / next sample | Samples or F2 / N |
 | Record / play-pause | Enter / Space |
 | Previous-next step | Left / Right |
 | First-final frame | Home / End |
@@ -38,7 +38,7 @@
 
 Scroll the inspector for source records and instructions. Dense scenes omit crowded labels; select points or use period/comma to inspect their identities. Resize the window as needed; the minimum is 960 × 640.
 
-Security mode provides nine scenarios through **Sample / N**. The canvas identifies the active dataset. The [security guide](SECURITY.md#csv-schema-and-samples) describes the scenario procedures.
+Security mode provides nine scenarios through **Samples / F2**; N cycles them. The canvas identifies the active dataset. The [security guide](SECURITY.md#csv-schema-and-samples) describes the scenario procedures.
 
 ## Laboratory workflows
 
@@ -52,9 +52,11 @@ Security mode provides nine scenarios through **Sample / N**. The canvas identif
 
 ## Files and reproducibility
 
-Drag a `.scene`, `.csv`, or `.security` file into the window to import it. Choose the matching algorithm after loading a scene. **Load** reloads `output/session.scene` or `output/session.security`; it is not a file picker.
+Use **Open / Ctrl+O**, or drag a `.scene`, `.csv`, or `.security` file into the window to import it. Choose the matching algorithm after loading a scene. **L** reloads the default `output/session.scene` or `output/session.security`.
 
-**Save** writes the current input to `output/`. **Export** writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. **Prior** exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.
+**Save As / Ctrl+S** chooses a named file. **S** saves to the current session file, or the default file in `output/` for a new session. **Export** writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. **Prior** exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.
+
+Comparison canvases show frozen inputs. Press **C** to leave comparison before editing points or queries. An unfinished geographic security fence must be completed or cleared before running, saving or exporting either security view.
 
 Scene snapshots also preserve polygon drafts, including one or two vertices and crossings that are still being edited. Reloading restores those vertices exactly. A geofence run requires a completed simple polygon and explains invalid geometry before calculating; other algorithms can use the remaining scene while the polygon is unfinished. Save and Load apply the same structural checks, including source/goal indices.
 
@@ -67,7 +69,7 @@ Use Windows, a C++17 compiler and a matching raylib installation. The tested ins
 ```powershell
 .\build.ps1                 # Isolated tests, then the application
 .\build.ps1 -Run            # Build, test and launch
-.\build.ps1 -Smoke          # Build plus 70 offscreen UI captures
+.\build.ps1 -Smoke          # Build plus 77 offscreen UI captures
 .\build.ps1 -DebugBuild     # Debug information and standard-library assertions
 ```
 
@@ -83,7 +85,7 @@ ctest --test-dir build/core -C Release --output-on-failure
 
 On Windows, use the compiler's terminal environment so its build tool is on PATH. A full CMake desktop build also accepts `-DRAYLIB_ROOT=...`; the supplied PowerShell script is the shortest Windows path.
 
-Documentation can be regenerated with `build.ps1 -Docs` after installing Python's Pillow package and Node's `marked` package (`python -m pip install Pillow`, `npm install --no-save marked`). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.
+Documentation can be regenerated with `build.ps1 -Docs` after installing the pinned dependencies (`python -m pip install -r requirements-docs.txt`, `npm ci`). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.
 
 The printable report is generated separately with `python tools/build_report.py` and requires ReportLab. Run `node tools/verify_docs.mjs` first with Playwright and Chrome available; this verifies the guide and renders its diagrams for the report. Both Node tools accept an absolute dependency-module path as their first argument when using an external authoring environment.
 

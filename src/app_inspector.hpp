@@ -52,8 +52,7 @@ void sidebar() {
     Ui::clip(panel.x + 8, top, panel.width - 16, panel.height - 32);
     float y = top + 14 - static_cast<float>(sidebarScroll);
     if (!presentation && !securityView && (mode == Mode::Dijkstra || mode == Mode::AStar)) {
-        bool interactive =
-            !help && !settings.isOpen() && CheckCollisionPointRec(Ui::mouse(), panel);
+        bool interactive = !help && !settings.isOpen() && !samplePicker && !noteOpen;
         float half = (contentWidth - 8) / 2;
         bool sourceClicked =
             button({x, y, half, 38}, "Pick source", routePick == RoutePick::Source);
@@ -100,7 +99,7 @@ void sidebar() {
                         std::max<std::size_t>(1, r.trace().frames().size() - 1);
         DrawRectangle(static_cast<int>(x), static_cast<int>(timeline.y),
                       static_cast<int>(portion * contentWidth), 18, ACCENT);
-        if (!help && !settings.isOpen() && !samplePicker &&
+        if (!help && !settings.isOpen() && !samplePicker && !noteOpen &&
             CheckCollisionPointRec(Ui::mouse(), timeline) && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
             playback.seek(static_cast<std::size_t>(std::round((Ui::mouse().x - x) / contentWidth *
                                                               (r.trace().frames().size() - 1))),
@@ -211,6 +210,8 @@ void sidebar() {
         if (sensitivityVisible)
             y = wrap(sensitivityCache, x, y + 16, contentWidth, 15, FOCUS);
         try {
+            if (!fenceDraft.empty())
+                GeometryKernel::validatePolygon(fenceDraft);
             if (evaluationDirty) {
                 evaluationCache = security.evaluation();
                 evaluationDirty = false;

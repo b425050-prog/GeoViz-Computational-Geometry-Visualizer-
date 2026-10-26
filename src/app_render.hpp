@@ -191,10 +191,14 @@ void draw() {
         action("Exit F5", [&] { togglePresentation(); });
         wrap(status, 16, h - 28, w - 32, 14, MUTED);
         ButtonFocus::overlay();
-        settingsDialog();
-        helpDialog();
-        sampleDialog();
-        reviewDialog();
+        if (help)
+            helpDialog();
+        else if (settings.isOpen())
+            settingsDialog();
+        else if (samplePicker)
+            sampleDialog();
+        else if (noteOpen)
+            reviewDialog();
         ButtonFocus::finish();
         return;
     }
@@ -215,8 +219,7 @@ void draw() {
     for (int i = 0; i < static_cast<int>(algorithmDescriptors().size()); ++i) {
         if (button({16 + (i % 5) * bw, 48.0f + (i / 5) * 38, bw - 7, 32},
                    std::to_string(i + 1) + " " + modeName(static_cast<Mode>(i)),
-                   mode == static_cast<Mode>(i),
-                   !securityView || algorithmDescriptors()[i].security) &&
+                   mode == static_cast<Mode>(i), modeAvailable(static_cast<Mode>(i))) &&
             !help && !settings.isOpen()) {
             routePick = RoutePick::None;
             mode = static_cast<Mode>(i);
@@ -234,7 +237,9 @@ void draw() {
                         label == "Step >" || label == "Rewind" || label == "Final" ||
                         label == "Compare" || label == "Prior" || label == "Export";
         bool enabled = (!needsRun || run || (label == "Export" && securityView)) &&
-                       (label != "Prior" || previous);
+                       (label != "Prior" || previous) &&
+                       ((label != "Polygon P" && label != "Clear polygon") || !feature()) &&
+                       ((label != "Benign" && label != "Suspect") || selected >= 0);
         bool clicked = button({bx, y, width, 40}, label, false, enabled);
         if (clicked && !help && !settings.isOpen())
             fn();
@@ -265,7 +270,7 @@ void draw() {
     action("Fit", 54, [&] { view.fit(scene, feature()); });
     y += 48;
     bx = 16;
-    action("Samples", 86, [&] { samplePicker = true; });
+    action("Samples", 86, [&] { openSamples(); });
     action("Grid", 60, [&] { loadGrid(); });
     action("Clear", 66, [&] { clearScene(); });
     action("Polygon P", 106, [&] {
@@ -278,25 +283,21 @@ void draw() {
     action("Open", 64, [&] { openNamed(); });
     action("Export", 76, [&] { exportEvidence(); });
     if (securityView) {
-        action("Benign", 75, [&] {
-            noteVerdict = "benign";
-            noteText.clear();
-            noteOpen = true;
-        });
-        action("Suspect", 85, [&] {
-            noteVerdict = "suspicious";
-            noteText.clear();
-            noteOpen = true;
-        });
+        action("Benign", 75, [&] { openReview("benign"); });
+        action("Suspect", 85, [&] { openReview("suspicious"); });
     }
     DrawRectangle(0, h - 64, w, 64, SOFT_BG);
     Ui::clip(0, h - 64, w, 64);
     wrap((!dirty() ? "" : "UNSAVED (recovery active) | ") + status, 16, h - 57, w - 30, 15);
     EndScissorMode();
     ButtonFocus::overlay();
-    settingsDialog();
-    helpDialog();
-    sampleDialog();
-    reviewDialog();
+    if (help)
+        helpDialog();
+    else if (settings.isOpen())
+        settingsDialog();
+    else if (samplePicker)
+        sampleDialog();
+    else if (noteOpen)
+        reviewDialog();
     ButtonFocus::finish();
 }

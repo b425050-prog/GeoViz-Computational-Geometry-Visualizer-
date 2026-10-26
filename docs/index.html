@@ -386,8 +386,8 @@ parameter sensitivity and is not a production detection-accuracy estimate.</p>
 <td>Middle-drag / wheel / F or Fit</td>
 </tr>
 <tr>
-<td>Next sample</td>
-<td>Sample or N</td>
+<td>Choose / next sample</td>
+<td>Samples or F2 / N</td>
 </tr>
 <tr>
 <td>Record / play-pause</td>
@@ -451,22 +451,23 @@ parameter sensitivity and is not a production detection-accuracy estimate.</p>
 </tr>
 </tbody></table>
 <p>Scroll the inspector for source records and instructions. Dense scenes omit crowded labels; select points or use period/comma to inspect their identities. Resize the window as needed; the minimum is 960 × 640.</p>
-<p>Security mode provides nine scenarios through <strong>Sample / N</strong>. The canvas identifies the active dataset. The <a href="#security--csv-schema-and-samples">security guide</a> describes the scenario procedures.</p>
+<p>Security mode provides nine scenarios through <strong>Samples / F2</strong>; N cycles them. The canvas identifies the active dataset. The <a href="#security--csv-schema-and-samples">security guide</a> describes the scenario procedures.</p>
 <h2 id="guide--laboratory-workflows">Laboratory workflows</h2>
 <p><strong>Routes:</strong> load a Dijkstra/A* sample or choose Grid. Pick source and destination, run, and use Compare to check optimal-cost agreement. Blocking a link changes the input and requires a fresh run. Settings edits a selected edge&#39;s cost.</p>
 <p><strong>Geofence:</strong> use a sample or add polygon vertices with P. Return to the point tool with P, right-click a query and run. Inside, boundary and outside are distinct outcomes. Self-intersecting or zero-area polygons are rejected.</p>
 <p><strong>Clustering:</strong> choose scan or indexed DBSCAN. Set radius and MinPts in Settings. Filled circles are core points; squares are border points; crosses are noise. MinPts includes the point itself. Compare uses the same input and parameters for both implementations.</p>
 <p><strong>Proximity and collision:</strong> right-click a query for k-d nearest/radius modes. For collision, points 0-1 form one segment, 2-3 the next, and so on; an unmatched last point has no segment.</p>
 <h2 id="guide--files-and-reproducibility">Files and reproducibility</h2>
-<p>Drag a <code>.scene</code>, <code>.csv</code>, or <code>.security</code> file into the window to import it. Choose the matching algorithm after loading a scene. <strong>Load</strong> reloads <code>output/session.scene</code> or <code>output/session.security</code>; it is not a file picker.</p>
-<p><strong>Save</strong> writes the current input to <code>output/</code>. <strong>Export</strong> writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. <strong>Prior</strong> exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.</p>
+<p>Use <strong>Open / Ctrl+O</strong>, or drag a <code>.scene</code>, <code>.csv</code>, or <code>.security</code> file into the window to import it. Choose the matching algorithm after loading a scene. <strong>L</strong> reloads the default <code>output/session.scene</code> or <code>output/session.security</code>.</p>
+<p><strong>Save As / Ctrl+S</strong> chooses a named file. <strong>S</strong> saves to the current session file, or the default file in <code>output/</code> for a new session. <strong>Export</strong> writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. <strong>Prior</strong> exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.</p>
+<p>Comparison canvases show frozen inputs. Press <strong>C</strong> to leave comparison before editing points or queries. An unfinished geographic security fence must be completed or cleared before running, saving or exporting either security view.</p>
 <p>Scene snapshots also preserve polygon drafts, including one or two vertices and crossings that are still being edited. Reloading restores those vertices exactly. A geofence run requires a completed simple polygon and explains invalid geometry before calculating; other algorithms can use the remaining scene while the polygon is unfinished. Save and Load apply the same structural checks, including source/goal indices.</p>
 <p>The plaintext <code>GEOVIZ 1</code> scene format contains point count/coordinates, polygon count/coordinates, edge count/rows, then query x/y, radius, MinPts, source, goal and grid flag. Edge rows are <code>endpointA endpointB weight blocked</code>. Boolean fields are 0 or 1. Coordinates use full-precision doubles; counts and trailing content are validated. See existing scenes before editing manually.</p>
 <h2 id="guide--build-from-source">Build from source</h2>
 <p>Use Windows, a C++17 compiler and a matching raylib installation. The tested installation uses GCC 15.2.0 and the headers/static library under <code>C:\raylib\w64devkit</code>. Raylib headers and binary must match the compiler architecture.</p>
 <pre><code class="language-powershell">.\build.ps1                 # Isolated tests, then the application
 .\build.ps1 -Run            # Build, test and launch
-.\build.ps1 -Smoke          # Build plus 70 offscreen UI captures
+.\build.ps1 -Smoke          # Build plus 77 offscreen UI captures
 .\build.ps1 -DebugBuild     # Debug information and standard-library assertions
 </code></pre>
 <p><code>-CompilerPath</code> and <code>-RaylibRoot</code> override the defaults. The script fails immediately if compilation or a required check fails. It copies the finished program to <code>GeoViz.exe</code>; intermediate executables stay in <code>build/</code>.</p>
@@ -476,7 +477,7 @@ cmake --build build/core --config Release
 ctest --test-dir build/core -C Release --output-on-failure
 </code></pre>
 <p>On Windows, use the compiler&#39;s terminal environment so its build tool is on PATH. A full CMake desktop build also accepts <code>-DRAYLIB_ROOT=...</code>; the supplied PowerShell script is the shortest Windows path.</p>
-<p>Documentation can be regenerated with <code>build.ps1 -Docs</code> after installing Python&#39;s Pillow package and Node&#39;s <code>marked</code> package (<code>python -m pip install Pillow</code>, <code>npm install --no-save marked</code>). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.</p>
+<p>Documentation can be regenerated with <code>build.ps1 -Docs</code> after installing the pinned dependencies (<code>python -m pip install -r requirements-docs.txt</code>, <code>npm ci</code>). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.</p>
 <p>The printable report is generated separately with <code>python tools/build_report.py</code> and requires ReportLab. Run <code>node tools/verify_docs.mjs</code> first with Playwright and Chrome available; this verifies the guide and renders its diagrams for the report. Both Node tools accept an absolute dependency-module path as their first argument when using an external authoring environment.</p>
 <p>Normal tests read the supplied data and write their scenes, reports and temporary inputs beneath a separate test-output directory. They do not rewrite <code>data/</code>. Use the explicit sample exporter when preparing a release, then <code>python tools/build_catalogue.py --source-root &quot;C:\path\to\exports&quot;</code> to read its checked <code>output/</code> reports and regenerate the catalogue and linked run snapshots. Omitting <code>--source-root</code> reads the project&#39;s own exports.</p>
 <h2 id="guide--troubleshooting">Troubleshooting</h2>
@@ -1206,7 +1207,7 @@ not a power-loss journal or a concurrent multi-process locking protocol.</p>
 <p>The tests also construct duplicates, collinear hulls, exact-radius queries, nearest ties, overlapping segments, zero-length segments, unreachable graphs and noise-to-border transitions. These cases are separate from the larger visual samples so their expected answers stay easy to inspect.</p>
 </section>
 <section id="verification" class="document" hidden><h1 id="verification--verification-and-scope">Verification and scope</h1>
-<p>Verification date: <strong>24 October 2026</strong>. Verification applies to the supplied build configuration and documented input limits.</p>
+<p>Existing-feature audit: <strong>26 October 2026</strong>. Verification applies to the supplied build configuration and documented input limits. The original compiler/instrumentation checks below are retained as historical evidence; the current audit reran Windows GCC Debug/Release, all eight CTest suites, desktop smoke and offline-guide checks.</p>
 <h2 id="verification--executed-checks">Executed checks</h2>
 <table>
 <thead>
@@ -1248,8 +1249,13 @@ not a power-loss journal or a concurrent multi-process locking protocol.</p>
 </tr>
 <tr>
 <td>Rendered UI</td>
-<td>70 states at 960×640, 1440×900 and 1920×1080</td>
-<td>Passed; captures visually reviewed</td>
+<td>77 states at 960×640 and 1440×900</td>
+<td>Passed; 960×640 contact sheets visually reviewed</td>
+</tr>
+<tr>
+<td>Existing-feature regressions</td>
+<td>333 checks: all 60 Lab samples, all nine security datasets in both views, drafts, imports, filters, selection and coordinate limits</td>
+<td>Passed</td>
 </tr>
 <tr>
 <td>Offline guide</td>
@@ -1329,7 +1335,7 @@ not a power-loss journal or a concurrent multi-process locking protocol.</p>
 </tbody></table>
 <p>The console reads local exports through the CSV adapter. It does not integrate a live production service.</p>
 <h2 id="verification--presentation-and-maintainability">Presentation and maintainability</h2>
-<p><code>SceneCanvas</code> consumes a const frame context and separates rendering into surface, region, topology, highlight, point, query and annotation layers. <code>SettingsPanel</code> owns modal input and validates detached candidate models. <code>App</code> coordinates commits and history. The 70-state smoke sequence covers both components, failed settings transactions and every added sample.</p>
+<p><code>SceneCanvas</code> consumes a const frame context and separates rendering into surface, region, topology, highlight, point, query and annotation layers. <code>SettingsPanel</code> owns modal input and validates detached candidate models. <code>App</code> coordinates commits and history. The 77-state smoke sequence covers both components, failed settings transactions and every sample.</p>
 <h2 id="verification--practical-limits">Practical limits</h2>
 <p>Floating-point geometry uses documented tolerances rather than exact predicates. Geographic distances are approximate within a local study area. Runtime reference checks add work beyond the displayed algorithm counts. A k-d tree can visit all points; indexed DBSCAN can still be quadratic. Trace storage can omit middle decisions when capped, while retaining the final result.</p>
 <p>UI verification combines programmatic state checks and offscreen rendering; physical mouse/keyboard sequences and display configurations are not exhaustively covered. The supplied executable targets Windows x64. Synthetic security labels demonstrate reproducibility and false-positive accounting, not production detection accuracy.</p>
@@ -1341,6 +1347,10 @@ and 1440x900, including new sample/settings/review/comparison/presentation/text 
 <a href="verification/DESKTOP_960.txt">small-window report</a>, <a href="verification/DESKTOP_1440.txt">normal-window report</a>,
 <a href="verification/CONTRAST.json">text contrast ratios</a>, <a href="verification/BENCHMARK.csv">benchmark phases</a>,
 and <a href="verification/BENCHMARK_ENVIRONMENT.json">measurement environment</a>.</p>
+<p>The <a href="FEATURE_AUDIT.md">existing-feature audit</a> records the fixes and scope; its
+<a href="verification/FEATURE_CHECKS.txt">regression result</a> is generated by the desktop smoke run.
+Superseded 70-state UI logs were removed. Matching scene files for paired algorithms remain
+intentional fixtures: the catalogue and reproducibility tests refer to each mode&#39;s named input.</p>
 <p>The <a href="../.github/workflows/engine.yml">CI workflow</a> runs GCC/Clang Debug/Release, supported ASan/UBSan,
 coverage, cppcheck, Windows desktop/resource builds, Linux graphics and OS input, and pinned guide
 regeneration. It preserves logs/screenshots and publishes release assets only after required jobs

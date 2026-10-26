@@ -1,4 +1,0 @@
-PASS: application run/edit invalidation, frozen history, prior exports, six-sample cycle, rejected settings transaction, settings/device filter, source review, query/snapshot/evidence persistence, CSV review reset. This covers programmatic application state, not exhaustive physical mouse/keyboard testing.
-PASS: rendered and captured 70 states: 10 algorithm modes, 2 security views, settings/help, intermediate hull/DBSCAN/tree-build and a pruned region, ten varied gallery inputs, both extended security datasets, all twenty tidal/terrace gallery inputs and both views of all 9 security scenarios, plus both empty filtered views.
-Offscreen render 1440x900; logical 1440x900; UI scale 1; body font pixels 20
-PASS: source/destination pickers and logical/world/native transforms.

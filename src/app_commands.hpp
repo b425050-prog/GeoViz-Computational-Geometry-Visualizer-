@@ -34,9 +34,20 @@ bool pickEndpoint(int id) {
 bool feature() const {
     return securityView == 2;
 }
+bool modeAvailable(Mode candidate) const {
+    return !securityView || (algorithmDescriptors()[static_cast<int>(candidate)].security &&
+                             !(feature() && candidate == Mode::Geofence));
+}
+void invalidateSecurityDisplays() {
+    evaluationDirty = true;
+    sensitivityVisible = false;
+    sensitivityCache.clear();
+}
 // Move the old result to history before resetting playback; stale evidence is never current.
 void invalidate() {
     scene.touch();
+    if (securityView)
+        invalidateSecurityDisplays();
     comparison.reset();
     compareVisible = false;
     if (run)
@@ -46,9 +57,11 @@ void invalidate() {
 }
 // The geographic editor is the authority for its fence; the feature view has no polygon.
 void syncFence(bool required = false) {
-    if (securityView != 1)
+    if (!securityView)
         return;
-    fenceDraft = scene.polygon();
+    if (securityView == 1)
+        fenceDraft = scene.polygon();
+    invalidateSecurityDisplays();
     try {
         security.setFence(fenceDraft);
         evaluationDirty = true;
@@ -65,10 +78,30 @@ void refreshSecurity() {
         PreparedSecurity::prepare(security, feature(), (root / "data/campus_map.csv").u8string());
     evaluationDirty = true;
     scene = std::move(prepared.scene);
+    if (!feature())
+        scene.setPolygon(fenceDraft);
     observations = std::move(prepared.observations);
     map = std::move(prepared.map);
     invalidate();
     resetInteractions();
+    view.fit(scene, feature());
+}
+void resetFilters() {
+    auto candidate = security;
+    candidate.updateSettings([](SecuritySettings &draft) {
+        draft.setUser("*");
+        draft.setDevice("*");
+    });
+    auto prepared =
+        PreparedSecurity::prepare(candidate, feature(), (root / "data/campus_map.csv").u8string());
+    if (!feature())
+        prepared.scene.setPolygon(scene.polygon());
+    security = std::move(candidate);
+    scene = std::move(prepared.scene);
+    observations = std::move(prepared.observations);
+    map = std::move(prepared.map);
+    resetInteractions();
+    invalidate();
     view.fit(scene, feature());
 }
 void resetInteractions() {
@@ -203,6 +236,7 @@ void setView(int v) {
     else
         securitySessionPath = sessionPath;
     securityView = v;
+    invalidateSecurityDisplays();
     sessionPath = v ? securitySessionPath : labSessionPath;
     resetInteractions();
     sidebarScroll = 0;
@@ -224,8 +258,11 @@ void setView(int v) {
         mode = labMode;
         view = labView;
         updateLayout();
-        selected = labSelected;
-        selectedEdge = labEdge;
+        selected = labSelected >= 0 && labSelected < static_cast<int>(scene.points().size())
+                       ? labSelected
+                       : -1;
+        selectedEdge =
+            labEdge >= 0 && labEdge < static_cast<int>(scene.edges().size()) ? labEdge : -1;
     }
     status = v ? "Security workspace. Settings controls filters, UTC window and scales."
                : "Laboratory edits restored.";
@@ -244,6 +281,8 @@ void execute() {
 void loadFile(const std::string &path) {
     protectWork();
     auto ext = std::filesystem::u8path(path).extension().u8string();
+    std::transform(ext.begin(), ext.end(), ext.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     if (ext == ".csv" || ext == ".security") {
         auto next = ext == ".security" ? SecurityConsole::load(path) : security;
         if (ext == ".csv")
@@ -256,6 +295,7 @@ void loadFile(const std::string &path) {
             labView = view;
             labSelected = selected;
             labEdge = selectedEdge;
+            labSessionPath = sessionPath;
         }
         security = std::move(next);
         fenceDraft = security.fence();
@@ -264,10 +304,15 @@ void loadFile(const std::string &path) {
         scene = std::move(prepared.scene);
         observations = std::move(prepared.observations);
         map = std::move(prepared.map);
-        securityDataset = std::filesystem::path(path).filename().u8string();
+        securityDataset = std::filesystem::u8path(path).filename().u8string();
         evaluationDirty = true;
     } else {
         auto next = SceneIO::load(path);
+        if (securityView) {
+            syncFence();
+            securitySessionPath = sessionPath;
+            mode = labMode;
+        }
         securityView = 0;
         scene = std::move(next);
         labScene = scene;
@@ -296,14 +341,20 @@ void openNamed() {
         loadFile(path);
 }
 void saveNamed() {
-    auto path = chooseSessionFile(
-        true, securityView != 0,
-        sessionPath.empty()
-            ? (root / "output" / (securityView ? "session.security" : "session.scene")).u8string()
-            : sessionPath.u8string());
+    auto initial = sessionPath.empty()
+                       ? root / "output" / (securityView ? "session.security" : "session.scene")
+                       : sessionPath;
+    initial.replace_extension(securityView ? ".security" : ".scene");
+    auto path = chooseSessionFile(true, securityView != 0, initial.u8string());
     if (!path.empty()) {
+        const auto previousPath = sessionPath;
         sessionPath = std::filesystem::u8path(path);
-        save();
+        try {
+            save();
+        } catch (...) {
+            sessionPath = previousPath;
+            throw;
+        }
     }
 }
 // Save only input state; exported evidence separately includes checked results.
@@ -396,7 +447,29 @@ void comparePrevious() {
     files.commit();
 }
 void openSettings() {
+    beginModal();
     settings.open(scene, security, selectedEdge, securityView, mode);
+}
+void beginModal() {
+    // The shortcut/Enter that opens a dialog must not also edit or submit it.
+    while (GetCharPressed()) {
+    }
+    pressedKeys.erase(KEY_ENTER);
+    ButtonFocus::reset();
+}
+void openSamples() {
+    beginModal();
+    samplePicker = true;
+}
+void openReview(const std::string &verdict) {
+    if (!securityView || selected < 0 || selected >= static_cast<int>(observations.size())) {
+        status = "Select a source observation before reviewing it.";
+        return;
+    }
+    beginModal();
+    noteVerdict = verdict;
+    noteText.clear();
+    noteOpen = true;
 }
 // Commit only after the component has validated every candidate field.
 void applySettings() {
@@ -404,6 +477,8 @@ void applySettings() {
     if (securityView) {
         auto prepared = PreparedSecurity::prepare(candidate.security, feature(),
                                                   (root / "data/campus_map.csv").u8string());
+        if (!feature())
+            prepared.scene.setPolygon(scene.polygon());
         security = std::move(candidate.security);
         scene = std::move(prepared.scene);
         observations = std::move(prepared.observations);
@@ -433,7 +508,7 @@ void removeSelected() {
     invalidate();
 }
 void review(const std::string &verdict, const std::string &note = "") {
-    evaluationDirty = true;
+    invalidateSecurityDisplays();
     if (!securityView || selected < 0 || selected >= static_cast<int>(observations.size()))
         return;
     for (int id : observations[selected].events())
@@ -460,8 +535,11 @@ void loadGrid() {
     view.fit(scene);
 }
 void clearFence() {
+    if (feature())
+        return;
     scene.setPolygon({});
-    fenceDraft.clear();
+    if (securityView == 1)
+        fenceDraft.clear();
     resetInteractions();
     invalidate();
     syncFence();

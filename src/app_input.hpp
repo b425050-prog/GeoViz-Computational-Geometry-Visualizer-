@@ -99,14 +99,14 @@ void input() {
     if (pressed(KEY_O) && !control)
         openSettings();
     if (pressed(KEY_F2))
-        samplePicker = !samplePicker;
+        openSamples();
     if (pressed(KEY_F3))
         setView((securityView + 1) % 3);
     if (pressed(KEY_F4)) {
         do {
             mode = static_cast<Mode>((static_cast<int>(mode) + 1) %
                                      static_cast<int>(algorithmDescriptors().size()));
-        } while (securityView && !algorithmDescriptors()[static_cast<int>(mode)].security);
+        } while (!modeAvailable(mode));
         invalidate();
     }
     if (pressed(KEY_F5))
@@ -122,21 +122,19 @@ void input() {
         selected = -1;
     }
     if (pressed(KEY_F8) && securityView) {
+        const bool show = !sensitivityVisible;
+        syncFence(true);
         sensitivityCache = security.sensitivity();
-        sensitivityVisible = !sensitivityVisible;
-        status = "Sensitivity comparison shown in inspector.";
+        sensitivityVisible = show;
+        status =
+            show ? "Sensitivity comparison shown in inspector." : "Sensitivity comparison hidden.";
     }
     if (pressed(KEY_PAGE_DOWN))
         sidebarScroll += 240;
     if (pressed(KEY_PAGE_UP))
         sidebarScroll = std::max(0.0, sidebarScroll - 240);
     if (pressed(KEY_F7) && securityView) {
-        auto draft = security.settings();
-        draft.setUser("*");
-        draft.setDevice("*");
-        security.setSettings(draft);
-        if (securityView)
-            refreshSecurity();
+        resetFilters();
     }
     if (pressed(KEY_B) && selectedEdge >= 0 && !securityView) {
         scene.setEdgeBlocked(selectedEdge, !scene.edges()[selectedEdge].blocked());
@@ -187,19 +185,19 @@ void input() {
         }
     }
     auto mouse = Ui::mouse();
-    if (CheckCollisionPointRec(mouse, view.area)) {
+    if (!compareVisible && CheckCollisionPointRec(mouse, view.area)) {
         float wheel = GetMouseWheelMove();
         if (wheel) {
             auto before = view.world(mouse);
-            view.zoom = std::clamp(view.zoom * std::pow(1.15, wheel), 0.001, 200.0);
+            view.zoom = std::clamp(view.zoom * std::pow(1.15, wheel), 1e-8, 200.0);
             auto after = view.world(mouse);
-            view.centre.setX(view.centre.x() + (before.x() - after.x()));
-            view.centre.setY(view.centre.y() + (before.y() - after.y()));
+            view.centre.setX(View::bounded(view.centre.x() + (before.x() - after.x())));
+            view.centre.setY(View::bounded(view.centre.y() + (before.y() - after.y())));
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
             auto delta = Ui::mouseDelta();
-            view.centre.setX(view.centre.x() - (delta.x / view.zoom));
-            view.centre.setY(view.centre.y() + (delta.y / view.zoom));
+            view.centre.setX(View::bounded(view.centre.x() - (delta.x / view.zoom)));
+            view.centre.setY(View::bounded(view.centre.y() + (delta.y / view.zoom)));
         }
         Point world = view.world(mouse);
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
@@ -240,6 +238,7 @@ void input() {
                 }
             } else if (near >= 0) {
                 selected = near;
+                selectedEdge = -1;
                 if (shift && !securityView) {
                     if (edgeStart < 0) {
                         edgeStart = near;
@@ -274,6 +273,7 @@ void input() {
                     }
                 }
                 if (selectedEdge >= 0) {
+                    selected = -1;
                     status = "Edge selected. B blocks/unblocks; Settings edits its weight.";
                 } else if (!securityView) {
                     if (scene.points().size() >= MAX_POINTS)

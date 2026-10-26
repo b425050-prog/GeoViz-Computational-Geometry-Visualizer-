@@ -1,4 +1,6 @@
 #include "file_dialogs.hpp"
+#include <algorithm>
+#include <cctype>
 #include <stdexcept>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -19,7 +21,9 @@ std::string chooseSessionFile(bool save, bool security, const std::string &initi
     dialog.lStructSize = sizeof(dialog);
     dialog.lpstrFile = buffer;
     dialog.nMaxFile = static_cast<DWORD>(std::size(buffer));
-    dialog.lpstrFilter = L"GeoViz sessions\0*.scene;*.security\0Event CSV\0*.csv\0All files\0*.*\0";
+    dialog.lpstrFilter =
+        save ? (security ? L"Security snapshot\0*.security\0" : L"Lab scene\0*.scene\0")
+             : L"GeoViz sessions\0*.scene;*.security\0Event CSV\0*.csv\0All files\0*.*\0";
     dialog.lpstrDefExt = security ? L"security" : L"scene";
     dialog.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST |
                    (save ? OFN_OVERWRITEPROMPT : OFN_FILEMUSTEXIST);
@@ -28,7 +32,14 @@ std::string chooseSessionFile(bool save, bool security, const std::string &initi
             throw std::runtime_error("Windows file dialog failed.");
         return {};
     }
-    return std::filesystem::path(buffer).u8string();
+    const auto selected = std::filesystem::path(buffer);
+    auto extension = selected.extension().u8string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (save && extension != (security ? ".security" : ".scene"))
+        throw std::runtime_error(security ? "Save security snapshots with a .security extension."
+                                          : "Save Lab scenes with a .scene extension.");
+    return selected.u8string();
 }
 } // namespace gv
 #else

@@ -55,6 +55,7 @@ class App {
 #include "app_input.hpp"
 #include "app_inspector.hpp"
 #include "app_render.hpp"
+#include "app_feature_checks.hpp"
 #include "app_smoke.hpp"
   public:
     explicit App(std::filesystem::path base, bool smokeMode, int width, int height)

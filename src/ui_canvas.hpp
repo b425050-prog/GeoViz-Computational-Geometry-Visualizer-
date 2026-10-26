@@ -45,9 +45,9 @@ class SceneCanvas final {
                                        context_.view.bounds().y + context_.view.bounds().height}),
              hi = context_.view.world({context_.view.bounds().x + context_.view.bounds().width,
                                        context_.view.bounds().y});
-        for (double x = std::floor(lo.x() / step) * step; x < hi.x(); x += step)
+        for (double x = std::ceil(lo.x() / step) * step; x < hi.x(); x += step)
             line(context_.view, {x, lo.y()}, {x, hi.y()}, GRID, 1);
-        for (double y = std::floor(lo.y() / step) * step; y < hi.y(); y += step)
+        for (double y = std::ceil(lo.y() / step) * step; y < hi.y(); y += step)
             line(context_.view, {lo.x(), y}, {hi.x(), y}, GRID, 1);
         line(context_.view, {0, lo.y()}, {0, hi.y()}, AXIS, 1);
         line(context_.view, {lo.x(), 0}, {hi.x(), 0}, AXIS, 1);
