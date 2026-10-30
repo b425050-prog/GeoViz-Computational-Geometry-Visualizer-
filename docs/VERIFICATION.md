@@ -40,8 +40,10 @@ are generated under ignored `output/` or `build/` directories.
 - Manual stepping resets the playback interval before playback resumes; a regression
   check verifies that an old partial interval cannot skip a frame on resume.
 - Accessor bodies and class comments are concise; private state and validated mutation remain.
-- Duplicate generated scene files, HTML/media/report output, documentation generators,
+- Duplicate generated scene files, HTML/report output, documentation generators,
   authoring package dependencies and old verification logs are removed.
+- The tested Windows executable is tracked as `GeoViz.exe`. The five original GIFs,
+  four workspace/sample screenshots and nine SVG diagrams are retained under `docs/media/`.
 - The UI loads Windows fonts at runtime; bundled fonts and license files are removed.
   Graphics remain provided by the external raylib dependency.
 

@@ -36,6 +36,11 @@ cannot change the recorded answer.
 
 ## Algorithms and boundaries
 
+Visual references: [convex hull](media/hull.svg), [geofence](media/geofence.svg),
+[routing](media/routing.svg), [DBSCAN](media/dbscan.svg), [closest pair](media/closest.svg),
+[KD-tree](media/kdtree.svg), [segment collision](media/collision.svg),
+[object model](media/classes.svg) and [security workflow](media/security-flow.svg).
+
 The costs below describe the core calculation. Recording, input validation and runtime
 result verification add work; these are included in application execution.
 

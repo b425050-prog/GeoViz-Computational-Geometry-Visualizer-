@@ -1,6 +1,5 @@
 /build/
 /output/
-/GeoViz.exe
 *.o
 *.obj
 __pycache__/

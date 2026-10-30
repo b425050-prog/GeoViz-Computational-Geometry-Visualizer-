@@ -8,12 +8,17 @@ GeoViz is an offline desktop application for editing geometric inputs, running a
 and inspecting their recorded decisions. Its security workspaces reuse the geometry engine
 to examine synthetic location and device-activity records.
 
+![Recorded geometry and clustering steps](docs/media/overview.gif)
+
 ## Run
 
-On Windows, open `GeoViz.exe` from the final project folder. Keep `assets/` and `data/`
-beside the executable. Runtime saves, recovery files and exports go into `output/`.
+**The Windows executable is included in this repository:** [GeoViz.exe](GeoViz.exe).
+Download and extract the complete repository or the
+[final project ZIP](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/releases/download/final-submission/GeoViz-Final.zip),
+then double-click `GeoViz.exe`. Keep `assets/` and `data/` beside it.
+Runtime saves, recovery files and exports go into `output/`.
 
-The GitHub repository contains source code. To build and test it on Windows, install
+The complete source is also included. To rebuild and test it on Windows, install
 CMake 3.21+, Ninja, and a compatible GCC/raylib 5.5 toolchain, then run:
 
 ```powershell
@@ -35,6 +40,22 @@ KD nearest, KD radius, indexed DBSCAN and segment collision. Six built-in inputs
 are generated in C++; they do not require duplicate scene files. Nine security scenarios
 are selected from the CSV catalogue.
 
+## Visual walkthrough
+
+| Convex hull | Shortest-path search | Density clustering |
+| --- | --- | --- |
+| ![Hull recording](docs/media/hull.gif) | ![Route recording](docs/media/routes.gif) | ![Indexed DBSCAN recording](docs/media/density.gif) |
+
+| Geometry laboratory | Security workspace |
+| --- | --- |
+| ![Lab workspace](docs/media/lab.png) | ![Security map](docs/media/security.png) |
+
+![Security scenario recordings](docs/media/security.gif)
+
+Additional sample previews: [tidal archipelago](docs/media/tidal-gallery.png) and
+[botanical terraces](docs/media/terrace-gallery.png). Algorithm and architecture
+diagrams are linked from the [design guide](docs/DESIGN.md).
+
 ## Documentation
 
 | Document | Contents |
@@ -45,12 +66,13 @@ are selected from the CSV catalogue.
 | [Verification](docs/VERIFICATION.md) | Executed checks, fixes and testing limits |
 
 ```text
+GeoViz.exe     Tested Windows application, included in the repository
 include/       Domain models and engine interfaces
 src/           Geometry, algorithms, persistence and desktop interface
 tests/         Engine, regression, desktop and evidence checks
 data/          Synthetic security CSVs, catalogue and campus map
 assets/        Application icon
-docs/          Project documentation
+docs/          Project documentation, GIFs, screenshots and diagrams
 build.ps1      Windows build, test and optional launch
 CMakeLists.txt Cross-platform engine and desktop build
 ```
