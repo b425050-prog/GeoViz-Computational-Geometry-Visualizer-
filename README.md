@@ -71,12 +71,13 @@ include/       Domain models and engine interfaces
 src/           Geometry, algorithms, persistence and desktop interface
 tests/         Engine, regression, desktop and evidence checks
 data/          Synthetic security CSVs, catalogue and campus map
-assets/        Application icon
+assets/        Original application icons and Lato fonts
 docs/          Project documentation, GIFs, screenshots and diagrams
 build.ps1      Windows build, test and optional launch
 CMakeLists.txt Cross-platform engine and desktop build
 ```
 
 The engine has no graphics dependency. The desktop interface uses
-[raylib](https://github.com/raysan5/raylib) and loads Segoe UI from Windows when available,
-with raylib's default font as a fallback.
+[raylib](https://github.com/raysan5/raylib) and the original bundled Lato Regular/Bold fonts.
+The 2.0 theme, canvas artwork, animations and application features are preserved.
+Third-party notices remain beside the bundled assets.

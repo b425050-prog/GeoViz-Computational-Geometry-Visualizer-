@@ -102,7 +102,7 @@ class App {
             SetWindowIcon(icon);
             UnloadImage(icon);
         }
-        Ui ui(smoke ? windowWidth : 0, smoke ? windowHeight : 0);
+        Ui ui(root, smoke ? windowWidth : 0, smoke ? windowHeight : 0);
         updateLayout();
         view.fit(scene);
         if (smoke) {

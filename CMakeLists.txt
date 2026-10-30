@@ -69,10 +69,20 @@ if(GEOVIZ_BUILD_APP)
     if(WIN32)
         target_link_libraries(geoviz PRIVATE opengl32 gdi32 winmm comdlg32)
         enable_language(RC)
-        target_sources(geoviz PRIVATE assets/geoviz.rc)
-        set_source_files_properties(assets/geoviz.rc PROPERTIES
-            INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}"
-            OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/assets/geoviz.ico")
+        if(MINGW)
+            # Keep windres preprocessing independent of C++ include paths containing spaces.
+            add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/geoviz_icon.obj"
+                COMMAND "${CMAKE_RC_COMPILER}" -O coff -i assets/geoviz.rc
+                    -o "${PROJECT_BINARY_DIR}/geoviz_icon.obj"
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+                DEPENDS assets/geoviz.rc assets/geoviz.ico VERBATIM)
+            target_sources(geoviz PRIVATE "${PROJECT_BINARY_DIR}/geoviz_icon.obj")
+        else()
+            target_sources(geoviz PRIVATE assets/geoviz.rc)
+            set_source_files_properties(assets/geoviz.rc PROPERTIES
+                INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}"
+                OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/assets/geoviz.ico")
+        endif()
     endif()
     install(TARGETS geoviz RUNTIME DESTINATION .)
     install(DIRECTORY assets data docs DESTINATION .)

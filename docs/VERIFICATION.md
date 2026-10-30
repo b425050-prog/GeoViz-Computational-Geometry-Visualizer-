@@ -44,8 +44,11 @@ are generated under ignored `output/` or `build/` directories.
   authoring package dependencies and old verification logs are removed.
 - The tested Windows executable is tracked as `GeoViz.exe`. The five original GIFs,
   four workspace/sample screenshots and nine SVG diagrams are retained under `docs/media/`.
-- The UI loads Windows fonts at runtime; bundled fonts and license files are removed.
-  Graphics remain provided by the external raylib dependency.
+- The original Lato Regular/Bold fonts, icons, theme and canvas artwork are preserved.
+  Font-loading behavior matches 2.0; third-party asset notices accompany the bundled files.
+  The cleanup changes shared code and generated clutter rather than application features.
+- Windows icon compilation handles project paths containing spaces; executable version
+  metadata identifies GeoViz 2.0.0.
 
 ## Reproduce
 

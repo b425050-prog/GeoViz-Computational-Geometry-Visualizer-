@@ -77,7 +77,7 @@ runtime oracle.
 - Security datasets hold at most 4,096 records; each filtered view is limited to
   256 observations. Geographic data is restricted to 50 km from the configured
   origin, whose latitude is within ±80°. Distances are local approximations.
-- Windows uses native Open/Save dialogs and the system Segoe UI font when available.
-  Other platforms use raylib's default font; the native session chooser is Windows-only.
+- The interface uses the bundled Lato Regular/Bold fonts on every platform, preserving
+  the 2.0 appearance. The native session chooser is Windows-only.
 - Saved files are local text formats. Staged publication handles reported I/O failures;
   it is not a power-loss journal. Export hashes are unsigned consistency checks.

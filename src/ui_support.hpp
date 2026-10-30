@@ -8,7 +8,6 @@
 #include "workspace.hpp"
 #include <cctype>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -66,38 +65,30 @@ class Ui final {
     float scale_ = 1;
     inline static int textAdjustment_ = 0;
     static const Font &font(int size) { return size >= 20 ? active_->bold_ : active_->regular_; }
-    static Font load(const char *filename) {
-#ifdef _WIN32
-        if (const auto *windows = std::getenv("WINDIR")) {
-            const auto path = std::filesystem::path(windows) / "Fonts" / filename;
-            Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
-            if (result.texture.id && result.texture.id != GetFontDefault().texture.id) {
-                SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);
-                return result;
-            }
-        }
-#else
-        (void)filename;
-#endif
-        return GetFontDefault();
-    }
-    static void release(Font font) {
-        if (font.texture.id && font.texture.id != GetFontDefault().texture.id)
-            UnloadFont(font);
+    static Font load(const std::filesystem::path &path) {
+        Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
+        if (!result.texture.id || result.texture.id == GetFontDefault().texture.id)
+            throw std::runtime_error("Cannot load font: " + path.string());
+        SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);
+        return result;
     }
 
   public:
-    explicit Ui(int testWidth = 0, int testHeight = 0)
+    explicit Ui(const std::filesystem::path &root, int testWidth = 0, int testHeight = 0)
         : testWidth_(testWidth), testHeight_(testHeight) {
-        regular_ = load("segoeui.ttf");
-        bold_ = load("segoeuib.ttf");
-        if (testWidth_) {
-            testTarget_ = LoadRenderTexture(testWidth_, testHeight_);
-            if (!testTarget_.id) {
-                release(bold_);
-                release(regular_);
-                throw std::runtime_error("Could not create the automated render target.");
+        regular_ = load(root / "assets/Lato-Regular.ttf");
+        try {
+            bold_ = load(root / "assets/Lato-Bold.ttf");
+            if (testWidth_) {
+                testTarget_ = LoadRenderTexture(testWidth_, testHeight_);
+                if (!testTarget_.id)
+                    throw std::runtime_error("Could not create the automated render target.");
             }
+        } catch (...) {
+            if (bold_.texture.id)
+                UnloadFont(bold_);
+            UnloadFont(regular_);
+            throw;
         }
         active_ = this;
         refresh();
@@ -105,8 +96,8 @@ class Ui final {
     ~Ui() {
         if (testTarget_.id)
             UnloadRenderTexture(testTarget_);
-        release(bold_);
-        release(regular_);
+        UnloadFont(bold_);
+        UnloadFont(regular_);
         active_ = nullptr;
     }
     Ui(const Ui &) = delete;
