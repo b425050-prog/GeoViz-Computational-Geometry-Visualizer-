@@ -1,4 +1,5 @@
 #pragma once
+#include <charconv>
 #include <cstdint>
 #include <ctime>
 #include <iomanip>
@@ -7,9 +8,11 @@
 #include <stdexcept>
 namespace gv {
 inline std::string exactNumber(double value) {
-    std::ostringstream out;
-    out << std::setprecision(std::numeric_limits<double>::max_digits10) << value;
-    return out.str();
+    char buffer[128];
+    const auto result = std::to_chars(buffer, buffer + sizeof(buffer), value);
+    if (result.ec != std::errc{})
+        throw std::runtime_error("Cannot format numeric value.");
+    return {buffer, result.ptr};
 }
 inline std::string utcText(std::int64_t epoch) {
     std::time_t value = static_cast<std::time_t>(epoch);

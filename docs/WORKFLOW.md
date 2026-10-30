@@ -65,3 +65,5 @@ analyst verdicts and notes are stored separately.
 - KD nearest and radius queries share tree traversal and pruning.
 - Security map and feature views publish validated derived data through one method.
 - Recovery and recovery-history saves share the same snapshot-writing method.
+- Settings and review notes share caret, selection and bounded text-editing code.
+- Unchanged frames borrow the workspace; changed input alone creates a history snapshot.

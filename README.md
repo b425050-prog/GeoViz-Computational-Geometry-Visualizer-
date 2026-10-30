@@ -64,6 +64,7 @@ diagrams are linked from the [design guide](docs/DESIGN.md).
 | [Design and algorithms](docs/DESIGN.md) | Modules, OOP concepts, shared implementations, algorithms and limitations |
 | [User guide](docs/USER_GUIDE.md) | Build commands, controls, security data and file formats |
 | [Verification](docs/VERIFICATION.md) | Executed checks, fixes and testing limits |
+| [Usability review](docs/USABILITY.md) | Repeatable user tasks and the completed assistant UI review |
 
 ```text
 GeoViz.exe     Tested Windows application, included in the repository
@@ -81,3 +82,8 @@ The engine has no graphics dependency. The desktop interface uses
 [raylib](https://github.com/raysan5/raylib) and the original bundled Lato Regular/Bold fonts.
 The 2.0 theme, canvas artwork, animations and application features are preserved.
 Third-party notices remain beside the bundled assets.
+
+The final cleanup also separates application commands from rendering, avoids copying
+unchanged workspaces each frame, and preserves input when a save or import fails.
+Windows CI builds and tests a freshly extracted portable package; see Verification
+for the checks and their limits.

@@ -10,9 +10,11 @@
 | `include/security.hpp`, `src/security*.cpp`, `src/csv.cpp` | CSV ingestion, filtering, projection, aggregation, samples and security evidence |
 | `include/persistence.hpp`, `src/io*.hpp`, `src/io.cpp` | Scene format and checked-run summaries |
 | `include/atomic_files.hpp` | Staged multi-file saves with rollback on reported publication failures |
-| `include/workspace.hpp` | Undo/redo snapshots and prepared security-view data |
-| `src/main.cpp`, `src/app*.hpp` | Startup, commands, input, inspection and drawing |
+| `include/workspace.hpp` | Change detection, undo/redo snapshots and prepared security-view data |
+| `include/session_files.hpp`, `src/session_files.cpp` | Asset checks, recent sessions and complete recovery snapshots |
+| `src/main.cpp`, `src/app.hpp`, `src/app*.cpp` | Startup and App coordination, with separately compiled command, input, inspector and drawing methods |
 | `src/ui*.hpp`, `src/canvas_art.hpp`, `src/file_dialogs.cpp` | Rendering, settings, decorative backgrounds and native file dialogs |
+| `include/text_cursor.hpp`, `src/ui_editing.hpp` | Shared bounded text editing, selection and caret rendering |
 | `src/samples.cpp` | Six deterministic inputs per algorithm |
 | `tests/` | Expected cases, reference comparisons, persistence failures and desktop checks |
 
@@ -33,6 +35,32 @@
 `SecuritySettings` is a detached edit buffer; related fields are validated together when
 applied to `SecurityConsole`. A `Run` exposes const input/result access, so later edits
 cannot change the recorded answer.
+
+## State and persistence
+
+`App` coordinates the existing workflows; it delegates algorithm execution to
+`AlgorithmRunner`, recovery policy to `SessionFiles`, input history to `EditHistory`,
+canvas drawing to `SceneCanvas`, and candidate settings to `SettingsPanel`. Its member
+definitions live in ordinary `.cpp` files, rather than implementation headers included
+inside the class.
+
+Scene and security mutations assign unique revision tokens. `WorkspaceView` borrows
+the current models, so an idle frame checks tokens and the bounded fence draft without
+copying events or serializing the workspace. Only changed input is compared with the
+last semantic snapshot. Equivalent edits do not add history entries; saved-state flags
+are refreshed when input or a save checkpoint changes. Choosing another algorithm
+invalidates its trace while retaining the input and its saved state.
+
+`SessionFiles` prepares all recovery components before publishing restored state.
+Save operations stage files through `AtomicFiles`; a reported failure keeps the live
+workspace and its save checkpoint available. Replacing unsaved input first preserves
+a recovery generation. If recovery fails while closing unsaved work, the window stays
+open and explains how to use Save As. Settings and review drafts must be applied,
+saved or cancelled before closing.
+
+Settings and analyst notes share `TextCursor` and the desktop editing adapter. Text
+selection uses UTF-8 character boundaries and bounded buffers. The original bundled
+fonts do not provide universal character coverage.
 
 ## Algorithms and boundaries
 
@@ -79,5 +107,7 @@ runtime oracle.
   origin, whose latitude is within ±80°. Distances are local approximations.
 - The interface uses the bundled Lato Regular/Bold fonts on every platform, preserving
   the 2.0 appearance. The native session chooser is Windows-only.
+- The Windows executable embeds UTF-8 process configuration and loads font/icon bytes
+  through filesystem paths. Package checks exercise a folder containing spaces and Ω.
 - Saved files are local text formats. Staged publication handles reported I/O failures;
   it is not a power-loss journal. Export hashes are unsigned consistency checks.

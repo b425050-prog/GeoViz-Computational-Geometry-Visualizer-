@@ -1,5 +1,6 @@
 // Windows shell icon and executable identity; no runtime dependency is added.
 1 ICON "assets/geoviz.ico"
+1 24 "assets/geoviz.manifest"
 1 VERSIONINFO
  FILEVERSION 2,0,0,0
  PRODUCTVERSION 2,0,0,0

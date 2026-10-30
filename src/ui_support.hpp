@@ -5,6 +5,7 @@
 #include "geoviz.hpp"
 #include "numeric_text.hpp"
 #include "raylib.h"
+#include "text_cursor.hpp"
 #include "workspace.hpp"
 #include <cctype>
 #include <chrono>
@@ -14,7 +15,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace {
+namespace gv::ui {
 using namespace gv;
 // Warm paper, sage and earth colours keep text and algorithm states legible.
 const Color BG{246, 245, 240, 255}, PANEL{255, 255, 252, 255}, INK{39, 52, 48, 255},
@@ -54,6 +55,19 @@ class Window final {
     Window(const Window &) = delete;
     Window &operator=(const Window &) = delete;
 };
+// Read through filesystem paths so bundled assets work in Unicode Windows folders.
+inline std::vector<unsigned char> readAsset(const std::filesystem::path &path) {
+    std::ifstream in(path, std::ios::binary | std::ios::ate);
+    const auto size = in ? in.tellg() : std::streampos(-1);
+    if (size <= 0 || size > 8 * 1024 * 1024)
+        throw std::runtime_error("Cannot read bundled asset: " + path.u8string() +
+                                 ". Extract the complete GeoViz ZIP again.");
+    std::vector<unsigned char> data(static_cast<std::size_t>(size));
+    in.seekg(0);
+    if (!in.read(reinterpret_cast<char *>(data.data()), static_cast<std::streamsize>(data.size())))
+        throw std::runtime_error("Could not finish reading bundled asset: " + path.u8string());
+    return data;
+}
 // Own fonts once; render directly at the display resolution in logical UI
 // units.
 class Ui final {
@@ -66,9 +80,12 @@ class Ui final {
     inline static int textAdjustment_ = 0;
     static const Font &font(int size) { return size >= 20 ? active_->bold_ : active_->regular_; }
     static Font load(const std::filesystem::path &path) {
-        Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
+        const auto data = readAsset(path);
+        Font result =
+            LoadFontFromMemory(".ttf", data.data(), static_cast<int>(data.size()), 64, nullptr, 0);
         if (!result.texture.id || result.texture.id == GetFontDefault().texture.id)
-            throw std::runtime_error("Cannot load font: " + path.string());
+            throw std::runtime_error("Cannot load bundled font: " + path.u8string() +
+                                     ". Extract the complete GeoViz ZIP again.");
         SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);
         return result;
     }
@@ -104,6 +121,29 @@ class Ui final {
     Ui &operator=(const Ui &) = delete;
     void refresh() {
         scale_ = std::max(0.8f, std::min(pixelWidth() / 1440.0f, pixelHeight() / 900.0f));
+    }
+    static std::string elide(std::string value, float width, int size) {
+        if (measure(value.c_str(), size) <= width)
+            return value;
+        std::string left, right;
+        std::size_t a = 0, b = value.size();
+        bool tail = true;
+        while (a < b) {
+            auto next = tail ? TextCursor::previous(value, b) : TextCursor::next(value, a);
+            auto candidate =
+                tail ? left + "..." + value.substr(next) : value.substr(0, next) + "..." + right;
+            if (measure(candidate.c_str(), size) > width)
+                break;
+            if (tail) {
+                b = next;
+                right = value.substr(b);
+            } else {
+                a = next;
+                left = value.substr(0, a);
+            }
+            tail = !tail;
+        }
+        return left + "..." + right;
     }
     static int pixelWidth() { return active_->testWidth_ ? active_->testWidth_ : GetScreenWidth(); }
     static int pixelHeight() {
@@ -290,6 +330,8 @@ class View {
         centre.setY(bounded(centre.y() + 45 / zoom)); // Reserve a header above all data.
     }
 };
+#include "ui_editing.hpp"
+
 class ButtonFocus final {
     inline static int focus_ = -1, count_ = 0, previous_ = 0;
     inline static bool enter_ = false, blocked_ = false;
@@ -306,11 +348,21 @@ class ButtonFocus final {
         blocked_ = modal;
         enter_ = keys.count(KEY_ENTER) != 0;
         if (keys.count(KEY_TAB) && !modal)
-            focus_ = (focus_ + (IsKeyDown(KEY_LEFT_SHIFT) ? std::max(1, previous_) - 1 : 1) +
+            focus_ = (focus_ +
+                      (modifier(keys, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT) ? std::max(1, previous_) - 1
+                                                                       : 1) +
                       std::max(1, previous_)) %
                      std::max(1, previous_);
     }
-    static void overlay() { blocked_ = false; }
+    static void overlay(const std::set<int> &keys, bool navigate) {
+        blocked_ = false;
+        if (navigate && keys.count(KEY_TAB)) {
+            const auto count = std::max(1, previous_);
+            focus_ = (focus_ + (modifier(keys, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT) ? count - 1 : 1) +
+                      count) %
+                     count;
+        }
+    }
     static bool current(bool enabled, Rectangle r) {
         if (blocked_ || !enabled)
             return false;
@@ -329,26 +381,30 @@ class ButtonFocus final {
             focus_ = -1;
     }
 };
-bool button(Rectangle r, const std::string &label, bool selected = false, bool enabled = true) {
+inline bool button(Rectangle r, const std::string &label, bool selected = false,
+                   bool enabled = true) {
     bool hover = CheckCollisionPointRec(Ui::mouse(), r);
     DrawRectangleRounded(r, 0.18f, 6, selected ? SELECTED_BG : (hover ? SOFT_BG : PANEL));
     DrawRectangleRoundedLinesEx(r, 0.18f, 6, 1, selected ? ACCENT : BORDER);
     int size = 17;
     while (size > 14 && Ui::measure(label.c_str(), size) > r.width - 16)
         --size;
-    Ui::draw(label, r.x + 8, r.y + (r.height - Ui::fontSize(size)) / 2, size,
-             selected ? ACCENT : INK);
+    Ui::draw(Ui::elide(label, r.width - 16, size), r.x + 8,
+             r.y + (r.height - Ui::fontSize(size)) / 2, size, selected ? ACCENT : INK);
     bool keyboard = ButtonFocus::current(enabled, r);
     if (!enabled)
         DrawRectangleRec(r, {246, 245, 240, 145});
-    return enabled && ButtonFocus::allowsInput() &&
-           (keyboard || (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)));
+    const bool clicked =
+        enabled && ButtonFocus::allowsInput() && hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+    if (clicked)
+        ButtonFocus::reset();
+    return enabled && ButtonFocus::allowsInput() && (keyboard || clicked);
 }
-void text(const std::string &s, float x, float y, int size = 17, Color color = INK) {
+inline void text(const std::string &s, float x, float y, int size = 17, Color color = INK) {
     Ui::draw(s, x, y, size, color);
 }
-float wrap(const std::string &value, float x, float y, float width, int size = 17,
-           Color color = INK) {
+inline float wrap(const std::string &value, float x, float y, float width, int size = 17,
+                  Color color = INK) {
     std::istringstream in(value);
     std::string word, line;
     while (in >> word) {
@@ -375,7 +431,8 @@ float wrap(const std::string &value, float x, float y, float width, int size = 1
     }
     return y;
 }
-void line(const View &view, Point a, Point b, Color color, float thick = 2, bool dashed = false) {
+inline void line(const View &view, Point a, Point b, Color color, float thick = 2,
+                 bool dashed = false) {
     auto u = view.screen(a), v = view.screen(b);
     if (!dashed)
         DrawLineEx(u, v, thick, color);
@@ -390,7 +447,7 @@ void line(const View &view, Point a, Point b, Color color, float thick = 2, bool
         }
     }
 }
-double segmentPixelDistance(Vector2 p, Vector2 a, Vector2 b) {
+inline double segmentPixelDistance(Vector2 p, Vector2 a, Vector2 b) {
     double dx = b.x - a.x, dy = b.y - a.y, d = dx * dx + dy * dy;
     double t = d ? std::clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / d, 0.0, 1.0) : 0;
     return std::hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
@@ -400,4 +457,4 @@ double segmentPixelDistance(Vector2 p, Vector2 a, Vector2 b) {
 #include "ui_canvas.hpp"
 #include "ui_settings.hpp"
 
-} // namespace
+} // namespace gv::ui

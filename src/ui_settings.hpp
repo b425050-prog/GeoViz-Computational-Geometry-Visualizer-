@@ -9,7 +9,7 @@ class SettingsPanel final {
     int context = 0;
     bool edgeAvailable = false;
     Mode activeMode = Mode::Hull;
-    std::size_t caret = 0;
+    TextCursor cursor;
     std::string error;
     inline static const std::vector<std::string> names = {"Radius",
                                                           "MinPts",
@@ -45,7 +45,11 @@ class SettingsPanel final {
     };
     bool isOpen() const noexcept { return open_; }
     void close() noexcept { open_ = false; }
-    void setField(std::size_t index, std::string value) { fields.at(index) = std::move(value); }
+    void setField(std::size_t index, std::string value) {
+        fields.at(index) = std::move(value);
+        if (field == static_cast<int>(index))
+            cursor.reset(fields[index].size());
+    }
     // Format a detached edit buffer; the model changes only when Apply succeeds.
     void open(const Scene &scene, const SecurityConsole &security, int selectedEdge,
               int securityView = 0, Mode mode = Mode::Hull) {
@@ -68,7 +72,7 @@ class SettingsPanel final {
         error.clear();
         auto shown = visible();
         field = shown.empty() ? -1 : shown.front();
-        caret = field < 0 ? 0 : fields[field].size();
+        cursor.reset(field < 0 ? 0 : fields[field].size());
         open_ = true;
     }
     Changes candidate(const Scene &scene, const SecurityConsole &security, int selectedEdge,
@@ -145,10 +149,12 @@ class SettingsPanel final {
         if (pressed(KEY_TAB) && !shown.empty()) {
             auto i = std::find(shown.begin(), shown.end(), field);
             int index = i == shown.end() ? 0 : static_cast<int>(i - shown.begin());
-            index = (index + (IsKeyDown(KEY_LEFT_SHIFT) ? static_cast<int>(shown.size()) - 1 : 1)) %
+            index = (index + (modifier(pressedKeys, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT)
+                                  ? static_cast<int>(shown.size()) - 1
+                                  : 1)) %
                     static_cast<int>(shown.size());
             field = shown[index];
-            caret = fields[field].size();
+            cursor.reset(fields[field].size());
         }
         for (std::size_t j = 0; j < shown.size(); ++j) {
             int i = shown[j];
@@ -157,21 +163,14 @@ class SettingsPanel final {
             Rectangle box{bx, by + 26, 430, 42};
             DrawRectangleRec(box, field == i ? SELECTED_BG : BG);
             DrawRectangleLinesEx(box, field == i ? 2.0f : 1.0f, field == i ? FOCUS : BORDER);
-            Ui::clip(box.x + 6, box.y, 418, 42);
-            auto label = fields[i];
             if (field == i)
-                label.insert(std::min(caret, label.size()), "|");
-            float offset =
-                field == i
-                    ? std::max(0.0f,
-                               Ui::measure((fields[i].substr(0, caret) + "|").c_str(), 17) - 400)
-                    : 0;
-            text(label, box.x + 7 - offset, box.y + 8, 17);
-            EndScissorMode();
+                drawEditor(fields[i], cursor, {box.x + 7, box.y + 8, 416, 30});
+            else
+                text(Ui::elide(fields[i], 416, 17), box.x + 7, box.y + 8, 17);
             if (CheckCollisionPointRec(Ui::mouse(), box) &&
                 IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 field = i;
-                caret = fields[i].size();
+                cursor.reset(fields[i].size());
             }
             if (i == 5 || i == 6) {
                 try {
@@ -181,46 +180,19 @@ class SettingsPanel final {
             }
         }
         if (field >= 0) {
-            auto &value = fields[field];
-            caret = std::min(caret, value.size());
-            bool ctrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ||
-                        IsKeyReleased(KEY_LEFT_CONTROL) || IsKeyReleased(KEY_RIGHT_CONTROL) ||
-                        pressed(KEY_LEFT_CONTROL) || pressed(KEY_RIGHT_CONTROL);
-            if (ctrl && pressed(KEY_A)) {
-                value.clear();
-                caret = 0;
-            }
-            if (ctrl && pressed(KEY_V)) {
-                const char *pasted = GetClipboardText();
-                if (pasted) {
-                    std::string clip = pasted;
-                    if (clip.size() + value.size() <= 128) {
-                        value.insert(caret, clip);
-                        caret += clip.size();
-                    }
-                }
-            }
-            if (pressed(KEY_LEFT) && caret)
-                --caret;
-            if (pressed(KEY_RIGHT) && caret < value.size())
-                ++caret;
-            if (pressed(KEY_HOME))
-                caret = 0;
-            if (pressed(KEY_END))
-                caret = value.size();
-            if (pressed(KEY_BACKSPACE) && caret)
-                value.erase(--caret, 1);
-            if (pressed(KEY_DELETE) && caret < value.size())
-                value.erase(caret, 1);
-            for (int ch = GetCharPressed(); ch; ch = GetCharPressed())
-                if (!ctrl && ch >= 32 && ch <= 126 && value.size() < 128)
-                    value.insert(caret++, 1, static_cast<char>(ch));
+            const auto before = fields[field];
+            editText(fields[field], cursor, pressedKeys, 128);
+            if (fields[field] != before)
+                error.clear();
         }
         bool apply = button({x + 24, y + 482, 170, 42}, "Apply") || pressed(KEY_ENTER);
-        if (button({x + 210, y + 482, 170, 42}, "Cancel"))
+        if (button({x + 210, y + 482, 170, 42}, "Cancel")) {
             close();
+            return false;
+        }
         wrap(error.empty() ? "Only parameters used by this workspace and algorithm are shown. UTC "
-                             "accepts calendar text or integer epoch seconds. Ctrl+V pastes; "
+                             "accepts calendar text or integer epoch seconds. Ctrl+A selects all; "
+                             "Ctrl+V pastes; "
                              "arrows/Home/End move the caret."
                            : error,
              x + 24, y + 550, 880, 16, error.empty() ? MUTED : DANGER);

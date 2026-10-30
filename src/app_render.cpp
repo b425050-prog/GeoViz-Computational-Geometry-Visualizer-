@@ -1,5 +1,7 @@
-// Included inside App: app render.
-void sampleDialog() {
+#include "app.hpp"
+
+namespace gv::ui {
+void App::sampleDialog() {
     if (!samplePicker)
         return;
     DrawRectangle(0, 0, Ui::width(), Ui::height(), VEIL);
@@ -45,45 +47,48 @@ void sampleDialog() {
     if (button({x, y + 8, 160, 36}, "Close") || pressedKeys.count(KEY_ESCAPE))
         samplePicker = false;
 }
-void reviewDialog() {
+void App::reviewDialog() {
     if (!noteOpen)
         return;
+    if (pressed(KEY_TAB))
+        noteFocus =
+            (noteFocus + (modifier(pressedKeys, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT) ? 2 : 1)) % 3;
     DrawRectangle(0, 0, Ui::width(), Ui::height(), VEIL);
     float x = (Ui::width() - 940) / 2, y = (Ui::height() - 420) / 2;
     text("ANALYST REVIEW: " + noteVerdict, x, y, 23, ACCENT);
-    wrap("Enter a review note (optional). Ctrl+V pastes explicitly. Review time is recorded in "
+    wrap("Enter a review note (optional). Editing shortcuts match Settings. Review time is "
+         "recorded in "
          "UTC, separately from synthetic truth.",
          x, y + 50, 900, 17);
     Rectangle field{x, y + 132, 900, 140};
     DrawRectangleRec(field, PANEL);
-    DrawRectangleLinesEx(field, 2, FOCUS);
-    Ui::clip(field.x + 8, field.y + 8, field.width - 16, field.height - 16);
-    wrap((noteText.size() > 220 ? "..." + noteText.substr(noteText.size() - 220) : noteText) + "|",
-         x + 12, y + 142, 876, 17);
-    EndScissorMode();
-    text(std::to_string(noteText.size()) + " / 1024 characters (end shown; full note retained)", x,
-         y + 278, 14, MUTED);
-    bool ctrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ||
-                IsKeyReleased(KEY_LEFT_CONTROL) || IsKeyReleased(KEY_RIGHT_CONTROL) ||
-                pressed(KEY_LEFT_CONTROL) || pressed(KEY_RIGHT_CONTROL);
-    if (ctrl && pressed(KEY_V)) {
-        const char *clip = GetClipboardText();
-        if (clip && noteText.size() + std::string(clip).size() <= 1024)
-            noteText += clip;
-    }
-    if (pressed(KEY_BACKSPACE) && !noteText.empty())
-        noteText.pop_back();
-    for (int ch = GetCharPressed(); ch; ch = GetCharPressed())
-        if (!ctrl && ch >= 32 && ch <= 126 && noteText.size() < 1024)
-            noteText += static_cast<char>(ch);
-    if (button({x, y + 300, 210, 42}, "Save review") || pressed(KEY_ENTER)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(Ui::mouse(), field))
+        noteFocus = 0;
+    DrawRectangleLinesEx(field, 2, noteFocus == 0 ? FOCUS : BORDER);
+    drawEditor(noteText, noteCursor,
+               {field.x + 8, field.y + 8, field.width - 16, field.height - 16}, 17, true,
+               noteFocus == 0);
+    const bool closingNote = status.rfind("Finish this review", 0) == 0;
+    text(closingNote ? status
+                     : std::to_string(noteText.size()) +
+                           " / 1024 bytes | Ctrl+A selects all; Tab changes focus",
+         x, y + 278, 14, closingNote ? DANGER : MUTED);
+    if (noteFocus == 0)
+        editText(noteText, noteCursor, pressedKeys, 1024);
+    if (button({x, y + 300, 210, 42}, "Save review") || (pressed(KEY_ENTER) && noteFocus != 2)) {
         review(noteVerdict, noteText);
         noteOpen = false;
     }
-    if (button({x + 225, y + 300, 170, 42}, "Cancel"))
+    if (button({x + 225, y + 300, 170, 42}, "Cancel") || (pressed(KEY_ENTER) && noteFocus == 2)) {
         noteOpen = false;
+        status = "Review cancelled; existing verdicts are unchanged.";
+    }
+    if (noteFocus == 1 || noteFocus == 2)
+        DrawRectangleLinesEx(
+            {noteFocus == 1 ? x : x + 225, y + 300, noteFocus == 1 ? 210.0f : 170.0f, 42}, 3,
+            FOCUS);
 }
-void settingsDialog() {
+void App::settingsDialog() {
     if (settings.draw(pressedKeys)) {
         try {
             applySettings();
@@ -93,7 +98,7 @@ void settingsDialog() {
     }
 }
 // Scrollable control reference; keyboard and pointer input are blocked behind the overlay.
-void helpDialog() {
+void App::helpDialog() {
     if (!help)
         return;
     DrawRectangle(0, 0, Ui::width(), Ui::height(), VEIL);
@@ -161,10 +166,9 @@ void helpDialog() {
         help = false;
 }
 // Render one logical-resolution UI frame through the RAII drawing session.
-void draw() {
+void App::draw() {
     DrawingSession drawing;
-    ButtonFocus::begin(pressedKeys,
-                       help || settings.isOpen() || samplePicker || noteOpen || noteOpen);
+    ButtonFocus::begin(pressedKeys, help || settings.isOpen() || samplePicker || noteOpen);
     ClearBackground(BG);
     float w = Ui::width(), h = Ui::height();
     if (presentation) {
@@ -190,7 +194,7 @@ void draw() {
         action("Compare", [&] { compare(); }, bool(run));
         action("Exit F5", [&] { togglePresentation(); });
         wrap(status, 16, h - 28, w - 32, 14, MUTED);
-        ButtonFocus::overlay();
+        ButtonFocus::overlay(pressedKeys, help || samplePicker);
         if (help)
             helpDialog();
         else if (settings.isOpen())
@@ -221,10 +225,7 @@ void draw() {
                    std::to_string(i + 1) + " " + modeName(static_cast<Mode>(i)),
                    mode == static_cast<Mode>(i), modeAvailable(static_cast<Mode>(i))) &&
             !help && !settings.isOpen()) {
-            routePick = RoutePick::None;
-            mode = static_cast<Mode>(i);
-            invalidate();
-            sidebarScroll = 0;
+            setMode(static_cast<Mode>(i));
         }
     }
     canvas();
@@ -287,9 +288,10 @@ void draw() {
     }
     DrawRectangle(0, h - 64, w, 64, SOFT_BG);
     Ui::clip(0, h - 64, w, 64);
-    wrap((!dirty() ? "" : "UNSAVED (recovery active) | ") + status, 16, h - 57, w - 30, 15);
+    wrap((!dirty() ? "" : "UNSAVED | ") + status, 16, h - 57, w - 30, 15,
+         status.rfind("Action failed:", 0) == 0 ? DANGER : INK);
     EndScissorMode();
-    ButtonFocus::overlay();
+    ButtonFocus::overlay(pressedKeys, help || samplePicker);
     if (help)
         helpDialog();
     else if (settings.isOpen())
@@ -300,3 +302,5 @@ void draw() {
         reviewDialog();
     ButtonFocus::finish();
 }
+
+} // namespace gv::ui

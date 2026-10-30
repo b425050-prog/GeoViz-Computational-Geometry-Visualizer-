@@ -156,11 +156,11 @@ class SecurityConsole {
     std::map<std::string, std::string> reviews_;
     std::map<std::string, std::string> reviewNotes_;
     std::map<std::string, std::int64_t> reviewTimes_;
-    std::uint64_t revision_ = 0;
+    std::uint64_t revision_ = detail::nextRevision();
     mutable std::map<bool, std::vector<Observation>> observationCache_;
     mutable std::string evaluationCache_;
     void changed() {
-        ++revision_;
+        revision_ = detail::nextRevision();
         observationCache_.clear();
         evaluationCache_.clear();
     }

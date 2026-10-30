@@ -1,24 +1,30 @@
 #pragma once
+#include "session_files.hpp"
 #include "ui_support.hpp"
-namespace {
-// Coordinates the domain model, execution interface, playback and raylib presentation.
-// Input handlers own edits; drawing reads the frozen Run and never advances algorithms.
+
+namespace gv::ui {
+// Coordinates workspace commands, input and presentation through focused interfaces.
 class App {
     std::unique_ptr<AlgorithmRunner> engine = std::make_unique<Engine>();
     Scene scene = sampleScene(Mode::Hull, 1);
     Scene labScene = scene;
+    std::string labInputName = sampleName(Mode::Hull, 1) + " | 2/6";
+    std::uint64_t labInputRevision = scene.revision();
     std::vector<Point> fenceDraft;
     Mode labMode = Mode::Hull;
     View labView;
     int labSelected = -1, labEdge = -1;
     EditHistory edits;
     std::string savedLabKey, savedSecurityKey;
+    bool labDirty = false, securityDirty = false;
     std::filesystem::path sessionPath, labSessionPath, securitySessionPath;
     std::vector<std::string> recentFiles;
     bool samplePicker = false, compareVisible = false, presentation = false;
     bool noteOpen = false, sensitivityVisible = false;
     std::string sensitivityCache;
     std::string noteText, noteVerdict;
+    TextCursor noteCursor;
+    int noteFocus = 0;
     std::unique_ptr<Run> comparison;
     int sampleVariant = 1, securitySample = 0;
     std::vector<SecuritySample> securityCatalogue;
@@ -40,6 +46,7 @@ class App {
     SettingsPanel settings;
     std::string status = "Click to add/select points; drag to move. Run records decisions.";
     std::filesystem::path root;
+    SessionFiles files;
     bool smoke = false;
     bool closeRequested = false;
     int smokeFrame = 0;
@@ -49,104 +56,81 @@ class App {
     enum class RoutePick { None, Source, Destination };
     RoutePick routePick = RoutePick::None;
 
-#include "../tests/desktop_checks.hpp"
-#include "app_commands.hpp"
-#include "app_input.hpp"
-#include "app_inspector.hpp"
-#include "app_render.hpp"
-  public:
-    explicit App(std::filesystem::path base, bool smokeMode, int width, int height)
-        : root(std::move(base)), smoke(smokeMode), windowWidth(width), windowHeight(height) {
-        std::filesystem::create_directories(root / "output");
-        securityCatalogue = securitySamples((root / "data").u8string());
-        security = loadSecuritySample((root / "data").u8string(), securityCatalogue.front());
-        std::ifstream recent(root / "output/recent.txt");
-        std::string f;
-        while (std::getline(recent, f) && recentFiles.size() < 8)
-            recentFiles.push_back(f);
-        bool recovered = false;
-        if (!smoke && std::filesystem::exists(root / "output/recovery.scene") &&
-            std::filesystem::exists(root / "output/recovery.security")) {
-            try {
-                auto recoveredLab = SceneIO::load((root / "output/recovery.scene").u8string());
-                auto recoveredSecurity =
-                    SecurityConsole::load((root / "output/recovery.security").u8string());
-                scene = std::move(recoveredLab);
-                security = std::move(recoveredSecurity);
-                recovered = true;
-                status = "Recovered last workspace. Ctrl+S Save As; Ctrl+Z undo edits.";
-            } catch (const std::exception &e) {
-                status = std::string("Recovery unavailable: ") + e.what();
-            }
-        }
-        labScene = scene;
-        fenceDraft = security.fence();
-        if (!smoke && std::filesystem::exists(root / "output/recovery.fence.scene"))
-            try {
-                fenceDraft =
-                    SceneIO::load((root / "output/recovery.fence.scene").u8string()).polygon();
-            } catch (const std::exception &) {
-            }
-        edits.record(workspace());
-        savedLabKey = recovered ? "" : labKey();
-        savedSecurityKey = recovered ? "" : securityKey();
-    }
-    // Keep the window and fonts alive around the loop; exceptions release graphics through RAII.
-    void loop() {
-        // Keep automated evidence paths inside the selected test directory.
-        if (smoke)
-            std::filesystem::current_path(root);
-        Window window(smoke, smoke ? 960 : windowWidth, smoke ? 640 : windowHeight);
-        Image icon = LoadImage((root / "assets/geoviz.png").u8string().c_str());
-        if (icon.data) {
-            SetWindowIcon(icon);
-            UnloadImage(icon);
-        }
-        Ui ui(root, smoke ? windowWidth : 0, smoke ? windowHeight : 0);
-        updateLayout();
-        view.fit(scene);
-        if (smoke) {
-            smokeInteractions();
-        }
-        while (!WindowShouldClose() && !closeRequested) {
-            try {
-                ui.refresh();
-                updateLayout();
-                if (smoke) {
-                    if (smokeFrame % 5 == 0 && !smokeStage(smokeFrame / 5))
-                        break;
-                } else
-                    input();
-                draw();
-                if (!smoke)
-                    recordEdit();
-                if (smoke && smokeFrame % 5 == 3) {
-                    auto path =
-                        root / "output" / ("screen_" + std::to_string(smokeFrame / 5) + ".png");
-                    std::filesystem::remove(path);
-                    Ui::capture(path);
-                    if (!std::filesystem::exists(path))
-                        throw std::runtime_error("Smoke screenshot was not written.");
-                }
-                ++smokeFrame;
-            } catch (const std::exception &e) {
-                status = std::string("ERROR: ") + e.what();
-                if (IsWindowReady()) {
-                    DrawingSession drawing;
-                    ClearBackground(BG);
-                    wrap(status, 30, 50, static_cast<float>(Ui::width() - 60), 20, DANGER);
-                    text("Correct the input or close the window. F1 for help.", 30, 150, 18);
-                }
-                if (smoke) {
-                    throw;
-                }
-            }
-        }
-        if (!smoke)
-            recover();
-        if (smoke)
-            smokeReport();
-    }
-};
+    // App commands
+    Rectangle sidebarBounds() const;
+    void updateLayout();
+    bool pickEndpoint(int id);
+    bool feature() const;
+    bool modeAvailable(Mode candidate) const;
+    void setMode(Mode candidate);
+    void invalidateSecurityDisplays();
+    void invalidate();
+    void syncFence(bool required = false);
+    void publishSecurity(PreparedSecurity prepared);
+    void refreshSecurity();
+    void resetFilters();
+    void resetInteractions();
+    WorkspaceView workspaceView() const;
+    WorkspaceState workspace() const;
+    void refreshDirty();
+    bool requestClose();
+    std::string labKey() const;
+    std::string securityKey() const;
+    bool dirty() const;
+    void markSaved(bool laboratory);
+    void recover();
+    void protectWork();
+    void finalFrame();
+    void recordEdit();
+    void restoreEdit(bool redo);
+    void chooseSample(int index);
+    void nextSample();
+    void setView(int v);
+    void execute();
+    void loadFile(const std::string &path);
+    void openNamed();
+    void saveNamed();
+    void save();
+    void exportEvidence();
+    void compare();
+    void comparePrevious();
+    void openSettings();
+    void beginModal();
+    void openSamples();
+    void openReview(const std::string &verdict);
+    void applySettings();
+    void removeSelected();
+    void review(const std::string &verdict, const std::string &note = "");
+    void clearScene();
+    void loadGrid();
+    void clearFence();
+    void togglePresentation();
 
-} // namespace
+    // App input
+    bool pressed(int key) const;
+    void input();
+
+    // App inspector
+    const Frame *frame() const;
+    void canvas() const;
+    void sidebar();
+
+    // App render
+    void sampleDialog();
+    void reviewDialog();
+    void settingsDialog();
+    void helpDialog();
+    void draw();
+
+    // Desktop checks
+    void featureChecks();
+    void smokeInteractions();
+    void smokeSample(Mode selectedMode, int variant);
+    bool smokeStage(int stage);
+    void smokeReport() const;
+
+  public:
+    explicit App(std::filesystem::path base, bool smokeMode, int width, int height);
+    void loop();
+};
+} // namespace gv::ui

@@ -11,20 +11,23 @@ if(GEOVIZ_SANITIZERS AND NOT WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang"
     add_link_options(-fsanitize=address,undefined)
 endif()
 
-execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    OUTPUT_VARIABLE GEOVIZ_REVISION OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+set(GEOVIZ_REVISION "" CACHE STRING "Source revision for builds exported without Git metadata")
+if(NOT GEOVIZ_REVISION)
+    execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+        OUTPUT_VARIABLE GEOVIZ_REVISION OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+endif()
 if(NOT GEOVIZ_REVISION)
     set(GEOVIZ_REVISION "unversioned-source")
 endif()
 add_library(geoviz_engine src/geometry.cpp src/algorithms.cpp src/io.cpp src/csv.cpp
-    src/security.cpp src/security_io.cpp src/samples.cpp src/security_samples.cpp)
+    src/security.cpp src/security_io.cpp src/samples.cpp src/security_samples.cpp src/session_files.cpp)
 target_include_directories(geoviz_engine PUBLIC include)
 target_compile_definitions(geoviz_engine PUBLIC GEOVIZ_SOURCE_REVISION="${GEOVIZ_REVISION}")
 set(checked_targets geoviz_engine)
 
 include(CTest)
 if(BUILD_TESTING)
-    foreach(name tests regressions)
+    foreach(name tests regressions product_checks)
         add_executable(geoviz_${name} tests/${name}.cpp)
         target_link_libraries(geoviz_${name} PRIVATE geoviz_engine)
         list(APPEND checked_targets geoviz_${name})
@@ -36,6 +39,9 @@ if(BUILD_TESTING)
     endforeach()
     add_test(NAME engine_checks COMMAND geoviz_tests "${PROJECT_SOURCE_DIR}"
         "${PROJECT_BINARY_DIR}/test-output")
+    add_test(NAME product_regressions COMMAND geoviz_product_checks "${PROJECT_SOURCE_DIR}"
+        "${PROJECT_BINARY_DIR}/product-output")
+    set_tests_properties(product_regressions PROPERTIES TIMEOUT 90)
     find_package(Python3 COMPONENTS Interpreter QUIET)
     if(Python3_FOUND)
         add_test(NAME structured_evidence COMMAND "${Python3_EXECUTABLE}"
@@ -58,7 +64,8 @@ if(GEOVIZ_BUILD_APP)
         find_path(RAYLIB_INCLUDE raylib.h HINTS "${RAYLIB_ROOT}/include" REQUIRED)
         find_library(GEOVIZ_RAYLIB NAMES raylib HINTS "${RAYLIB_ROOT}/lib" REQUIRED)
     endif()
-    add_executable(geoviz src/main.cpp src/file_dialogs.cpp)
+    add_executable(geoviz src/main.cpp src/app.cpp src/app_commands.cpp src/app_input.cpp
+        src/app_inspector.cpp src/app_render.cpp src/file_dialogs.cpp tests/desktop_checks.cpp)
     if(RAYLIB_INCLUDE)
         target_include_directories(geoviz PRIVATE "${RAYLIB_INCLUDE}")
     endif()
@@ -75,13 +82,13 @@ if(GEOVIZ_BUILD_APP)
                 COMMAND "${CMAKE_RC_COMPILER}" -O coff -i assets/geoviz.rc
                     -o "${PROJECT_BINARY_DIR}/geoviz_icon.obj"
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                DEPENDS assets/geoviz.rc assets/geoviz.ico VERBATIM)
+                DEPENDS assets/geoviz.rc assets/geoviz.ico assets/geoviz.manifest VERBATIM)
             target_sources(geoviz PRIVATE "${PROJECT_BINARY_DIR}/geoviz_icon.obj")
         else()
             target_sources(geoviz PRIVATE assets/geoviz.rc)
             set_source_files_properties(assets/geoviz.rc PROPERTIES
                 INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}"
-                OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/assets/geoviz.ico")
+                OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/assets/geoviz.ico;${PROJECT_SOURCE_DIR}/assets/geoviz.manifest")
         endif()
     endif()
     install(TARGETS geoviz RUNTIME DESTINATION .)

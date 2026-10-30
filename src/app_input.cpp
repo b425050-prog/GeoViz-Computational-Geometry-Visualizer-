@@ -1,9 +1,11 @@
-// Included inside App: app input.
+#include "app.hpp"
+
+namespace gv::ui {
 // Translate native input into logical coordinates once, then delegate domain edits to Scene.
-bool pressed(int key) const {
+bool App::pressed(int key) const {
     return pressedKeys.count(key) != 0;
 }
-void input() {
+void App::input() {
     // Drain raylib's press-event queue once per frame. A quick down/up tap
     // can finish between frames; polling only the current key state would
     // miss it. Settings and the canvas share this same immutable frame set.
@@ -13,11 +15,15 @@ void input() {
     if (pressed(KEY_F1))
         help = !help;
     if (pressed(KEY_ESCAPE)) {
+        if (noteOpen)
+            status = "Review cancelled; existing verdicts are unchanged.";
         help = false;
         samplePicker = false;
         noteOpen = false;
         settings.close();
         routePick = RoutePick::None;
+        ButtonFocus::reset();
+        return;
     }
     if (help) {
         if (pressed(KEY_PAGE_DOWN))
@@ -40,30 +46,29 @@ void input() {
         }
         UnloadDroppedFiles(list);
     }
-    if (pressed(KEY_ENTER) && !ButtonFocus::hasFocus())
+    const bool control = modifier(pressedKeys, KEY_LEFT_CONTROL, KEY_RIGHT_CONTROL);
+    const bool shiftKey = modifier(pressedKeys, KEY_LEFT_SHIFT, KEY_RIGHT_SHIFT);
+    if (!control && !shiftKey && pressed(KEY_ENTER) && !ButtonFocus::hasFocus())
         execute();
-    if (pressed(KEY_SPACE) && run)
+    if (!control && !shiftKey && pressed(KEY_SPACE) && run)
         playback.setPlaying(!playback.playing());
-    if (pressed(KEY_RIGHT) && run)
+    if (!control && !shiftKey && pressed(KEY_RIGHT) && run)
         playback.step(1, run->result().trace().frames().size());
-    if (pressed(KEY_LEFT) && run)
+    if (!control && !shiftKey && pressed(KEY_LEFT) && run)
         playback.step(-1, run->result().trace().frames().size());
-    if (pressed(KEY_HOME))
+    if (!control && !shiftKey && pressed(KEY_HOME))
         playback.reset();
-    if (pressed(KEY_END) && run) {
+    if (!control && !shiftKey && pressed(KEY_END) && run) {
         finalFrame();
     }
-    if (pressed(KEY_N))
+    if (!control && !shiftKey && pressed(KEY_N))
         nextSample();
-    if (pressed(KEY_F))
+    if (!control && !shiftKey && pressed(KEY_F))
         view.fit(scene, feature());
-    if (pressed(KEY_P) && !feature())
+    if (!control && !shiftKey && pressed(KEY_P) && !feature())
         polygonTool = !polygonTool;
-    if (pressed(KEY_DELETE))
+    if (!control && !shiftKey && pressed(KEY_DELETE))
         removeSelected();
-    bool control = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ||
-                   IsKeyReleased(KEY_LEFT_CONTROL) || IsKeyReleased(KEY_RIGHT_CONTROL) ||
-                   pressed(KEY_LEFT_CONTROL) || pressed(KEY_RIGHT_CONTROL);
     if (control && pressed(KEY_Q)) {
         closeRequested = true;
         return;
@@ -78,22 +83,22 @@ void input() {
         save();
     if (control && pressed(KEY_O))
         openNamed();
-    if (pressed(KEY_L))
+    if (!control && !shiftKey && pressed(KEY_L))
         loadFile(
             (root / (securityView ? "output/session.security" : "output/session.scene")).string());
-    if (pressed(KEY_C))
+    if (!control && !shiftKey && pressed(KEY_C))
         compare();
-    if (pressed(KEY_V))
+    if (!control && !shiftKey && pressed(KEY_V))
         comparePrevious();
-    if (pressed(KEY_PERIOD) && !scene.points().empty())
+    if (!control && !shiftKey && pressed(KEY_PERIOD) && !scene.points().empty())
         selected = (selected + 1) % static_cast<int>(scene.points().size());
-    if (pressed(KEY_COMMA) && !scene.points().empty())
+    if (!control && !shiftKey && pressed(KEY_COMMA) && !scene.points().empty())
         selected = (selected <= 0 ? static_cast<int>(scene.points().size()) : selected) - 1;
-    if (pressed(KEY_LEFT_BRACKET))
+    if (!control && !shiftKey && pressed(KEY_LEFT_BRACKET))
         playback.setSeconds(std::min(2.0, playback.seconds() * 1.5));
-    if (pressed(KEY_RIGHT_BRACKET))
+    if (!control && !shiftKey && pressed(KEY_RIGHT_BRACKET))
         playback.setSeconds(std::max(0.02, playback.seconds() / 1.5));
-    if (pressed(KEY_E))
+    if (!control && !shiftKey && pressed(KEY_E))
         exportEvidence();
     if (pressed(KEY_O) && !control)
         openSettings();
@@ -101,12 +106,13 @@ void input() {
         openSamples();
     if (pressed(KEY_F3))
         setView((securityView + 1) % 3);
-    if (pressed(KEY_F4)) {
+    if (!control && !shiftKey && pressed(KEY_F4)) {
+        auto next = mode;
         do {
-            mode = static_cast<Mode>((static_cast<int>(mode) + 1) %
+            next = static_cast<Mode>((static_cast<int>(next) + 1) %
                                      static_cast<int>(algorithmDescriptors().size()));
-        } while (!modeAvailable(mode));
-        invalidate();
+        } while (!modeAvailable(next));
+        setMode(next);
     }
     if (pressed(KEY_F5))
         togglePresentation();
@@ -164,8 +170,6 @@ void input() {
             invalidate();
         }
     }
-    bool shiftKey = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT) ||
-                    pressed(KEY_LEFT_SHIFT) || pressed(KEY_RIGHT_SHIFT);
     if (shiftKey) {
         auto p = scene.query();
         double dx = (pressed(KEY_RIGHT) ? 10 : 0) - (pressed(KEY_LEFT) ? 10 : 0),
@@ -209,6 +213,7 @@ void input() {
             invalidate();
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            ButtonFocus::reset();
             int near = -1;
             double best = 12;
             auto &points = polygonTool ? scene.polygon() : scene.points();
@@ -220,7 +225,7 @@ void input() {
                     best = dist;
                 }
             }
-            bool shift = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+            const bool shift = shiftKey;
             if (routePick != RoutePick::None) {
                 if (!pickEndpoint(near))
                     status = "Click an existing point to choose the route endpoint. "
@@ -295,3 +300,5 @@ void input() {
         sidebarScroll = std::max(0.0, sidebarScroll - GetMouseWheelMove() * 35.0);
     playback.update(GetFrameTime(), run ? run->result().trace().frames().size() : 0);
 }
+
+} // namespace gv::ui

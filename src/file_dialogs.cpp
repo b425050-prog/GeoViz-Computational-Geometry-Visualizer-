@@ -13,6 +13,14 @@
 #include <commdlg.h>
 // clang-format on
 namespace gv {
+void showApplicationError(const std::string &message) {
+    const int size = MultiByteToWideChar(CP_UTF8, 0, message.data(),
+                                         static_cast<int>(message.size()), nullptr, 0);
+    std::wstring text(static_cast<std::size_t>(size), L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, message.data(), static_cast<int>(message.size()), text.data(),
+                        size);
+    MessageBoxW(nullptr, text.c_str(), L"GeoViz - unable to complete action", MB_OK | MB_ICONERROR);
+}
 std::string chooseSessionFile(bool save, bool security, const std::string &initial) {
     wchar_t buffer[32768]{};
     auto path = std::filesystem::u8path(initial).wstring();
@@ -44,6 +52,7 @@ std::string chooseSessionFile(bool save, bool security, const std::string &initi
 } // namespace gv
 #else
 namespace gv {
+void showApplicationError(const std::string &) {}
 std::string chooseSessionFile(bool, bool, const std::string &) {
     throw std::runtime_error("Use drag/drop to open; named dialogs require Windows.");
 }

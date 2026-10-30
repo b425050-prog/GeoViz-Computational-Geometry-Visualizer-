@@ -1,5 +1,8 @@
-// Included inside App. Tests call the same commands as the interactive controls.
-void featureChecks() {
+#include "../src/app.hpp"
+
+namespace gv::ui {
+// Tests call the same commands as the interactive controls.
+void App::featureChecks() {
     std::vector<std::string> failures;
     int checks = 0;
     auto expect = [&](bool value, const std::string &name) {
@@ -198,6 +201,81 @@ void featureChecks() {
             }
         }
     });
+    test("Change-driven history and dirty state", [&] {
+        expect(!dirty(), "Initial workspace is clean");
+        chooseSample(0);
+        markSaved(true);
+        const auto name = labInputName;
+        setMode(Mode::ClosestPair);
+        expect(!dirty(), "Changing algorithm does not mark input unsaved");
+        expect(labInputName == name && labInputRevision == scene.revision(),
+               "Changing algorithm retains the actual input label");
+        scene.movePoint(0, {10, 20});
+        invalidate();
+        expect(dirty(), "Input change is visible before history capture");
+        recordEdit();
+        restoreEdit(false);
+        expect(!dirty(), "Undo returns to the saved checkpoint");
+        restoreEdit(true);
+        expect(dirty(), "Redo returns to the unsaved input");
+        markSaved(true);
+        expect(!dirty(), "Saving clears the current workspace dirty marker");
+    });
+    test("Rejected sample preserves interaction state", [&] {
+        selected = 1;
+        routePick = RoutePick::Source;
+        const auto before = workspaceKey(workspace());
+        bool rejected = false;
+        try {
+            chooseSample(-1);
+        } catch (const std::exception &) {
+            rejected = true;
+        }
+        expect(rejected && selected == 1 && routePick == RoutePick::Source &&
+                   workspaceKey(workspace()) == before,
+               "Unavailable sample keeps the current input and selection");
+    });
+    test("Failed save retains the live input", [&] {
+        scene.movePoint(0, {10, 20});
+        recordEdit();
+        const auto before = workspaceKey(workspace()), saved = savedLabKey;
+        sessionPath = root / "output/directory.scene";
+        std::filesystem::create_directories(sessionPath);
+        bool rejected = false;
+        try {
+            save();
+        } catch (const std::exception &) {
+            rejected = true;
+        }
+        expect(rejected && workspaceKey(workspace()) == before && savedLabKey == saved && dirty(),
+               "Failed save preserves geometry and the saved checkpoint");
+    });
+    test("Recovery failure prevents unsaved close", [&] {
+        const auto directory = root / "output/unavailable-recovery";
+        std::filesystem::create_directories(directory);
+        std::ofstream(directory / "output") << "not a directory";
+        const auto originalFiles = files;
+        files = SessionFiles(directory);
+        scene.movePoint(0, {10, 20});
+        recordEdit();
+        const auto before = workspaceKey(workspace());
+        const bool closed = requestClose();
+        files = originalFiles;
+        expect(!closed && workspaceKey(workspace()) == before && dirty(),
+               "Failed recovery keeps the unsaved workspace open");
+        expect(status.find("Ctrl+S") != std::string::npos, "Close failure explains how to save");
+    });
+    test("Closing keeps unapplied dialog edits", [&] {
+        openSettings();
+        expect(!requestClose() && settings.isOpen(), "Settings must be applied or cancelled");
+        settings.close();
+        noteOpen = true;
+        noteText = "Uncommitted review note";
+        expect(!requestClose() && noteOpen && noteText == "Uncommitted review note",
+               "Review must be saved or cancelled before closing");
+        noteOpen = false;
+        noteText.clear();
+    });
     reset();
     std::ofstream report(root / "output/FEATURE_CHECKS.txt");
     report << checks << " feature checks; " << failures.size() << " failures\n";
@@ -211,7 +289,7 @@ void featureChecks() {
 
 // Automated desktop scenarios and interaction checks.
 // Exercise model/UI coordination through the same handlers used by interactive controls.
-void smokeInteractions() {
+void App::smokeInteractions() {
     featureChecks();
     auto expect = [](bool yes, const std::string &message) {
         if (!yes)
@@ -419,7 +497,7 @@ void smokeInteractions() {
            "exhaustive physical "
            "mouse/keyboard testing.\n";
 }
-void smokeSample(Mode selectedMode, int variant) {
+void App::smokeSample(Mode selectedMode, int variant) {
     securityView = 0;
     mode = selectedMode;
     sampleVariant = variant;
@@ -429,7 +507,7 @@ void smokeSample(Mode selectedMode, int variant) {
     execute();
     finalFrame();
 }
-bool smokeStage(int stage) {
+bool App::smokeStage(int stage) {
     const int securityEnd = 50 + static_cast<int>(securityCatalogue.size()) * 2;
     if (stage < 10)
         smokeSample(static_cast<Mode>(stage), sampleVariant);
@@ -539,7 +617,7 @@ bool smokeStage(int stage) {
         return false;
     return true;
 }
-void smokeReport() const {
+void App::smokeReport() const {
     const int states = 59 + static_cast<int>(securityCatalogue.size()) * 2;
     if (smokeFrame < states * 5)
         throw std::runtime_error("Desktop smoke test ended before all states completed.");
@@ -549,3 +627,5 @@ void smokeReport() const {
         << "Includes all algorithm modes, both security views, all security scenarios, "
            "intermediate frames, dialogs, comparison, presentation and enlarged text.\n";
 }
+
+} // namespace gv::ui

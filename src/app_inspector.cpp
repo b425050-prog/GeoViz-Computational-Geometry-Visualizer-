@@ -1,12 +1,14 @@
-// Included inside App: app inspector.
+#include "app.hpp"
+
+namespace gv::ui {
 // Return a read-only snapshot at the playback cursor, or no frame before a run.
-const Frame *frame() const {
+const Frame *App::frame() const {
     return run && !run->result().trace().frames().empty()
                ? &run->result().trace().frames()[playback.cursor()]
                : nullptr;
 }
 // Supply a read-only presentation context; the renderer cannot mutate app state.
-void canvas() const {
+void App::canvas() const {
     if (compareVisible && comparison && run) {
         View left = view, right = view;
         left.area.width = (view.area.width - 12) / 2;
@@ -35,7 +37,10 @@ void canvas() const {
         }
     } else
         SceneCanvas({scene, view, frame(), mode, sampleVariant, securityView, selected,
-                     selectedEdge, polygonTool, map, security.settings(), securityDataset})
+                     selectedEdge, polygonTool, map, security.settings(),
+                     securityView                           ? securityDataset
+                     : scene.revision() == labInputRevision ? labInputName
+                                                            : "Edited Lab input"})
             .draw();
     if (scene.points().empty())
         wrap(securityView ? "No observations match the current filters. F7 resets user/device "
@@ -44,7 +49,7 @@ void canvas() const {
              view.area.x + 24, view.area.y + 90, view.area.width - 48, 18, FOCUS);
 }
 // Show results first; the scrollable inspector retains complete source and help details.
-void sidebar() {
+void App::sidebar() {
     auto panel = sidebarBounds();
     float x = panel.x + 16, top = panel.y, bottom = panel.y + panel.height - 32;
     float contentWidth = panel.width - 32;
@@ -234,3 +239,5 @@ void sidebar() {
     EndScissorMode();
     text("Scroll for results and details", x, bottom + 6, 14, MUTED);
 }
+
+} // namespace gv::ui

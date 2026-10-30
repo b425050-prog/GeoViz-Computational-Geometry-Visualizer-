@@ -41,3 +41,47 @@ jobs:
             output/*REPORT.txt
             output/FEATURE_CHECKS.txt
             output/screen_*.png
+
+  windows-package:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ssciwr/setup-mesa-dist-win@2dfeaebfa514f74c2b8cd8d27108c31486d33e72
+        with:
+          version: '26.0.3'
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-python git
+      - name: Build and test the Windows application in a path containing spaces
+        shell: pwsh
+        run: |
+          $bin = Join-Path '${{ steps.msys2.outputs.msys2-location }}' 'ucrt64/bin'
+          $env:PATH = $bin + ';' + $env:PATH
+          $source = Join-Path $env:RUNNER_TEMP 'GeoViz source with spaces'
+          New-Item -ItemType Directory -Path $source | Out-Null
+          foreach ($relative in (git ls-files)) {
+            $target = Join-Path $source $relative
+            New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
+            Copy-Item -LiteralPath $relative -Destination $target
+          }
+          $build = Join-Path $source 'build/windows'
+          cmake -S $source -B $build -G Ninja "-DCMAKE_CXX_COMPILER=$bin/g++.exe" -DGEOVIZ_FETCH_RAYLIB=ON -DCMAKE_BUILD_TYPE=Release "-DGEOVIZ_REVISION=${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Windows configuration failed.' }
+          cmake --build $build --parallel 4
+          if ($LASTEXITCODE -ne 0) { throw 'Windows compilation failed.' }
+          ctest --test-dir $build --output-on-failure
+          if ($LASTEXITCODE -ne 0) { throw 'Windows tests failed.' }
+          & (Join-Path $source 'tests/portable_checks.ps1') -BuildDirectory $build -OutputDirectory (Join-Path $env:RUNNER_TEMP 'GeoViz Windows artifact')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-package
+          path: |
+            ${{ runner.temp }}/GeoViz Windows artifact/GeoViz-Windows.zip*
+            ${{ runner.temp }}/GeoViz Windows artifact/*CHECKS.txt
+            ${{ runner.temp }}/GeoViz Windows artifact/desktop-*.txt
+            ${{ runner.temp }}/GeoViz Windows artifact/process-*.txt

@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -9,6 +10,12 @@
 #include <vector>
 
 namespace gv {
+namespace detail {
+inline std::uint64_t nextRevision() noexcept {
+    static std::atomic<std::uint64_t> sequence{0};
+    return ++sequence;
+}
+} // namespace detail
 
 constexpr double INF = std::numeric_limits<double>::infinity();
 constexpr double TOL = 1e-9;
@@ -82,7 +89,7 @@ class Scene {
     int source_ = 0;
     int goal_ = 0;
     bool grid_ = false;
-    std::uint64_t revision_ = 0;
+    std::uint64_t revision_ = detail::nextRevision();
 
   public:
     Scene() = default;
@@ -131,7 +138,7 @@ class Scene {
         touch();
     }
     std::uint64_t revision() const noexcept { return revision_; }
-    void touch() noexcept { ++revision_; }
+    void touch() noexcept { revision_ = detail::nextRevision(); }
     void addPoint(Point point);
     void movePoint(std::size_t index, Point point);
     void removePoint(std::size_t index);

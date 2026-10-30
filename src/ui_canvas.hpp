@@ -14,7 +14,7 @@ struct CanvasContext {
     bool polygonTool;
     const std::vector<MapLine> &map;
     const SecuritySettings &securitySettings;
-    const std::string &securityDataset;
+    const std::string &datasetName;
 
     bool feature() const noexcept { return securityView == 2; }
 };
@@ -267,9 +267,9 @@ class SceneCanvas final {
                  : "World coordinates: x right, y up",
              context_.view.bounds().x + 12, context_.view.bounds().y + 12, 15, MUTED);
         if (context_.securityView)
-            text(context_.securityDataset + (context_.securityView == 1
-                                                 ? " | diamonds: outside"
-                                                 : " | Sample / N: next dataset"),
+            text(context_.datasetName + (context_.securityView == 1
+                                             ? " | diamonds: outside"
+                                             : " | Sample / N: next dataset"),
                  context_.view.bounds().x + 12, context_.view.bounds().y + 34, 14, MUTED);
         if (density)
             text("K: core circle | B: border square | N: noise cross | select for "
@@ -277,9 +277,8 @@ class SceneCanvas final {
                  context_.view.bounds().x + 12, context_.view.bounds().y + (tallHeader ? 56 : 34),
                  14, MUTED);
         if (!context_.securityView)
-            text(sampleName(context_.mode, context_.sampleVariant) + " | " +
-                     std::to_string(context_.sampleVariant + 1) + "/" +
-                     std::to_string(SampleVariantCount) + " | Sample / N: next input",
+            text(Ui::elide(context_.datasetName + " | Samples / N: next input",
+                           context_.view.bounds().width - 24, 14),
                  context_.view.bounds().x + 12, context_.view.bounds().y + 35, 14, MUTED);
         auto mouseWorld = context_.view.world(Ui::mouse());
         std::string coord = "x=" + number(mouseWorld.x()) + " y=" + number(mouseWorld.y());

@@ -45,6 +45,9 @@ Run `GeoViz.exe` beside `assets/` and `data/`. To specify another data root:
 The minimum desktop size is 960×640. Startup creates `output/`, reads the synthetic
 security catalogue and restores valid recovery snapshots when available.
 An invalid recovery snapshot produces a status message while the default inputs remain usable.
+If required assets are missing, extract the complete ZIP again. If `output/` cannot
+be written, extract to a writable folder or save each unsaved workspace elsewhere
+with Ctrl+S. Closing unsaved work is refused if recovery cannot be written.
 
 ## Controls
 
@@ -89,6 +92,15 @@ Security points inspect source observations rather than edit CSV records. The in
 review controls store a verdict and optional note for all source records linked to that
 observation. The sidebar and help panel scroll when their content exceeds the visible area.
 Windows supports dragging a scene, security snapshot or event CSV onto the window.
+
+Tab and Shift+Tab move button focus; Enter activates the focused button. In Samples,
+the number keys choose an input directly. In Settings, Tab and Shift+Tab move between
+applicable fields. Ctrl+A selects text without clearing it; Ctrl+C/X/V copies, cuts
+and pastes; arrows and Home/End move the caret, with Shift extending selection.
+Settings fields hold at most 128 UTF-8 bytes. Review notes use the same editing keys,
+wrap in their field, and hold at most 1,024 bytes. Tab moves between the note, Save
+review and Cancel; Enter saves unless Cancel is focused. Esc cancels either dialog.
+Apply or cancel an open Settings dialog, or save/cancel a review, before exiting.
 
 ## Security inputs
 
@@ -142,5 +154,10 @@ two frozen traces; other modes show a prior-run summary when one is available.
 Do not edit saved file structure manually unless following the serializers in
 `src/io.cpp` and `src/security_io.cpp`. Malformed, oversized or trailing input is rejected.
 If a loaded file is rejected, the existing workspace remains available.
+Recovery is restored as one complete workspace; corrupt components cannot partially
+replace the defaults. Missing or duplicate entries are omitted from Recent Sessions.
+Recovery restores input, rather than the active algorithm, playback cursor or file path.
+The UNSAVED marker compares input with saved checkpoints. Switching algorithms or
+playing frames does not itself create an input edit.
 If too many security observations are selected, narrow the time window or identity filters.
 If graphics initialization fails, check the graphics driver and matching raylib/toolchain.
