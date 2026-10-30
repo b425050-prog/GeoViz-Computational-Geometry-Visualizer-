@@ -1,5 +1,5 @@
 #pragma once
-// Compatibility aggregate; new clients can include focused interfaces.
+// Public engine interfaces; no graphics dependency.
 #include "algorithms.hpp"
 #include "geometry.hpp"
 #include "persistence.hpp"

@@ -72,19 +72,21 @@ void syncFence(bool required = false) {
                  "exporting security.";
     }
 }
-// Rebuild derived observations and map positions after a source/filter/scaling change.
-void refreshSecurity() {
-    auto prepared =
-        PreparedSecurity::prepare(security, feature(), (root / "data/campus_map.csv").u8string());
-    evaluationDirty = true;
+// Publish a fully prepared security view only after validation succeeds.
+void publishSecurity(PreparedSecurity prepared) {
     scene = std::move(prepared.scene);
-    if (!feature())
-        scene.setPolygon(fenceDraft);
     observations = std::move(prepared.observations);
     map = std::move(prepared.map);
     invalidate();
     resetInteractions();
     view.fit(scene, feature());
+}
+void refreshSecurity() {
+    auto prepared =
+        PreparedSecurity::prepare(security, feature(), (root / "data/campus_map.csv").u8string());
+    if (!feature())
+        prepared.scene.setPolygon(fenceDraft);
+    publishSecurity(std::move(prepared));
 }
 void resetFilters() {
     auto candidate = security;
@@ -97,12 +99,7 @@ void resetFilters() {
     if (!feature())
         prepared.scene.setPolygon(scene.polygon());
     security = std::move(candidate);
-    scene = std::move(prepared.scene);
-    observations = std::move(prepared.observations);
-    map = std::move(prepared.map);
-    resetInteractions();
-    invalidate();
-    view.fit(scene, feature());
+    publishSecurity(std::move(prepared));
 }
 void resetInteractions() {
     selected = selectedEdge = edgeStart = drag = polygonDrag = -1;
@@ -128,30 +125,30 @@ void markSaved(bool laboratory) {
     else
         savedSecurityKey = securityKey();
 }
-void recover() {
-    auto state = workspace();
+void saveWorkspace(const std::filesystem::path &directory, const std::string &name) {
+    std::filesystem::create_directories(directory);
+    const auto state = workspace();
     AtomicFiles files;
-    SceneIO::save(state.lab, (root / "output/recovery.scene").u8string(), &files);
-    state.security.save((root / "output/recovery.security").u8string(), &files);
+    SceneIO::save(state.lab, (directory / (name + ".scene")).u8string(), &files);
+    state.security.save((directory / (name + ".security")).u8string(), &files);
     Scene draft;
     draft.setPolygon(state.fenceDraft);
-    SceneIO::save(draft, (root / "output/recovery.fence.scene").u8string(), &files);
+    SceneIO::save(draft, (directory / (name + ".fence.scene")).u8string(), &files);
     files.commit();
 }
+void recover() {
+    saveWorkspace(root / "output", "recovery");
+}
 void protectWork() {
-    if (smoke || !dirty())
-        return;
-    auto dir = root / "output/recovery-history";
-    std::filesystem::create_directories(dir);
-    auto token = std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
-    auto state = workspace();
-    AtomicFiles files;
-    SceneIO::save(state.lab, (dir / (token + ".scene")).u8string(), &files);
-    state.security.save((dir / (token + ".security")).u8string(), &files);
-    Scene draft;
-    draft.setPolygon(state.fenceDraft);
-    SceneIO::save(draft, (dir / (token + ".fence.scene")).u8string(), &files);
-    files.commit();
+    if (!smoke && dirty())
+        saveWorkspace(root / "output/recovery-history",
+                      std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
+}
+void finalFrame() {
+    if (run) {
+        const auto count = run->result().trace().frames().size();
+        playback.seek(count ? count - 1 : 0, count);
+    }
 }
 void recordEdit() {
     if (drag >= 0 || polygonDrag >= 0)
@@ -195,11 +192,7 @@ void chooseSample(int index) {
         fenceDraft = security.fence();
         securitySample = index;
         securityDataset = sample.name;
-        scene = std::move(prepared.scene);
-        observations = std::move(prepared.observations);
-        map = std::move(prepared.map);
-        invalidate();
-        view.fit(scene, feature());
+        publishSecurity(std::move(prepared));
         status = sample.name + ": " + sample.purpose;
     } else {
         sampleVariant = index;
@@ -273,7 +266,7 @@ void execute() {
     Result r = engine->execute(scene, mode, true);
     if (run)
         previous = std::move(run);
-    run = std::make_unique<Run>(Run{scene, std::move(r)});
+    run = std::make_unique<Run>(scene, std::move(r));
     playback.reset();
     status = run->result().summary() + " " + run->result().check();
 }
@@ -480,13 +473,7 @@ void applySettings() {
         if (!feature())
             prepared.scene.setPolygon(scene.polygon());
         security = std::move(candidate.security);
-        scene = std::move(prepared.scene);
-        observations = std::move(prepared.observations);
-        map = std::move(prepared.map);
-        evaluationDirty = true;
-        invalidate();
-        resetInteractions();
-        view.fit(scene, feature());
+        publishSecurity(std::move(prepared));
     } else {
         scene = std::move(candidate.scene);
         invalidate();

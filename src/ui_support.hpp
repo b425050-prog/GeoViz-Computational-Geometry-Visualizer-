@@ -8,6 +8,7 @@
 #include "workspace.hpp"
 #include <cctype>
 #include <chrono>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -50,9 +51,7 @@ class Window final {
         SetExitKey(KEY_NULL);
         SetTargetFPS(60);
     }
-    ~Window() {
-        CloseWindow();
-    }
+    ~Window() { CloseWindow(); }
     Window(const Window &) = delete;
     Window &operator=(const Window &) = delete;
 };
@@ -66,33 +65,39 @@ class Ui final {
     int testWidth_ = 0, testHeight_ = 0;
     float scale_ = 1;
     inline static int textAdjustment_ = 0;
-    static const Font &font(int size) {
-        return size >= 20 ? active_->bold_ : active_->regular_;
+    static const Font &font(int size) { return size >= 20 ? active_->bold_ : active_->regular_; }
+    static Font load(const char *filename) {
+#ifdef _WIN32
+        if (const auto *windows = std::getenv("WINDIR")) {
+            const auto path = std::filesystem::path(windows) / "Fonts" / filename;
+            Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
+            if (result.texture.id && result.texture.id != GetFontDefault().texture.id) {
+                SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);
+                return result;
+            }
+        }
+#else
+        (void)filename;
+#endif
+        return GetFontDefault();
     }
-    static Font load(const std::filesystem::path &path) {
-        Font result = LoadFontEx(path.string().c_str(), 64, nullptr, 0);
-        if (!result.texture.id || result.texture.id == GetFontDefault().texture.id)
-            throw std::runtime_error("Cannot load font: " + path.string());
-        SetTextureFilter(result.texture, TEXTURE_FILTER_BILINEAR);
-        return result;
+    static void release(Font font) {
+        if (font.texture.id && font.texture.id != GetFontDefault().texture.id)
+            UnloadFont(font);
     }
 
   public:
-    explicit Ui(const std::filesystem::path &root, int testWidth = 0, int testHeight = 0)
+    explicit Ui(int testWidth = 0, int testHeight = 0)
         : testWidth_(testWidth), testHeight_(testHeight) {
-        regular_ = load(root / "assets/Lato-Regular.ttf");
-        try {
-            bold_ = load(root / "assets/Lato-Bold.ttf");
-            if (testWidth_) {
-                testTarget_ = LoadRenderTexture(testWidth_, testHeight_);
-                if (!testTarget_.id)
-                    throw std::runtime_error("Could not create the automated render target.");
+        regular_ = load("segoeui.ttf");
+        bold_ = load("segoeuib.ttf");
+        if (testWidth_) {
+            testTarget_ = LoadRenderTexture(testWidth_, testHeight_);
+            if (!testTarget_.id) {
+                release(bold_);
+                release(regular_);
+                throw std::runtime_error("Could not create the automated render target.");
             }
-        } catch (...) {
-            if (bold_.texture.id)
-                UnloadFont(bold_);
-            UnloadFont(regular_);
-            throw;
         }
         active_ = this;
         refresh();
@@ -100,8 +105,8 @@ class Ui final {
     ~Ui() {
         if (testTarget_.id)
             UnloadRenderTexture(testTarget_);
-        UnloadFont(bold_);
-        UnloadFont(regular_);
+        release(bold_);
+        release(regular_);
         active_ = nullptr;
     }
     Ui(const Ui &) = delete;
@@ -109,21 +114,13 @@ class Ui final {
     void refresh() {
         scale_ = std::max(0.8f, std::min(pixelWidth() / 1440.0f, pixelHeight() / 900.0f));
     }
-    static int pixelWidth() {
-        return active_->testWidth_ ? active_->testWidth_ : GetScreenWidth();
-    }
+    static int pixelWidth() { return active_->testWidth_ ? active_->testWidth_ : GetScreenWidth(); }
     static int pixelHeight() {
         return active_->testHeight_ ? active_->testHeight_ : GetScreenHeight();
     }
-    static float scale() {
-        return active_->scale_;
-    }
-    static float width() {
-        return pixelWidth() / scale();
-    }
-    static float height() {
-        return pixelHeight() / scale();
-    }
+    static float scale() { return active_->scale_; }
+    static float width() { return pixelWidth() / scale(); }
+    static float height() { return pixelHeight() / scale(); }
     static Vector2 mouse() {
         auto p = GetMousePosition();
         return {p.x / scale(), p.y / scale()};
@@ -144,9 +141,7 @@ class Ui final {
     static void draw(const std::string &value, float x, float y, int size, Color color) {
         DrawTextEx(font(size), value.c_str(), {x, y}, fontSize(size), 0.6f, color);
     }
-    static Camera2D camera() {
-        return {{0, 0}, {0, 0}, 0, scale()};
-    }
+    static Camera2D camera() { return {{0, 0}, {0, 0}, 0, scale()}; }
     static void beginTarget() {
         if (active_->testTarget_.id)
             BeginTextureMode(active_->testTarget_);
@@ -267,12 +262,8 @@ class View {
     double zoom = 1;
 
   public:
-    const Rectangle &bounds() const noexcept {
-        return area;
-    }
-    double magnification() const noexcept {
-        return zoom;
-    }
+    const Rectangle &bounds() const noexcept { return area; }
+    double magnification() const noexcept { return zoom; }
     Vector2 screen(Point p) const {
         return {area.x + area.width / 2 + static_cast<float>((p.x() - centre.x()) * zoom),
                 area.y + area.height / 2 - static_cast<float>((p.y() - centre.y()) * zoom)};
@@ -281,9 +272,7 @@ class View {
         return {bounded(centre.x() + (p.x - area.x - area.width / 2) / zoom),
                 bounded(centre.y() - (p.y - area.y - area.height / 2) / zoom)};
     }
-    static double bounded(double coordinate) {
-        return std::clamp(coordinate, -1e7, 1e7);
-    }
+    static double bounded(double coordinate) { return std::clamp(coordinate, -1e7, 1e7); }
     void fit(const Scene &s, bool feature = false) {
         std::vector<Point> all = s.points();
         if (!feature)
@@ -319,12 +308,8 @@ class ButtonFocus final {
         focus_ = -1;
         enter_ = false;
     }
-    static bool allowsInput() {
-        return !blocked_;
-    }
-    static bool hasFocus() {
-        return focus_ >= 0;
-    }
+    static bool allowsInput() { return !blocked_; }
+    static bool hasFocus() { return focus_ >= 0; }
     static void begin(const std::set<int> &keys, bool modal) {
         count_ = 0;
         blocked_ = modal;
@@ -334,9 +319,7 @@ class ButtonFocus final {
                       std::max(1, previous_)) %
                      std::max(1, previous_);
     }
-    static void overlay() {
-        blocked_ = false;
-    }
+    static void overlay() { blocked_ = false; }
     static bool current(bool enabled, Rectangle r) {
         if (blocked_ || !enabled)
             return false;

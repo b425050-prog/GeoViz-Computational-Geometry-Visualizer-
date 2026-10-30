@@ -1,1 +1,0 @@
-PASS: 1766 checks with Clang, strict warnings, standard-library assertions and undefined-behaviour trap instrumentation; no trap. GCC release and debug assertions builds also passed 1766 checks.

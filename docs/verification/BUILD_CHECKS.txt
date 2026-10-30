@@ -1,1 +1,0 @@
-PASS: GCC 15.2.0 C++17 release, -Wall -Wextra -Wpedantic -Werror and static linkage. PowerShell, full CMake Release and engine-only CMake Debug builds passed. Isolated CTest passed. Source/fixture/documentation output paths, including Windows case variants, were rejected; fixture hashes remained unchanged.

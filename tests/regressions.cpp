@@ -252,6 +252,14 @@ void transitions(const std::filesystem::path &root) {
     expect(playback.cursor() == 4 && !playback.playing(), "bounded direct seek");
     playback.seek(9, 0);
     expect(playback.cursor() == 0, "empty seek");
+    playback.setPlaying(true);
+    playback.update(0.2, 10);
+    playback.step(1, 10);
+    playback.setPlaying(true);
+    playback.update(0.1, 10);
+    expect(playback.cursor() == 1, "manual step resets the playback interval");
+    playback.update(0.16, 10);
+    expect(playback.cursor() == 2, "playback resumes after a complete interval");
 }
 void securityDomain(const std::filesystem::path &root) {
     auto c = loadSecuritySample((root / "data").string(),

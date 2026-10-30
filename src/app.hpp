@@ -43,20 +43,17 @@ class App {
     bool smoke = false;
     bool closeRequested = false;
     int smokeFrame = 0;
-    double frameMilliseconds = 0, maximumFrameMilliseconds = 0;
-    std::size_t measuredFrames = 0;
     double sidebarScroll = 0;
     double helpScroll = 0;
     int windowWidth = 1440, windowHeight = 900;
     enum class RoutePick { None, Source, Destination };
     RoutePick routePick = RoutePick::None;
 
+#include "../tests/desktop_checks.hpp"
 #include "app_commands.hpp"
 #include "app_input.hpp"
 #include "app_inspector.hpp"
 #include "app_render.hpp"
-#include "app_feature_checks.hpp"
-#include "app_smoke.hpp"
   public:
     explicit App(std::filesystem::path base, bool smokeMode, int width, int height)
         : root(std::move(base)), smoke(smokeMode), windowWidth(width), windowHeight(height) {
@@ -105,7 +102,7 @@ class App {
             SetWindowIcon(icon);
             UnloadImage(icon);
         }
-        Ui ui(root, smoke ? windowWidth : 0, smoke ? windowHeight : 0);
+        Ui ui(smoke ? windowWidth : 0, smoke ? windowHeight : 0);
         updateLayout();
         view.fit(scene);
         if (smoke) {
@@ -116,168 +113,11 @@ class App {
                 ui.refresh();
                 updateLayout();
                 if (smoke) {
-                    if (smokeFrame % 5 == 0) {
-                        int stage = smokeFrame / 5;
-                        if (stage < 10) {
-                            securityView = 0;
-                            mode = static_cast<Mode>(stage);
-                            scene = sampleScene(mode, sampleVariant);
-                            view.fit(scene);
-                            execute();
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                        } else if (stage == 10) {
-                            setView(1);
-                            execute();
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                            selected = 11;
-                        } else if (stage == 11) {
-                            setView(2);
-                            execute();
-                            selected = 0;
-                        } else if (stage == 12) {
-                            openSettings();
-                        } else if (stage == 13) {
-                            settings.close();
-                            help = true;
-                        } else if (stage >= 14 && stage <= 17) {
-                            help = false;
-                            securityView = 0;
-                            mode = stage == 14   ? Mode::Hull
-                                   : stage == 15 ? Mode::DBSCAN
-                                                 : Mode::KDNearest;
-                            scene = sampleScene(mode, sampleVariant);
-                            view.fit(scene);
-                            execute();
-                            auto &frames = run->result().trace().frames();
-                            std::size_t target = frames.size() / 2;
-                            if (stage == 16)
-                                target = std::min<std::size_t>(3, frames.size() - 1);
-                            if (stage == 17)
-                                for (std::size_t i = 0; i < frames.size(); ++i)
-                                    if (!frames[i].pruned().empty()) {
-                                        target = i;
-                                        break;
-                                    }
-                            while (playback.cursor() < target)
-                                playback.step(1, frames.size());
-                        } else if (stage >= 18 && stage < 28) {
-                            securityView = 0;
-                            mode = static_cast<Mode>(stage - 18);
-                            sampleVariant = stage % 2 + 2;
-                            scene = sampleScene(mode, sampleVariant);
-                            selected = selectedEdge = -1;
-                            view.fit(scene);
-                            execute();
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                        } else if (stage == 28 || stage == 29) {
-                            setView(1);
-                            nextSample();
-                            execute();
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                            selected = static_cast<int>(scene.points().size()) - 1;
-                        } else if (stage >= 30 && stage < 50) {
-                            securityView = 0;
-                            mode = static_cast<Mode>((stage - 30) % 10);
-                            sampleVariant = 4 + (stage - 30) / 10;
-                            scene = sampleScene(mode, sampleVariant);
-                            selected = selectedEdge = -1;
-                            view.fit(scene);
-                            execute();
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                        } else if (stage >= 50 &&
-                                   stage < 50 + static_cast<int>(securityCatalogue.size()) * 2) {
-                            securitySample = (stage - 50) / 2;
-                            security = loadSecuritySample((root / "data").u8string(),
-                                                          securityCatalogue[securitySample]);
-                            securityDataset = securityCatalogue[securitySample].name;
-                            securityView = (stage - 50) % 2 + 1;
-                            mode = Mode::IndexedDBSCAN;
-                            refreshSecurity();
-                            execute();
-                            selected = static_cast<int>(scene.points().size()) - 1;
-                            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                                playback.step(1, run->result().trace().frames().size());
-                        } else if (stage < 52 + static_cast<int>(securityCatalogue.size()) * 2) {
-                            security = loadSecuritySample((root / "data").u8string(),
-                                                          securityCatalogue.front());
-                            security.updateSettings([&](SecuritySettings &draft) {
-                                draft.setDevice("no-such-device");
-                            });
-                            securityDataset = "Empty filtered selection";
-                            securityView =
-                                stage - 50 - static_cast<int>(securityCatalogue.size()) * 2 + 1;
-                            mode = Mode::IndexedDBSCAN;
-                            refreshSecurity();
-                            if (feature() &&
-                                !CheckCollisionPointRec(view.screen({0, 0}), view.bounds()))
-                                throw std::runtime_error(
-                                    "Empty feature view must retain visible coordinate axes.");
-                            execute();
-                        } else if (stage < 59 + static_cast<int>(securityCatalogue.size()) * 2) {
-                            int extra = stage - 52 - static_cast<int>(securityCatalogue.size()) * 2;
-                            settings.close();
-                            help = false;
-                            samplePicker = false;
-                            noteOpen = false;
-                            if (extra == 0) {
-                                setView(0);
-                                mode = Mode::Hull;
-                                chooseSample(0);
-                                samplePicker = true;
-                            }
-                            if (extra == 1) {
-                                security = loadSecuritySample((root / "data").u8string(),
-                                                              securityCatalogue.front());
-                                fenceDraft = security.fence();
-                                securityDataset = securityCatalogue.front().name;
-                                setView(1);
-                                samplePicker = true;
-                            }
-                            if (extra == 2) {
-                                loadGrid();
-                                execute();
-                                compare();
-                            }
-                            if (extra == 3) {
-                                compareVisible = false;
-                                togglePresentation();
-                            }
-                            if (extra == 4) {
-                                togglePresentation();
-                                setView(1);
-                                openSettings();
-                            }
-                            if (extra == 5) {
-                                setView(2);
-                                execute();
-                                Ui::adjustText(6);
-                            }
-                            if (extra == 6) {
-                                Ui::adjustText(-6);
-                                selected = 0;
-                                noteVerdict = "suspicious";
-                                noteText = "Synthetic test note; review time is stored "
-                                           "independently of truth.";
-                                noteOpen = true;
-                            }
-                        } else
-                            break;
-                    }
+                    if (smokeFrame % 5 == 0 && !smokeStage(smokeFrame / 5))
+                        break;
                 } else
                     input();
-                auto frameStart = std::chrono::steady_clock::now();
                 draw();
-                double elapsed = std::chrono::duration<double, std::milli>(
-                                     std::chrono::steady_clock::now() - frameStart)
-                                     .count();
-                frameMilliseconds += elapsed;
-                maximumFrameMilliseconds = std::max(maximumFrameMilliseconds, elapsed);
-                ++measuredFrames;
                 if (!smoke)
                     recordEdit();
                 if (smoke && smokeFrame % 5 == 3) {
@@ -304,31 +144,8 @@ class App {
         }
         if (!smoke)
             recover();
-        if (smoke) {
-            const int expectedStates = 59 + static_cast<int>(securityCatalogue.size()) * 2;
-            if (smokeFrame < expectedStates * 5)
-                throw std::runtime_error(
-                    "Visual smoke run interrupted before all states completed.");
-            std::ofstream(root / "output/APP_SMOKE_REPORT.txt", std::ios::app)
-                << "Measured render/frame latency incl. FPS wait: avg_ms="
-                << (measuredFrames ? frameMilliseconds / measuredFrames : 0)
-                << " max_ms=" << maximumFrameMilliseconds << " frames=" << measuredFrames << "\n"
-                << "PASS: rendered and captured " << expectedStates
-                << " states: 10 algorithm modes, 2 "
-                   "security views, "
-                   "settings/help, intermediate hull/DBSCAN/tree-build and a pruned "
-                   "region, ten varied gallery inputs, both extended security datasets, "
-                   "all twenty tidal/terrace gallery inputs and both views of all "
-                << securityCatalogue.size()
-                << " security scenarios, plus both empty filtered views; named sample pickers, "
-                   "frozen comparison, presentation layout, geographic UTC Settings, enlarged text "
-                   "and review-note editor.\n"
-                << "Offscreen render " << Ui::pixelWidth() << 'x' << Ui::pixelHeight()
-                << "; logical " << Ui::width() << 'x' << Ui::height() << "; UI scale "
-                << Ui::scale() << "; body font pixels " << Ui::fontSize(17) * Ui::scale() << "\n"
-                << "PASS: source/destination pickers and logical/world/native "
-                   "transforms.\n";
-        }
+        if (smoke)
+            smokeReport();
     }
 };
 

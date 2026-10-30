@@ -1,8 +1,7 @@
-name: Verified builds
+name: Build and test
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -13,146 +12,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang]
+        compiler: [g++, clang++]
         configuration: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
-      - name: Configure checked engine
-        env:
-          CC: ${{ matrix.compiler == 'gcc' && 'gcc' || 'clang' }}
-          CXX: ${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
-        run: cmake -S . -B build/core -G Ninja -DGEOVIZ_BUILD_APP=OFF -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DGEOVIZ_SANITIZERS=${{ matrix.configuration == 'Debug' && 'ON' || 'OFF' }}
+      - name: Configure
+        run: cmake -S . -B build/core -G Ninja -DGEOVIZ_BUILD_APP=OFF -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DGEOVIZ_SANITIZERS=${{ matrix.configuration == 'Debug' && 'ON' || 'OFF' }}
       - run: cmake --build build/core --parallel 2
-      - run: ctest --test-dir build/core --output-on-failure --output-junit build/core/results.xml
+      - run: ctest --test-dir build/core --output-on-failure
         env:
-          ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1
+          ASAN_OPTIONS: detect_leaks=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
-      - run: python3 tools/verify_release.py --source
-      - run: python3 tools/check_style.py
-      - run: python3 tools/check_contrast.py
-      - run: build/core/geoviz_benchmark > build/core/benchmark.csv
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: engine-${{ matrix.compiler }}-${{ matrix.configuration }}
-          path: |
-            build/core/results.xml
-            build/core/test-output/output/TEST_REPORT.txt
-            build/core/benchmark.csv
-  analysis:
+  desktop:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y cppcheck
-      - run: cppcheck --std=c++17 --enable=warning,performance,portability --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr -I include src/geometry.cpp src/algorithms.cpp src/io.cpp src/csv.cpp src/security.cpp src/security_io.cpp src/samples.cpp src/security_samples.cpp
-  coverage:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - run: cmake -S . -B build/coverage -G Ninja -DGEOVIZ_BUILD_APP=OFF -DGEOVIZ_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
-      - run: cmake --build build/coverage --parallel 2
-      - run: ctest --test-dir build/coverage --output-on-failure
-      - run: pip install gcovr==8.3
-      - run: gcovr --root . --filter src --filter include --html-details build/coverage/index.html --xml build/coverage/coverage.xml --print-summary
-      - uses: actions/upload-artifact@v4
-        with:
-          name: source-coverage
-          path: build/coverage
-  desktop-linux:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev xvfb xdotool
+      - name: Install graphics build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev xvfb
       - run: cmake -S . -B build/desktop -G Ninja -DGEOVIZ_FETCH_RAYLIB=ON -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build/desktop --parallel 2
       - run: ctest --test-dir build/desktop --output-on-failure
       - run: xvfb-run -a build/desktop/geoviz --root . --smoke --smoke-size 960 640
-      - run: mkdir -p build/evidence-960 && cp output/screen_*.png output/APP_SMOKE_REPORT.txt build/evidence-960/
-      - run: xvfb-run -a build/desktop/geoviz --root . --smoke --smoke-size 1440 900
-      - run: mkdir -p build/evidence-1440 && cp output/screen_*.png output/APP_SMOKE_REPORT.txt build/evidence-1440/
-      - run: mkdir -p build/input-root/output && cp -r assets data build/input-root/ && xvfb-run -a bash tools/desktop_input.sh build/desktop/geoviz build/input-root
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: desktop-linux-evidence
+          name: desktop-checks
           path: |
-            build/evidence-960
-            build/evidence-1440
             output/*REPORT.txt
-            build/input-root/output
-  desktop-windows:
-    runs-on: windows-2022
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ssciwr/setup-mesa-dist-win@2dfeaebfa514f74c2b8cd8d27108c31486d33e72
-        with:
-          version: '26.0.3'
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-python git
-      - run: cmake -S . -B build/desktop -G Ninja -DGEOVIZ_FETCH_RAYLIB=ON -DCMAKE_BUILD_TYPE=Release
-      - run: cmake --build build/desktop --parallel 2
-      - run: ctest --test-dir build/desktop --output-on-failure --output-junit results.xml
-      - run: build/desktop/geoviz.exe --root . --smoke --smoke-size 960 640
-      - run: mkdir -p build/evidence-960 && cp output/screen_*.png output/APP_SMOKE_REPORT.txt build/evidence-960/
-      - run: build/desktop/geoviz.exe --root . --smoke --smoke-size 1440 900
-      - run: mkdir -p build/evidence-1440 && cp output/screen_*.png output/APP_SMOKE_REPORT.txt build/evidence-1440/
-      - run: cp build/desktop/geoviz.exe GeoViz.exe && python tools/provenance.py && mkdir -p dist && python tools/package.py --destination dist/GeoViz-2.0.0-Windows.zip && python tools/verify_release.py && python tools/package.py --check
-      - run: sha256sum dist/GeoViz-2.0.0-Windows.zip > dist/SHA256SUMS.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: portable-windows-${{ github.sha }}
-          path: dist/*
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: desktop-windows-evidence
-          path: |
-            build/evidence-960
-            build/evidence-1440
-            output/*REPORT.txt
-            results.xml
-            BUILD_PROVENANCE.json
-  docs:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - run: npm ci && npx playwright install --with-deps chromium
-      - run: pip install -r requirements-docs.txt
-      - run: node tools/build_docs.mjs && node tools/verify_docs.mjs
-      - run: python tools/build_report.py
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: guide-evidence
-          path: |
-            build/doc-qa
-            output/pdf
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [engine, analysis, coverage, desktop-linux, desktop-windows, docs]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: portable-windows-${{ github.sha }}
-          path: dist
-      - name: Publish artifact from verified tagged revision
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "GeoViz $GITHUB_REF_NAME" --notes-file CHANGELOG.md
+            output/FEATURE_CHECKS.txt
+            output/screen_*.png

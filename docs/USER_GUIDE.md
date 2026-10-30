@@ -1,155 +1,146 @@
 # User guide
 
-## Start a run
+## Build and run
 
-1. Open `GeoViz.exe` from the repository root.
-2. Select a mode. Click **Samples** (F2), then select a named input directly; N still cycles its six scenarios. Across ten modes, the catalogue contains 60 editable scenes, including tidal archipelago and terraced botanical families.
-3. Click **Run** or press Enter. The engine validates input, calculates a result and checks it against a reference or invariant.
-4. Use **Play**, **Step**, **Rewind**, or **Final**. The inspector explains the current decision and displays work counts.
-5. Edit the input and run again. The previous result is retained for comparison; its trace is no longer current.
+The Windows build requires CMake 3.21+, Ninja and a GCC toolchain matching the installed
+raylib 5.5 library. The default is `C:\raylib\w64devkit`; CMake and Ninja must be on PATH.
 
-![Desktop algorithm workspace](media/lab.png)
+```powershell
+# Build the desktop application, run automated tests, and copy GeoViz.exe to the project root
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+
+# Build, test and launch
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Run
+
+# Build and run the hidden desktop smoke test
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Smoke
+
+# Debug configuration or engine-only tests
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -DebugBuild
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -CoreOnly
+
+# A different compatible compiler/raylib installation
+.\build.ps1 -CompilerPath 'D:\raylib\bin\g++.exe' -RaylibRoot 'D:\raylib'
+```
+
+The engine can be built without graphics:
+
+```sh
+cmake -S . -B build/core -G Ninja -DGEOVIZ_BUILD_APP=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build/core --parallel 4
+ctest --test-dir build/core --output-on-failure
+```
+
+For a desktop build without installed raylib, use `-DGEOVIZ_FETCH_RAYLIB=ON` in the CMake
+configure command. This downloads and builds the pinned raylib 5.5 revision and requires
+network access plus the platform's graphics development libraries. CMake presets also
+provide `engine-release`, `engine-debug` and Linux `sanitizers` configurations.
+
+Run `GeoViz.exe` beside `assets/` and `data/`. To specify another data root:
+
+```powershell
+.\GeoViz.exe --root 'C:\path\to\project'
+```
+
+The minimum desktop size is 960×640. Startup creates `output/`, reads the synthetic
+security catalogue and restores valid recovery snapshots when available.
+An invalid recovery snapshot produces a status message while the default inputs remain usable.
 
 ## Controls
 
 | Action | Control |
 | --- | --- |
-| Add/select a point | Left-click the canvas |
-| Move a point | Drag it in Lab |
-| Set the query | Right-click |
-| Delete selected point | Delete |
-| Pan / zoom / fit | Middle-drag / wheel / F or Fit |
-| Choose / next sample | Samples or F2 / N |
-| Record / play-pause | Enter / Space |
-| Previous-next step | Left / Right |
-| First-final frame | Home / End |
-| Slower-faster playback | `[` / `]` |
-| Polygon edit tool | P; click vertices in boundary order; drag to adjust |
-| Create graph edge | Shift-click two different existing points |
-| Set route endpoints | Pick source / Pick destination, then click a point; or select and press R / T |
-| Block selected edge | Click an edge, then B |
-| Parameters / edge cost | Settings or O |
-| Same-input algorithm comparison | Compare or C |
-| Compare and export two retained runs | Prior or V |
-| Select next-previous point | Period / comma |
-| Save / reload session | S / L |
-| Export evidence | E |
-| Help / dismiss overlay | F1 / Esc |
+| Run selected algorithm | Run / Enter |
+| Play or pause recorded frames | Play / Space |
+| Previous or next frame | Step buttons / Left or Right |
+| First or last frame | Rewind / Home; Final / End |
+| Slow down or speed up playback | [ / ] |
+| Select a sample; next sample | Samples / F2; N |
+| Cycle workspace; available algorithm | F3; F4 |
+| Help; presentation layout | F1; F5 |
+| Open applicable settings | Settings / O |
+| Save current input to its path or the default session file | S |
+| Save As; Open | Ctrl+S; Ctrl+O |
+| Reload the default session file | L |
+| Undo; redo input edits | Ctrl+Z; Ctrl+Y |
+| Export checked result/evidence | Export / E |
+| Compare paired algorithms on the same input | Compare / C |
+| Export summaries of prior and current runs | Prior / V |
+| Fit the view | Fit / F |
+| Increase or decrease text size | Ctrl+plus / Ctrl+minus |
+| Cycle point selection; edge selection | . / , ; F6 |
+| Reset security identity filters | F7 |
+| Toggle security parameter-sensitivity summary | F8 |
+| Close an overlay or cancel endpoint picking | Esc |
+| Exit and save recovery data | Ctrl+Q / window Close |
 
-Scroll the inspector for source records and instructions. Dense scenes omit crowded labels; select points or use period/comma to inspect their identities. Resize the window as needed; the minimum is 960 × 640.
+In Lab, click blank canvas to add a point, click a point to select it, and drag to move it.
+Delete removes the selected point and its incident edges. Shift-click two existing points
+to connect them; select an edge and press B to block/unblock it. R and T set the selected
+point as source and goal. Settings edits route endpoints and a selected edge's weight.
 
-Security mode provides nine scenarios through **Samples / F2**; N cycles them. The canvas identifies the active dataset. The [security guide](SECURITY.md#csv-schema-and-samples) describes the scenario procedures.
+Right-click sets the query. P switches the polygon tool; click vertices in boundary order
+and drag to move them. Clear polygon removes the fence. The feature workspace has no polygon.
+The mouse wheel zooms around the pointer, and middle-button dragging pans.
+Ctrl+I inserts a point or polygon vertex at the query; Ctrl+arrows moves a selected Lab
+point by one world unit. Shift+arrows moves the query by ten world units.
 
-## Laboratory workflows
+Security points inspect source observations rather than edit CSV records. The inspector's
+review controls store a verdict and optional note for all source records linked to that
+observation. The sidebar and help panel scroll when their content exceeds the visible area.
+Windows supports dragging a scene, security snapshot or event CSV onto the window.
 
-**Routes:** load a Dijkstra/A* sample or choose Grid. Pick source and destination, run, and use Compare to check optimal-cost agreement. Blocking a link changes the input and requires a fresh run. Settings edits a selected edge's cost.
+## Security inputs
 
-**Geofence:** use a sample or add polygon vertices with P. Return to the point tool with P, right-click a query and run. Inside, boundary and outside are distinct outcomes. Self-intersecting or zero-area polygons are rejected.
+`data/security_samples.csv` lists nine scenarios with their parameters and fence policy.
+The remaining event CSVs and `campus_map.csv` are synthetic study data. Built-in Lab
+inputs are constructed by `sampleScene`; saving one creates an editable `.scene` file.
 
-**Clustering:** choose scan or indexed DBSCAN. Set radius and MinPts in Settings. Filled circles are core points; squares are border points; crosses are noise. MinPts includes the point itself. Compare uses the same input and parameters for both implementations.
+Event CSVs require this exact header:
 
-**Proximity and collision:** right-click a query for k-d nearest/radius modes. For collision, points 0-1 form one segment, 2-3 the next, and so on; an unmatched last point has no segment.
-
-## Files and reproducibility
-
-Use **Open / Ctrl+O**, or drag a `.scene`, `.csv`, or `.security` file into the window to import it. Choose the matching algorithm after loading a scene. **L** reloads the default `output/session.scene` or `output/session.security`.
-
-**Save As / Ctrl+S** chooses a named file. **S** saves to the current session file, or the default file in `output/` for a new session. **Export** writes a checked summary and its exact scene, or full security evidence with both view scenes and a security snapshot. **Prior** exports previous/current runs separately. Input timestamps are UTC epoch seconds; window ends are excluded.
-
-Comparison canvases show frozen inputs. Press **C** to leave comparison before editing points or queries. An unfinished geographic security fence must be completed or cleared before running, saving or exporting either security view.
-
-Scene snapshots also preserve polygon drafts, including one or two vertices and crossings that are still being edited. Reloading restores those vertices exactly. A geofence run requires a completed simple polygon and explains invalid geometry before calculating; other algorithms can use the remaining scene while the polygon is unfinished. Save and Load apply the same structural checks, including source/goal indices.
-
-The plaintext `GEOVIZ 1` scene format contains point count/coordinates, polygon count/coordinates, edge count/rows, then query x/y, radius, MinPts, source, goal and grid flag. Edge rows are `endpointA endpointB weight blocked`. Boolean fields are 0 or 1. Coordinates use full-precision doubles; counts and trailing content are validated. See existing scenes before editing manually.
-
-## Build from source
-
-Use Windows, a C++17 compiler and a matching raylib installation. The tested installation uses GCC 15.2.0 and the headers/static library under `C:\raylib\w64devkit`. Raylib headers and binary must match the compiler architecture.
-
-```powershell
-.\build.ps1                 # Isolated tests, then the application
-.\build.ps1 -Run            # Build, test and launch
-.\build.ps1 -Smoke          # Build plus 77 offscreen UI captures
-.\build.ps1 -DebugBuild     # Debug information and standard-library assertions
+```csv
+event_id,timestamp,user_id,device_id,latitude,longitude,requests,failures,label,summary
 ```
 
-`-CompilerPath` and `-RaylibRoot` override the defaults. The script fails immediately if compilation or a required check fails. It copies the finished program to `GeoViz.exe`; intermediate executables stay in `build/`.
+Timestamps are integer UTC seconds. IDs must be nonempty and event IDs unique.
+Requests and failures are nonnegative integers, failures cannot exceed requests,
+and requests cannot exceed 1,000,000,000. Truth labels are `benign`, `suspicious`
+or `unknown`. CSV supports quoted commas and doubled quotes, with one record per line.
 
-An engine-only build needs CMake and a C++17 compiler, with no raylib dependency:
+Settings accepts a UTC window, exact user/device filters (`*` means all), radii,
+MinPts and feature scales. UTC fields accept epoch seconds or
+`YYYY-MM-DD HH:MM:SS`. The window is [start, end), positive and at most 31 days.
 
-```powershell
-cmake -S . -B build/core -DGEOVIZ_BUILD_APP=OFF
-cmake --build build/core --config Release
-ctest --test-dir build/core -C Release --output-on-failure
+The security map shows one projected event per point in metres. Feature coordinates are:
+
+```text
+window_minutes = (end - start) / 60
+x = (device_requests / window_minutes) / request_scale
+y = (device_failures / window_minutes) / failure_scale
 ```
 
-On Windows, use the compiler's terminal environment so its build tool is on PATH. A full CMake desktop build also accepts `-DRAYLIB_ROOT=...`; the supplied PowerShell script is the shortest Windows path.
+Records are filtered before aggregation; devices with no selected records have no point.
+Truth labels and analyst verdicts do not enter these coordinates.
 
-Documentation can be regenerated with `build.ps1 -Docs` after installing the pinned dependencies (`python -m pip install -r requirements-docs.txt`, `npm ci`). This exports verified C++ trace recordings, then renders the offline guide and repository previews. The desktop application does not require Python or Node.
+## Save, recovery and exports
 
-The printable report is generated separately with `python tools/build_report.py` and requires ReportLab. Run `node tools/verify_docs.mjs` first with Playwright and Chrome available; this verifies the guide and renders its diagrams for the report. Both Node tools accept an absolute dependency-module path as their first argument when using an external authoring environment.
-
-Normal tests read the supplied data and write their scenes, reports and temporary inputs beneath a separate test-output directory. They do not rewrite `data/`. Use the explicit sample exporter when preparing a release, then `python tools/build_catalogue.py --source-root "C:\path\to\exports"` to read its checked `output/` reports and regenerate the catalogue and linked run snapshots. Omitting `--source-root` reads the project's own exports.
-
-## Troubleshooting
-
-| Symptom | Resolution |
+| File | Contents |
 | --- | --- |
-| Program cannot find data or fonts | Keep the executable, `data/` and `assets/` together; extract the complete folder |
-| Script execution is blocked | Use the process-only PowerShell invocation in the README |
-| Invalid polygon | Remove crossings, repeated adjacent vertices or folded edges; use boundary order |
-| No path | Inspect blocked links and chosen endpoints; an unreachable result is valid |
-| Too many observations | Narrow time/user/device filters to at most 256 displayed observations |
-| A* reports h=0 fallback | Costs are below geometric lower bounds; the safe result still matches Dijkstra |
-| Nothing moves after an edit | Edits invalidate the old trace; Run again |
-| Text or points seem outside the view | Fit; scroll the inspector for full explanations |
-| Exports cannot be written | Place the folder in a writable location and keep `output/` writable |
+| `.scene` | `GEOVIZ 1` header; points, polygon, edges, query, radius, MinPts, source, goal and grid flag |
+| `.security` | `GEOVIZ_SECURITY 2` header; settings, fence, source events and analyst reviews; loader also accepts version 1 |
+| `output/run.txt` and `run.txt.scene` | Lab result summary and its exact input |
+| `output/evidence.txt`, `.json`, `.security`, `.geo.scene`, `.feature.scene` | Security evidence and adjacent snapshots; suffixes are appended to `evidence.txt` |
+| `output/security_selected_run.txt` and adjacent `.scene` | Selected security algorithm's result, when a completed run exists during export |
+| `output/previous.txt`, `current.txt` and adjacent `.scene` files | Prior and current completed-run summaries |
+| `output/recovery.*` and `recovery-history/` | Current recovery snapshots and generations retained before unsaved work is replaced |
+| `output/recent.txt` | Recently opened session paths |
 
-The application runs offline and reads local input files. It does not require a service account or install a background process.
+Save stores editable input; Run creates a result. Editing invalidates the current run.
+Compare pairs Dijkstra/A* or scan/indexed DBSCAN on the same scene and synchronizes the
+two frozen traces; other modes show a prior-run summary when one is available.
 
-## Version 2 keyboard and recovery controls
-
-| Task | Keyboard |
-| --- | --- |
-| Workspace / next compatible algorithm | F3 / F4 |
-| Named sample picker / select scenario | F2 / number 1-9 |
-| Run / play / step / seek endpoints | Enter / Space / Left-Right / Home-End |
-| Input undo / redo | Ctrl+Z / Ctrl+Y |
-| Close with recovery | Ctrl+Q |
-| Named Save As / Open | Ctrl+S / Ctrl+O |
-| Quick save / reload default session | S / L |
-| Settings, fields, caret and paste | O, Tab, arrows/Home/End, Ctrl+A to replace, Ctrl+V |
-| Point selection / edge selection | comma-period / F6 |
-| Move selected Lab point / move query | Ctrl+arrows / Shift+arrows |
-| Insert point or polygon vertex at query | Ctrl+I (P selects polygon tool) |
-| Route source / destination / blocked edge | R / T / B |
-| Polygon editing / fit / presentation | P / F / F5 |
-| Inspector/help scroll | PageUp / PageDown |
-| Text size / keyboard button focus | Ctrl+plus-minus / Tab, Shift+Tab, Enter |
-| Compare equivalent frozen runs / close comparison | C / C again |
-| Security reset identity filters / sensitivity panel | F7 / F8 |
-| Help / dismiss modal | F1 / Escape |
-
-Click the desktop timeline to seek directly. The inspector labels the recorded pseudocode line and
-shows queue/frontier data, per-vertex g/f/parent rows and a point table. Scroll the inspector for all
-rows. Comparison maps relative progress across different trace lengths; these are equivalent stages,
-not identical decisions. Editing input invalidates both comparison displays.
-
-Save As and Open use native Windows dialogs and support multiple independent `.scene` or `.security`
-files. Recent files are listed in Samples. A CSV is imported using the current security origin; load a
-`.security` snapshot first to configure an origin elsewhere. The campus map is optional there.
-
-Recovery writes Lab, security and unfinished-fence snapshots as one transaction. Closing normally
-retains them too. Replacement by Sample, Clear, Grid or Open preserves an earlier generation in
-`output/recovery-history/` when input is unsaved. Reopen a `.scene` or `.security` file from that
-folder to restore it. Keep `.fence.scene` drafts if the polygon is incomplete; they can be opened in
-Lab. Recovery is local working data and is excluded from releases and Git.
-
-Security review buttons open a note editor. Notes and UTC review times remain separate from sample
-truth labels. Export emits text, JSON, full security snapshot, both view scenes and sensitivity text
-as one checked generation. Invalid/unfinished geofences must be completed or cleared before a
-security run, save or evidence export. Drafts remain recoverable.
-
-A reported write/flush/close/publication failure restores the prior export. AtomicFiles rollback
-covers ordinary filesystem errors and keeps recovery backups if restoration itself fails; it is
-not a power-loss journal or a concurrent multi-process locking protocol.
+Do not edit saved file structure manually unless following the serializers in
+`src/io.cpp` and `src/security_io.cpp`. Malformed, oversized or trailing input is rejected.
+If a loaded file is rejected, the existing workspace remains available.
+If too many security observations are selected, narrow the time window or identity filters.
+If graphics initialization fails, check the graphics driver and matching raylib/toolchain.

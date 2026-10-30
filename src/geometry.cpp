@@ -129,17 +129,9 @@ std::string modeName(Mode m) {
     return names[index];
 }
 // A manual step pauses the clock and never leaves the available frame interval.
-void Playback::step(int d, std::size_t n) {
-    playing_ = false;
-    if (!n) {
-        cursor_ = 0;
-        return;
-    }
-    if (d < 0) {
-        if (cursor_)
-            --cursor_;
-    } else if (cursor_ + 1 < n)
-        ++cursor_;
+void Playback::step(int direction, std::size_t count) {
+    const auto target = direction < 0 ? (cursor_ ? cursor_ - 1 : 0) : cursor_ + 1;
+    seek(target, count);
 }
 // Cap a delayed frame contribution to avoid skipping a long trace after a UI pause.
 void Playback::update(double dt, std::size_t n) {

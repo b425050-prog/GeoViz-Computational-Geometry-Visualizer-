@@ -261,8 +261,7 @@ void draw() {
     action("Rewind", 86, [&] { playback.reset(); });
     action("Final", 65, [&] {
         if (run)
-            while (playback.cursor() + 1 < run->result().trace().frames().size())
-                playback.step(1, run->result().trace().frames().size());
+            finalFrame();
     });
     action("Settings", 98, [&] { openSettings(); });
     action("Compare", 98, [&] { compare(); });

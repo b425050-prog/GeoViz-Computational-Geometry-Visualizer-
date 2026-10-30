@@ -43,15 +43,9 @@ class SettingsPanel final {
         Scene scene;
         SecurityConsole security;
     };
-    bool isOpen() const noexcept {
-        return open_;
-    }
-    void close() noexcept {
-        open_ = false;
-    }
-    void setField(std::size_t index, std::string value) {
-        fields.at(index) = std::move(value);
-    }
+    bool isOpen() const noexcept { return open_; }
+    void close() noexcept { open_ = false; }
+    void setField(std::size_t index, std::string value) { fields.at(index) = std::move(value); }
     // Format a detached edit buffer; the model changes only when Apply succeeds.
     void open(const Scene &scene, const SecurityConsole &security, int selectedEdge,
               int securityView = 0, Mode mode = Mode::Hull) {
@@ -232,7 +226,5 @@ class SettingsPanel final {
              x + 24, y + 550, 880, 16, error.empty() ? MUTED : DANGER);
         return apply;
     }
-    void showError(const std::string &value) {
-        error = value;
-    }
+    void showError(const std::string &value) { error = value; }
 };

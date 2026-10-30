@@ -51,8 +51,7 @@ void input() {
     if (pressed(KEY_HOME))
         playback.reset();
     if (pressed(KEY_END) && run) {
-        while (playback.cursor() + 1 < run->result().trace().frames().size())
-            playback.step(1, run->result().trace().frames().size());
+        finalFrame();
     }
     if (pressed(KEY_N))
         nextSample();
@@ -230,8 +229,6 @@ void input() {
                 if (near >= 0)
                     polygonDrag = near;
                 else {
-                    if (scene.polygon().size() >= MAX_POINTS)
-                        throw std::runtime_error("Polygon vertex limit reached.");
                     scene.addPolygonVertex(world);
                     invalidate();
                     syncFence();
@@ -244,20 +241,11 @@ void input() {
                         edgeStart = near;
                         status = "Edge start selected. Shift-click its other endpoint.";
                     } else if (edgeStart != near) {
-                        if (scene.edges().size() >= MAX_EDGES)
-                            throw std::runtime_error("Edge limit reached.");
-                        for (auto edge : scene.edges())
-                            if ((edge.a() == edgeStart && edge.b() == near) ||
-                                (edge.b() == edgeStart && edge.a() == near)) {
-                                edgeStart = -1;
-                                throw std::runtime_error("That edge already exists. Select "
-                                                         "it to edit its weight.");
-                            }
-                        scene.addEdge({edgeStart, near,
-                                       GeometryKernel::distance(scene.points()[edgeStart],
-                                                                scene.points()[near]),
-                                       false});
-                        edgeStart = -1;
+                        const auto from = std::exchange(edgeStart, -1);
+                        scene.addEdge(
+                            {from, near,
+                             GeometryKernel::distance(scene.points()[from], scene.points()[near]),
+                             false});
                         invalidate();
                     }
                 } else if (!securityView)
@@ -276,8 +264,6 @@ void input() {
                     selected = -1;
                     status = "Edge selected. B blocks/unblocks; Settings edits its weight.";
                 } else if (!securityView) {
-                    if (scene.points().size() >= MAX_POINTS)
-                        throw std::runtime_error("Point limit reached.");
                     scene.addPoint(world);
                     scene.setGoal(static_cast<int>(scene.points().size() - 1));
                     invalidate();
@@ -289,7 +275,6 @@ void input() {
             auto old = scene.points()[drag];
             if (GeometryKernel::distance2(old, world) > TOL) {
                 scene.movePoint(drag, world);
-                scene.setGrid(false);
                 invalidate();
             }
         }

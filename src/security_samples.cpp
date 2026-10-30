@@ -1,6 +1,7 @@
 #include "security.hpp"
 #include <filesystem>
 #include <fstream>
+#include <set>
 
 namespace gv {
 namespace {
@@ -19,7 +20,7 @@ double numeric(const std::string &value) {
 }
 } // namespace
 
-// The catalogue is shared by the application and documentation authoring tools.
+// The application and tests use the same sample catalogue.
 std::vector<SecuritySample> securitySamples(const std::string &dataDirectory) {
     std::ifstream in(std::filesystem::u8path(dataDirectory) / "security_samples.csv");
     std::string row;
@@ -68,11 +69,11 @@ SecurityConsole loadSecuritySample(const std::string &dataDirectory, const Secur
     SecurityConsole result;
     result.setEvents(
         CsvLogAdapter{}.load((std::filesystem::u8path(dataDirectory) / sample.file).u8string()));
-    result.updateSettings(
-        [&](SecuritySettings &draft) { draft.setGeoRadius(sample.geographicRadius); });
-    result.updateSettings(
-        [&](SecuritySettings &draft) { draft.setFeatureRadius(sample.featureRadius); });
-    result.updateSettings([&](SecuritySettings &draft) { draft.setMinPts(sample.minPts); });
+    result.updateSettings([&](SecuritySettings &draft) {
+        draft.setGeoRadius(sample.geographicRadius);
+        draft.setFeatureRadius(sample.featureRadius);
+        draft.setMinPts(sample.minPts);
+    });
     if (sample.eventFence) {
         if (result.events().size() < 4)
             throw std::runtime_error("Boundary sample requires four corner observations.");

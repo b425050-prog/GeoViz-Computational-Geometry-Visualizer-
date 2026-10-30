@@ -1,19 +1,5 @@
 #pragma once
 #include "atomic_files.hpp"
-// The engine deliberately has no raylib dependency. Coordinates here are doubles.
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <functional>
-#include <limits>
-#include <map>
-#include <memory>
-#include <queue>
-#include <set>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "trace.hpp"
 

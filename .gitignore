@@ -1,14 +1,7 @@
 /build/
-/cmake-build/
 /output/
+/GeoViz.exe
 *.o
-
-/node_modules/
+*.obj
 __pycache__/
 *.pyc
-
-/GeoViz.exe
-/RELEASE_MANIFEST.sha256
-/BUILD_PROVENANCE.json
-/dist/
-/.venv-docs/

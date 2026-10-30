@@ -16,9 +16,7 @@ struct CanvasContext {
     const SecuritySettings &securitySettings;
     const std::string &securityDataset;
 
-    bool feature() const noexcept {
-        return securityView == 2;
-    }
+    bool feature() const noexcept { return securityView == 2; }
 };
 
 // Layered presentation of Lab, geographic and feature scenes. Each layer has a

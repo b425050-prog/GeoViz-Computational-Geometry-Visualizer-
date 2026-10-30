@@ -13,9 +13,7 @@ bool xyLess(const std::vector<Point> &p, int a, int b) {
 
 // Sort exact coordinates, remove duplicates, then build two strictly counterclockwise chains.
 Result HullAlgorithm::calculate(const Scene &s, bool record) const {
-    Result r;
-    r.setMode(Mode::Hull);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     std::vector<int> ids(s.points().size());
     std::iota(ids.begin(), ids.end(), 0);
     std::sort(ids.begin(), ids.end(), [&](int a, int b) {
@@ -66,10 +64,8 @@ Result HullAlgorithm::calculate(const Scene &s, bool record) const {
         auto low = chain(false), up = chain(true);
         low.pop_back();
         up.pop_back();
-        r.setAnswer(low);
-        auto combined = r.answer();
-        combined.insert(combined.end(), up.begin(), up.end());
-        r.setAnswer(std::move(combined));
+        low.insert(low.end(), up.begin(), up.end());
+        r.setAnswer(std::move(low));
     }
     f.setChain(r.answer());
     f.setFocus(-1);
@@ -87,9 +83,7 @@ Result HullAlgorithm::calculate(const Scene &s, bool record) const {
 // Record boundary tests before ray crossings so edge and vertex queries are explicit.
 Result GeofenceAlgorithm::calculate(const Scene &s, bool record) const {
     G::validatePolygon(s.polygon());
-    Result r;
-    r.setMode(Mode::Geofence);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     Frame f;
     int classification = -1;
     for (std::size_t i = 0; i < s.polygon().size(); ++i) {
@@ -145,9 +139,7 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
     int n = static_cast<int>(s.points().size());
     if (!n || s.source() < 0 || s.source() >= n || s.goal() < 0 || s.goal() >= n)
         throw std::runtime_error("Select valid source and goal vertices.");
-    Result r;
-    r.setMode(selectedMode);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     std::vector<std::vector<std::pair<int, double>>> adj(n);
     bool compatible = true;
     for (const auto &e : s.edges())
@@ -169,8 +161,8 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
     d[s.source()] = 0;
     heap.emplace((useH ? estimate(s, s.source(), s.goal()) : 0.0), 0, s.source());
     Frame f;
-    auto snapshot = [&](int focus, const char *explanation, int codeLine) {
-        if (!record || r.trace().truncated())
+    auto snapshot = [&](int focus, const char *explanation, int codeLine, bool final = false) {
+        if (!record || (!final && r.trace().truncated()))
             return;
         f.setPseudocodeLine(codeLine);
         f.setFocus(focus);
@@ -185,7 +177,10 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
             if (!closed[i] && std::isfinite(d[i]))
                 f.appendActive(i);
         f.setExplanation(explanation);
-        r.trace().add(f);
+        if (final)
+            r.trace().finish(f);
+        else
+            r.trace().add(f);
     };
     snapshot(s.source(), "Initialize source cost to zero.", 1);
     while (!heap.empty()) {
@@ -224,31 +219,15 @@ Result RouteAlgorithm::calculate(const Scene &s, bool record) const {
         r.setSummary("NO PATH: goal is unreachable.");
     if (selectedMode == Mode::AStar && !compatible)
         r.setSummary(r.summary() + (" Incompatible weights: safe h=0 fallback."));
-    // A capped prefix skips intermediate allocations; the final table must still be current.
-    if (record) {
-        f.setCosts(d);
-        f.setParents(parent);
-        f.setLabels(closed);
-        f.resizeScores(n);
-        f.clearActive();
-        for (int i = 0; i < n; ++i) {
-            f.setScore(i, d[i] + (useH ? estimate(s, i, s.goal()) : 0.0));
-            if (!closed[i] && std::isfinite(d[i]))
-                f.appendActive(i);
-        }
-    }
+    // Refresh the final table even when intermediate recording reached the trace limit.
     f.setChain(r.answer());
-    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
-    f.setExplanation(r.summary());
-    r.trace().finish(f);
+    snapshot(-1, r.summary().c_str(), 4, true);
     return r;
 }
 // One deterministic breadth-first expansion serves both linear and indexed radius queries.
 Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
     const bool indexed = indexed_;
-    Result r;
-    r.setMode(indexed ? Mode::IndexedDBSCAN : Mode::DBSCAN);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     int n = static_cast<int>(s.points().size());
     // -2 unassigned; -1 noise; >=0 cluster. kind: 0 noise, 1 border, 2 core.
     std::vector<int> labels(n, -2), kind(n, 0), visited(n, 0);
@@ -259,9 +238,8 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
         index = std::make_unique<LinearIndex>(s.points());
     Frame f;
     auto neighbours = [&](int i) {
-        std::vector<int> out;
         r.stats().countQuery();
-        out = index->radius(s.points()[i], s.radius(), r.stats());
+        auto out = index->radius(s.points()[i], s.radius(), r.stats());
         if (record) {
             f.setFocus(i);
             f.setRadius(s.radius());
@@ -338,16 +316,12 @@ Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
     const auto noise = std::count(labels.begin(), labels.end(), -1);
     r.setSummary(std::to_string(cluster) + (cluster == 1 ? " cluster; " : " clusters; ") +
                  std::to_string(noise) + (noise == 1 ? " noise point." : " noise points."));
-    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
-    f.setExplanation(r.summary());
-    r.trace().finish(f);
+    r.finish(f, 5);
     return r;
 }
 // Sort by x once, solve recursively, and merge y order to preserve O(n log n) computation.
 Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
-    Result r;
-    r.setMode(Mode::ClosestPair);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     std::vector<int> ids(s.points().size()), temp(ids.size());
     std::iota(ids.begin(), ids.end(), 0);
     std::sort(ids.begin(), ids.end(), [&](int a, int b) {
@@ -430,16 +404,12 @@ Result ClosestPairAlgorithm::calculate(const Scene &s, bool record) const {
     f.setChain(r.answer());
     f.clearActive();
     f.clearRegions();
-    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
-    f.setExplanation(r.summary());
-    r.trace().finish(f);
+    r.finish(f, 4);
     return r;
 }
 // Consecutive endpoint pairs define segments; test each unordered segment pair exactly once.
 Result CollisionAlgorithm::calculate(const Scene &s, bool record) const {
-    Result r;
-    r.setMode(Mode::Collision);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     Frame f;
     int count = 0;
     std::vector<bool> highlighted(s.points().size() / 2, false);
@@ -468,10 +438,8 @@ Result CollisionAlgorithm::calculate(const Scene &s, bool record) const {
     r.setValue(count);
     r.setSummary(std::to_string(count) +
                  (count == 1 ? " intersecting segment pair." : " intersecting segment pairs."));
-    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
-    f.setExplanation(r.summary());
     f.clearActive();
-    r.trace().finish(f);
+    r.finish(f, 4);
     return r;
 }
 
@@ -543,84 +511,61 @@ double KDTree::boxDistance2(Point q, const Box &b) {
            dy = std::max({b.y0() - q.y(), 0.0, q.y() - b.y1()});
     return dx * dx + dy * dy;
 }
-// Visit the nearer subtree first; prune only strictly worse boxes so equal-distance ties survive.
-int KDTree::nearest(Point q, Stats &stats, Trace *trace) const {
-    int best = -1;
-    double dist = INF;
-    std::function<void(int)> visit = [&](int u) {
-        if (u < 0)
-            return;
-        const auto &node = nodes_[u];
-        if (boxDistance2(q, node.box) > dist) {
-            if (trace) {
-                Frame f;
-                f.setPruned({node.box});
-                f.setPseudocodeLine(3);
-                f.setExplanation("Prune region: its lower-bound distance exceeds best.");
-                trace->add(f);
-            }
-            return;
-        }
-        stats.countOperation();
-        stats.countExpansion();
-        double d = GeometryKernel::distance2(q, points_[node.point]);
-        if (d < dist || (d == dist && (best < 0 || node.point < best))) {
-            dist = d;
-            best = node.point;
-        }
-        if (trace) {
-            Frame f;
-            f.setFocus(node.point);
-            f.setActive({best});
-            f.setRegions({node.box});
-            f.setPseudocodeLine(2);
-            f.setExplanation("Visit node; current nearest ID " + std::to_string(best));
-            trace->add(f);
-        }
-        bool left = node.axis ? q.y() <= points_[node.point].y() : q.x() <= points_[node.point].x();
-        visit(left ? node.left : node.right);
-        visit(left ? node.right : node.left);
-    };
-    visit(root_);
-    return best;
-}
-// A box outside the query disk is skipped; surviving points use inclusive distance tests.
-std::vector<int> KDTree::radius(Point q, double r, Stats &stats, Trace *trace) const {
+// Nearest and radius queries share traversal, pruning, statistics and recording.
+std::vector<int> KDTree::search(Point q, double limit, bool nearestOnly, Stats &stats,
+                                Trace *trace) const {
     std::vector<int> out;
     std::function<void(int)> visit = [&](int u) {
         if (u < 0)
             return;
         const auto &node = nodes_[u];
-        if (boxDistance2(q, node.box) > r * r) {
+        if (boxDistance2(q, node.box) > limit) {
             if (trace) {
-                Frame f;
-                f.setPruned({node.box});
-                f.setPseudocodeLine(3);
-                f.setExplanation("Prune box outside radius.");
-                trace->add(f);
+                Frame frame;
+                frame.setPruned({node.box});
+                frame.setPseudocodeLine(3);
+                frame.setExplanation(
+                    "Prune box: its lower-bound distance exceeds the search limit.");
+                trace->add(frame);
             }
             return;
         }
         stats.countOperation();
         stats.countExpansion();
-        if (GeometryKernel::distance2(q, points_[node.point]) <= r * r)
+        const double distance = GeometryKernel::distance2(q, points_[node.point]);
+        if (nearestOnly) {
+            if (distance < limit ||
+                (distance == limit && (out.empty() || node.point < out.front()))) {
+                limit = distance;
+                out = {node.point};
+            }
+        } else if (distance <= limit)
             out.push_back(node.point);
         if (trace) {
-            Frame f;
-            f.setFocus(node.point);
-            f.setActive(out);
-            f.setRegions({node.box});
-            f.setPseudocodeLine(2);
-            f.setExplanation("Visit node and test radius membership.");
-            trace->add(f);
+            Frame frame;
+            frame.setFocus(node.point);
+            frame.setActive(out);
+            frame.setRegions({node.box});
+            frame.setPseudocodeLine(2);
+            frame.setExplanation(nearestOnly ? "Visit node and update the nearest point."
+                                             : "Visit node and test radius membership.");
+            trace->add(frame);
         }
-        bool left = node.axis ? q.y() <= points_[node.point].y() : q.x() <= points_[node.point].x();
+        const bool left =
+            node.axis ? q.y() <= points_[node.point].y() : q.x() <= points_[node.point].x();
         visit(left ? node.left : node.right);
         visit(left ? node.right : node.left);
     };
     visit(root_);
     std::sort(out.begin(), out.end());
     return out;
+}
+int KDTree::nearest(Point q, Stats &stats, Trace *trace) const {
+    auto ids = search(q, INF, true, stats, trace);
+    return ids.empty() ? -1 : ids.front();
+}
+std::vector<int> KDTree::radius(Point q, double r, Stats &stats, Trace *trace) const {
+    return search(q, r * r, false, stats, trace);
 }
 
 // Validate bounded finite model input before any algorithm indexes its collections.
@@ -655,9 +600,7 @@ void Engine::validate(const Scene &s) {
 }
 // Rebuild the index for this frozen input, recording construction and query decisions.
 Result SpatialQueryAlgorithm::calculate(const Scene &s, bool record) const {
-    Result r;
-    r.setMode(mode_);
-    r.trace().setEnabled(record);
+    Result r(mode(), record);
     std::unique_ptr<SpatialIndex> index =
         std::make_unique<KDTree>(s.points(), record ? &r.trace() : nullptr);
     if (mode_ == Mode::KDNearest) {
@@ -677,9 +620,7 @@ Result SpatialQueryAlgorithm::calculate(const Scene &s, bool record) const {
                                                                 : " points inside radius."));
     Frame f;
     f.setActive(r.answer());
-    f.setPseudocodeLine(r.mode() == Mode::DBSCAN || r.mode() == Mode::IndexedDBSCAN ? 5 : 4);
-    f.setExplanation(r.summary());
-    r.trace().finish(f);
+    r.finish(f, 4);
     return r;
 }
 // The shared execution contract is validate, calculate, then independent result verification.

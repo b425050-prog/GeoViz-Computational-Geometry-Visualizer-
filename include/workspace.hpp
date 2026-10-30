@@ -67,15 +67,9 @@ class EditHistory final {
         cursor_ = states_.size() - 1;
         return true;
     }
-    bool canUndo() const {
-        return cursor_ > 0;
-    }
-    bool canRedo() const {
-        return cursor_ + 1 < states_.size();
-    }
-    const WorkspaceState &current() const {
-        return states_.at(cursor_);
-    }
+    bool canUndo() const { return cursor_ > 0; }
+    bool canRedo() const { return cursor_ + 1 < states_.size(); }
+    const WorkspaceState &current() const { return states_.at(cursor_); }
     const WorkspaceState &undo() {
         if (canUndo())
             --cursor_;
@@ -92,19 +86,14 @@ struct PreparedSecurity {
     Scene scene;
     std::vector<Observation> observations;
     std::vector<MapLine> map;
-    std::string background;
     static PreparedSecurity prepare(const SecurityConsole &console, bool feature,
                                     const std::string &mapPath) {
         console.validate();
         console.observations(!feature);
-        PreparedSecurity out{console.scene(feature),
-                             console.observations(feature),
-                             {},
-                             "Background unavailable; coordinates use configured origin."};
+        PreparedSecurity out{console.scene(feature), console.observations(feature), {}};
         if (!feature)
             try {
                 out.map = console.loadMap(mapPath);
-                out.background = "Campus background";
             } catch (const std::exception &) {
             }
         return out;
