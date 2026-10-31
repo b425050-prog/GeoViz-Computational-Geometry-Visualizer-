@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="495" height="252" preserveAspectRatio="xMinYMin meet" viewBox="0 0 495 252" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="495" height="252"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-252)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="204" width="140" height="43" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="31.560000000000002" y="231" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,462) scale(1,-1)">AlgorithmRunner</text>
+			<text x="35.26985" y="217" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,434) scale(1,-1)">execute interface</text>
+			<rect x="0" y="133" width="140" height="46" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="54.905" y="163" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,326) scale(1,-1)">Engine</text>
+			<text x="16.801399999999994" y="149" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,298) scale(1,-1)">Owns Algorithm strategies</text>
+			<rect x="177" y="204" width="140" height="43" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="224.77" y="231" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,462) scale(1,-1)">Algorithm</text>
+			<text x="211.8012" y="217" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,434) scale(1,-1)">run calls calculate</text>
+			<rect x="177" y="133" width="140" height="46" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="201.8175" y="163" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,326) scale(1,-1)">Concrete algorithms</text>
+			<text x="193.011975" y="149" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,298) scale(1,-1)">Shared route and DBSCAN</text>
+			<rect x="354" y="204" width="141" height="43" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="397.05" y="231" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,462) scale(1,-1)">SpatialIndex</text>
+			<text x="387.89525" y="217" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,434) scale(1,-1)">nearest and radius</text>
+			<rect x="354" y="133" width="141" height="46" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="370.26" y="163" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,326) scale(1,-1)">LinearIndex and KDTree</text>
+			<text x="391.369175" y="149" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,298) scale(1,-1)">Query strategies</text>
+			<polyline points="70 179, 70 204" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="70 204, 72.7 198, 67.3 198" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="76" y="188" style="font-family: Lato; font-size: 8.2px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">implements</text>
+			<polyline points="140 155, 157 155, 157 225, 177 225" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="177 225, 171 222.3, 171 227.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="247 179, 247 204" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="247 204, 249.7 198, 244.3 198" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="253" y="188" style="font-family: Lato; font-size: 8.2px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">inherits</text>
+			<polyline points="424 179, 424 204" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="424 204, 426.7 198, 421.3 198" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="430" y="188" style="font-family: Lato; font-size: 8.2px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">implements</text>
+			<polyline points="317 155, 337 155, 337 225, 354 225" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="354 225, 348 222.3, 348 227.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="269.0346" y="117" style="font-family: Lato; font-size: 8.6px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,234) scale(1,-1)">DBSCAN owns one SpatialIndex</text>
+			<rect x="0" y="39" width="140" height="52" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="61.144999999999996" y="75" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,150) scale(1,-1)">Run</text>
+			<text x="22.982574999999997" y="61" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,122) scale(1,-1)">Owns Scene and Result</text>
+			<rect x="177" y="39" width="140" height="52" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="232.995" y="75" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,150) scale(1,-1)">Result</text>
+			<text x="199.79375" y="61" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,122) scale(1,-1)">Answer Stats and Trace</text>
+			<rect x="354" y="39" width="141" height="52" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="381.3975" y="75" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,150) scale(1,-1)">Trace owns Frames</text>
+			<text x="379.998725" y="61" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,122) scale(1,-1)">Playback reads frames</text>
+			<polyline points="140 65, 177 65" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="177 65, 171 62.3, 171 67.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="317 65, 354 65" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="354 65, 348 62.3, 348 67.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="122.64749999999998" y="10" style="font-family: Lato; font-size: 9px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,20) scale(1,-1)">Arrows show interface use inheritance or ownership as labelled</text>
+		</g>
+	</g>
+</svg>

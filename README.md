@@ -60,6 +60,7 @@ diagrams are linked from the [design guide](docs/DESIGN.md).
 
 | Document | Contents |
 | --- | --- |
+| [Project report](docs/GeoViz_Project_Report.pdf) | Professional academic report covering the complete project, architecture, algorithms, OOP design, security analysis and measured evaluation; [editable source](docs/PROJECT_REPORT.md) |
 | [Project workflow](docs/WORKFLOW.md) | Input → validation → execution → playback → save/export; suitable for the workflow PPT |
 | [Design and algorithms](docs/DESIGN.md) | Modules, OOP concepts, shared implementations, algorithms and limitations |
 | [User guide](docs/USER_GUIDE.md) | Build commands, controls, security data and file formats |

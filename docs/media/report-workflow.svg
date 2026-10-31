@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="495" height="218" preserveAspectRatio="xMinYMin meet" viewBox="0 0 495 218" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="495" height="218"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-218)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="151" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="26.130000000000003" y="188" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">Choose or edit input</text>
+			<text x="21.295299999999997" y="174" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,348) scale(1,-1)">Scene sample or local file</text>
+			<rect x="176" y="151" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="229.0725" y="188" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">Validate</text>
+			<text x="186.250175" y="174" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,348) scale(1,-1)">Geometry settings and bounds</text>
+			<rect x="352" y="151" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="377.7275" y="188" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,376) scale(1,-1)">Calculate and record</text>
+			<text x="379.456" y="174" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,348) scale(1,-1)">Algorithm and Frames</text>
+			<rect x="352" y="51" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="374.96" y="88" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,176) scale(1,-1)">Check and freeze Run</text>
+			<text x="380.732275" y="74" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,148) scale(1,-1)">Input result and trace</text>
+			<rect x="176" y="51" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="204.67000000000002" y="88" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,176) scale(1,-1)">Inspect or compare</text>
+			<text x="204.6663" y="74" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,148) scale(1,-1)">Play step rewind final</text>
+			<rect x="0" y="51" width="143" height="53" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
+			<text x="39.025" y="88" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,176) scale(1,-1)">Save or export</text>
+			<text x="15.671499999999995" y="74" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,148) scale(1,-1)">Input and checked evidence</text>
+			<polyline points="143 178, 176 178" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="176 178, 170 175.3, 170 180.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="319 178, 352 178" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="352 178, 346 175.3, 346 180.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="424 151, 424 104" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="424 104, 421.3 110, 426.7 110" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="352 78, 319 78" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="319 78, 325 80.7, 325 75.3" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<polyline points="176 78, 143 78" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="143 78, 149 80.7, 149 75.3" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<text x="113.85249999999999" y="19" style="font-family: Lato; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,38) scale(1,-1)">Input edits invalidate the active result and require a fresh run</text>
+		</g>
+	</g>
+</svg>
