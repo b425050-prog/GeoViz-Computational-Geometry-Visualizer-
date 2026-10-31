@@ -10,27 +10,27 @@
 	</clipPath>
 	<g id="group" transform="scale(1,-1) translate(0,-154)" style="clip-path: url(#clip)">
 		<g transform="">
-			<text x="90.114" y="138" style="font-family: LatoBold; font-size: 11px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,276) scale(1,-1)">Convex hull</text>
-			<text x="324.366" y="138" style="font-family: LatoBold; font-size: 11px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,276) scale(1,-1)">Polygon membership</text>
+			<text x="90.114" y="138" style="font-family: LatoBold; font-size: 11px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,276) scale(1,-1)">Convex hull</text>
+			<text x="324.366" y="138" style="font-family: LatoBold; font-size: 11px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,276) scale(1,-1)">Polygon membership</text>
 			<polygon points="30 27, 209 27, 209 115, 30 115" style="stroke: rgb(14%,40%,30%); stroke-linecap: butt; stroke-width: 2; fill: none; fill-rule: evenodd;"/>
-			<circle cx="30" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="209" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="209" cy="115" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="30" cy="115" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="82" cy="62" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="135" cy="77" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="90" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="158" cy="49" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<text x="35.182199999999995" y="7" style="font-family: Lato; font-size: 8.8px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,14) scale(1,-1)">Interior and side points are not hull vertices</text>
+			<circle cx="30" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="209" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="209" cy="115" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="30" cy="115" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="82" cy="62" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="135" cy="77" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="90" cy="27" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="158" cy="49" r="3.3" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<text x="35.182199999999995" y="7" style="font-family: Lato; font-size: 8.8px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,14) scale(1,-1)">Interior and side points are not hull vertices</text>
 			<polygon points="280 27, 430 27, 430 115, 280 115" style="stroke: rgb(14%,40%,30%); stroke-linecap: butt; stroke-width: 1.5; fill: none; fill-rule: evenodd;"/>
-			<path d="M 320,65 L 482,65 Z" style="stroke: rgb(71%,45%,11%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 4, 3;"/>
-			<circle cx="320" cy="65" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="430" cy="91" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<circle cx="467" cy="91" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,23%,31%); fill-rule: evenodd;"/>
-			<text x="312" y="51" style="font-family: Lato; font-size: 8.6px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,102) scale(1,-1)">inside</text>
-			<text x="406.0303" y="104" style="font-family: Lato; font-size: 8.6px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,208) scale(1,-1)">boundary</text>
-			<text x="453.0508" y="78" style="font-family: Lato; font-size: 8.6px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,156) scale(1,-1)">outside</text>
-			<text x="302.674" y="7" style="font-family: Lato; font-size: 8.8px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,14) scale(1,-1)">Boundary is checked before ray parity</text>
+			<path d="M 320,65 L 482,65 Z" style="stroke: rgb(30%,56%,43%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 4, 3;"/>
+			<circle cx="320" cy="65" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="430" cy="91" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<circle cx="467" cy="91" r="3.5" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(14%,40%,30%); fill-rule: evenodd;"/>
+			<text x="312" y="51" style="font-family: Lato; font-size: 8.6px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,102) scale(1,-1)">inside</text>
+			<text x="406.0303" y="104" style="font-family: Lato; font-size: 8.6px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,208) scale(1,-1)">boundary</text>
+			<text x="453.0508" y="78" style="font-family: Lato; font-size: 8.6px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,156) scale(1,-1)">outside</text>
+			<text x="302.674" y="7" style="font-family: Lato; font-size: 8.8px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,14) scale(1,-1)">Boundary is checked before ray parity</text>
 		</g>
 	</g>
 </svg>

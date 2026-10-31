@@ -10,26 +10,26 @@
 	</clipPath>
 	<g id="group" transform="scale(1,-1) translate(0,-225)" style="clip-path: url(#clip)">
 		<g transform="">
-			<rect x="42" y="179" width="411" height="40" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="159.89" y="203" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,406) scale(1,-1)">Validated local CSV and common filters</text>
-			<text x="167.40634999999997" y="189" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,378) scale(1,-1)">[start end) UTC window user and device</text>
-			<rect x="0" y="92" width="230" height="54" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="59.589999999999996" y="130" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,260) scale(1,-1)">Geographic observations</text>
-			<text x="44.50685" y="116" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,232) scale(1,-1)">One point per event in local metres</text>
-			<rect x="265" y="92" width="230" height="54" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="323.5775" y="130" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,260) scale(1,-1)">Behavioural observations</text>
-			<text x="308.480825" y="116" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,232) scale(1,-1)">One point per device in scaled rates</text>
-			<polyline points="185 179, 185 162, 115 162, 115 146" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="115 146, 112.3 152, 117.7 152" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<polyline points="310 179, 310 162, 380 162, 380 146" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="380 146, 377.3 152, 382.7 152" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<rect x="42" y="17" width="411" height="45" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="151.55" y="46" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,92) scale(1,-1)">Scene adapter and shared geometry engine</text>
-			<text x="141.373525" y="32" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,64) scale(1,-1)">Source inspection reviews and reproducible evidence</text>
-			<polyline points="115 92, 115 62" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="115 62, 112.3 68, 117.7 68" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<polyline points="380 92, 380 62" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="380 62, 377.3 68, 382.7 68" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<rect x="42" y="179" width="411" height="40" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="159.89" y="203" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,406) scale(1,-1)">Validated local CSV and common filters</text>
+			<text x="167.40634999999997" y="189" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,378) scale(1,-1)">[start end) UTC window user and device</text>
+			<rect x="0" y="92" width="230" height="54" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="59.589999999999996" y="130" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,260) scale(1,-1)">Geographic observations</text>
+			<text x="44.50685" y="116" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,232) scale(1,-1)">One point per event in local metres</text>
+			<rect x="265" y="92" width="230" height="54" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="323.5775" y="130" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,260) scale(1,-1)">Behavioural observations</text>
+			<text x="308.480825" y="116" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,232) scale(1,-1)">One point per device in scaled rates</text>
+			<polyline points="185 179, 185 162, 115 162, 115 146" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="115 146, 112.3 152, 117.7 152" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<polyline points="310 179, 310 162, 380 162, 380 146" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="380 146, 377.3 152, 382.7 152" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<rect x="42" y="17" width="411" height="45" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="151.55" y="46" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,92) scale(1,-1)">Scene adapter and shared geometry engine</text>
+			<text x="141.373525" y="32" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,64) scale(1,-1)">Source inspection reviews and reproducible evidence</text>
+			<polyline points="115 92, 115 62" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="115 62, 112.3 68, 117.7 68" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<polyline points="380 92, 380 62" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="380 62, 377.3 68, 382.7 68" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
 		</g>
 	</g>
 </svg>

@@ -10,36 +10,36 @@
 	</clipPath>
 	<g id="group" transform="scale(1,-1) translate(0,-260)" style="clip-path: url(#clip)">
 		<g transform="">
-			<rect x="0" y="200" width="230" height="52" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="73.155" y="236" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,472) scale(1,-1)">Editable Lab Scene</text>
-			<text x="36.3669" y="222" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,444) scale(1,-1)">Points polygon graph query parameters</text>
-			<rect x="265" y="200" width="230" height="52" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="343.7425" y="236" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,472) scale(1,-1)">SecurityConsole</text>
-			<text x="307.757375" y="222" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,444) scale(1,-1)">Events filters projection scaled rates</text>
-			<rect x="0" y="108" width="230" height="58" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="50.84" y="150" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,300) scale(1,-1)">AlgorithmRunner and Engine</text>
-			<text x="44.6024" y="136" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,272) scale(1,-1)">Validate calculate record and verify</text>
-			<rect x="265" y="108" width="230" height="58" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="354.575" y="150" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,300) scale(1,-1)">Frozen Run</text>
-			<text x="290.99745" y="136" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,272) scale(1,-1)">Owns Scene and Result with Stats and Trace</text>
-			<rect x="0" y="10" width="230" height="60" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="53.335" y="54" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,108) scale(1,-1)">App and raylib presentation</text>
-			<text x="39.70205" y="40" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,80) scale(1,-1)">Canvas inspector and Playback cursor</text>
-			<rect x="265" y="10" width="230" height="60" rx="3" ry="3" style="stroke: rgb(85%,85%,85%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,97%); fill-rule: evenodd;"/>
-			<text x="338.855" y="54" style="font-family: LatoBold; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,108) scale(1,-1)">Input preservation</text>
-			<text x="298.966775" y="40" style="font-family: Lato; font-size: 9.1px;fill: rgb(27%,32%,37%); stroke:none;" transform="translate(0,80) scale(1,-1)">EditHistory SessionFiles and AtomicFiles</text>
-			<polyline points="115 200, 115 166" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="115 166, 112.3 172, 117.7 172" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<polyline points="380 200, 380 184, 190 184, 190 166" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="190 166, 187.3 172, 192.7 172" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<text x="284" y="186" style="font-family: Lato; font-size: 8.5px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,372) scale(1,-1)">scene adapter</text>
-			<polyline points="230 137, 265 137" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="265 137, 259 134.3, 259 139.7" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<polyline points="380 108, 380 88, 115 88, 115 70" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="115 70, 112.3 76, 117.7 76" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
-			<text x="199.6052" y="91" style="font-family: Lato; font-size: 8.4px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,182) scale(1,-1)">read completed frames</text>
-			<polyline points="265 40, 230 40" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
-			<polygon points="230 40, 236 42.7, 236 37.3" style="stroke: rgb(27%,32%,37%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(27%,32%,37%); fill-rule: evenodd;"/>
+			<rect x="0" y="200" width="230" height="52" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="73.155" y="236" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,472) scale(1,-1)">Editable Lab Scene</text>
+			<text x="36.3669" y="222" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,444) scale(1,-1)">Points polygon graph query parameters</text>
+			<rect x="265" y="200" width="230" height="52" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="343.7425" y="236" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,472) scale(1,-1)">SecurityConsole</text>
+			<text x="307.757375" y="222" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,444) scale(1,-1)">Events filters projection scaled rates</text>
+			<rect x="0" y="108" width="230" height="58" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="50.84" y="150" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,300) scale(1,-1)">AlgorithmRunner and Engine</text>
+			<text x="44.6024" y="136" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,272) scale(1,-1)">Validate calculate record and verify</text>
+			<rect x="265" y="108" width="230" height="58" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="354.575" y="150" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,300) scale(1,-1)">Frozen Run</text>
+			<text x="290.99745" y="136" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,272) scale(1,-1)">Owns Scene and Result with Stats and Trace</text>
+			<rect x="0" y="10" width="230" height="60" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="53.335" y="54" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,108) scale(1,-1)">App and raylib presentation</text>
+			<text x="39.70205" y="40" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,80) scale(1,-1)">Canvas inspector and Playback cursor</text>
+			<rect x="265" y="10" width="230" height="60" rx="3" ry="3" style="stroke: rgb(78%,84%,79%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(91%,95%,92%); fill-rule: evenodd;"/>
+			<text x="338.855" y="54" style="font-family: LatoBold; font-size: 10px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,108) scale(1,-1)">Input preservation</text>
+			<text x="298.966775" y="40" style="font-family: Lato; font-size: 9.1px;fill: rgb(32%,39%,36%); stroke:none;" transform="translate(0,80) scale(1,-1)">EditHistory SessionFiles and AtomicFiles</text>
+			<polyline points="115 200, 115 166" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="115 166, 112.3 172, 117.7 172" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<polyline points="380 200, 380 184, 190 184, 190 166" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="190 166, 187.3 172, 192.7 172" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<text x="284" y="186" style="font-family: Lato; font-size: 8.5px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,372) scale(1,-1)">scene adapter</text>
+			<polyline points="230 137, 265 137" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="265 137, 259 134.3, 259 139.7" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<polyline points="380 108, 380 88, 115 88, 115 70" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="115 70, 112.3 76, 117.7 76" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
+			<text x="199.6052" y="91" style="font-family: Lato; font-size: 8.4px;fill: rgb(15%,20%,18%); stroke:none;" transform="translate(0,182) scale(1,-1)">read completed frames</text>
+			<polyline points="265 40, 230 40" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 1.1; fill: None; fill-rule: evenodd;"/>
+			<polygon points="230 40, 236 42.7, 236 37.3" style="stroke: rgb(32%,39%,36%); stroke-linecap: butt; stroke-width: 0.3; fill: rgb(32%,39%,36%); fill-rule: evenodd;"/>
 		</g>
 	</g>
 </svg>

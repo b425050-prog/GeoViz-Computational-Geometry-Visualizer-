@@ -1,4 +1,4 @@
-![IIIT Bhubaneswar logo](media/iiit-bhubaneswar-logo.jpg)
+![IIIT Bhubaneswar logo](media/iiit-bhubaneswar-logo.png)
 
 # GeoViz
 
@@ -768,7 +768,7 @@ Fresh tests and the published revision's CI results support the exercised implem
 
 [8] GeoViz GitHub Actions. Build and test run 41112934477 for revision 1076a66f. Six completed jobs, all successful; checked 31 October 2026. [Build and test results](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/actions/runs/41112934477).
 
-[9] International Institute of Information Technology Bhubaneswar. Official institute website and cover logo asset. https://www.iiit-bh.ac.in/ and https://www.iiit-bh.ac.in/wp-content/uploads/2024/06/iiit-logo.jpg
+[9] International Institute of Information Technology Bhubaneswar. Official institute website and cover crest reproduced from the institute letterhead. https://www.iiit-bh.ac.in/ and [official institute letterhead](https://www.iiit-bh.ac.in/wp-content/uploads/2026/jobs/ANRF_V2_2101.pdf).
 
 Implementation measurements in Chapter 10 and scenario counts in Section 7.4 were generated locally from the cited source revision on 31 October 2026. Screenshot figures use the repository's bundled application captures. Architecture and explanatory figures summarize the implemented source relationships and policies. The institute logo is reproduced from its official website for academic identification [9].
 
