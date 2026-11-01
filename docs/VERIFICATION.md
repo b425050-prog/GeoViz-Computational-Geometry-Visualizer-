@@ -65,8 +65,11 @@ reports stay outside the release contents.
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Smoke
 
+# Package documentation checks use PowerShell 7 to parse Markdown.
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\tests\documentation_links_checks.ps1
+
 # OutputDirectory must be new and should be outside the source folder.
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\portable_checks.ps1 `
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\tests\portable_checks.ps1 `
   -BuildDirectory .\build\Release -OutputDirectory 'C:\Temp\GeoViz-package-check'
 ```
 

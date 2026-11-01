@@ -1,3 +1,4 @@
+#requires -Version 7.0
 param(
     [Parameter(Mandatory = $true)][string]$BuildDirectory,
     [string]$OutputDirectory = (Join-Path ([IO.Path]::GetTempPath()) ('GeoViz-package-' + [guid]::NewGuid()))
@@ -8,6 +9,7 @@ $buildRoot = (Resolve-Path -LiteralPath $BuildDirectory).Path
 $artifactRoot = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $artifactRoot) { throw 'Package test output must be a new directory.' }
 New-Item -ItemType Directory -Path $artifactRoot | Out-Null
+& (Join-Path $PSScriptRoot 'documentation_links_checks.ps1') -OutputDirectory (Join-Path $artifactRoot 'documentation-link-regressions')
 $payload = Join-Path $artifactRoot 'package\GeoViz'
 cmake --install $buildRoot --prefix $payload
 if ($LASTEXITCODE -ne 0) { throw 'Installing the fresh build failed.' }
@@ -75,16 +77,9 @@ $malformed = Join-Path $artifactRoot 'malformed-data'
 Copy-Runtime $malformed
 Set-Content -LiteralPath (Join-Path $malformed 'data/security_sample.csv') -Value 'invalid CSV'
 if ((Invoke-Smoke $malformed 960 640 1) -notmatch 'CSV header') { throw 'Malformed CSV is not reported.' }
-foreach ($document in @(Get-Item -LiteralPath (Join-Path $runtime 'README.md')) + @(Get-ChildItem -LiteralPath (Join-Path $runtime 'docs') -Filter '*.md' -File)) {
-    foreach ($link in [regex]::Matches([IO.File]::ReadAllText($document.FullName), '\]\(([^)]+)\)')) {
-        $target = $link.Groups[1].Value
-        if ($target -match '^(https?://|#)') { continue }
-        $path = Join-Path $document.DirectoryName ($target.Split('#')[0])
-        if (-not (Test-Path -LiteralPath $path)) { throw "Broken packaged documentation link: $target" }
-    }
-}
+& (Join-Path $PSScriptRoot 'documentation_links.ps1') -Root $runtime
 $digest = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
 Set-Content -LiteralPath ($archive + '.sha256') -Value ($digest + '  GeoViz-Windows.zip') -Encoding ascii
 Set-Content -LiteralPath (Join-Path $artifactRoot 'PACKAGE_CHECKS.txt') -Value `
-    'PASS: fresh build/package equality; original fonts and icons; Unicode extraction path; three render sizes; missing fonts; malformed CSV; documentation links.'
+    'PASS: fresh build/package equality; original fonts and icons; Unicode extraction path; three render sizes; missing fonts; malformed CSV; documentation links and Markdown parsing regressions.'
 Write-Output "PASS: Windows portable package verified: $archive"
