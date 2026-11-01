@@ -60,9 +60,8 @@ diagrams are linked from the [design guide](docs/DESIGN.md).
 
 | Document | Contents |
 | --- | --- |
-| [Project report](docs/GeoViz_Project_Report.pdf) | Professional academic report covering the complete project, methodology, architecture, algorithms, actual OOP code, execution outputs, security analysis and measured evaluation; [editable source](docs/PROJECT_REPORT.md) |
+| [Project report](docs/GeoViz_Project_Report.pdf) | One complete report covering the project, methodology, architecture, a numbered source code chapter, algorithms, execution outputs, security analysis and measured evaluation; [editable source](docs/PROJECT_REPORT.md) |
 | [Workflow presentation](docs/GeoViz_Presentation.pptx) | Class presentation with the workflow on slide 2, algorithm outputs and pseudocode |
-| [OOP code for printing](docs/GeoViz_OOP_Code_Extracts.pdf) | Selected source extracts and explanations from Appendix C; [editable source](docs/OOP_CODE_EXTRACTS.md) |
 | [Project workflow](docs/WORKFLOW.md) | Input → validation → execution → playback → save/export; suitable for the workflow PPT |
 | [Design and algorithms](docs/DESIGN.md) | Modules, OOP concepts, shared implementations, algorithms and limitations |
 | [User guide](docs/USER_GUIDE.md) | Build commands, controls, security data and file formats |

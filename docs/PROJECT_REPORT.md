@@ -56,19 +56,18 @@ A fresh GCC 15.2 Release engine build on 1 November 2026 passed all nine registe
 - [2 Requirements and delivered scope](#2-requirements-and-delivered-scope)
 - [3 Technology and deployment](#3-technology-and-deployment)
 - [4 System architecture and object oriented design](#4-system-architecture-and-object-oriented-design)
-- [5 Algorithms and numerical policies](#5-algorithms-and-numerical-policies)
-- [6 Execution interaction and persistence](#6-execution-interaction-and-persistence)
-- [7 Spatial Security Console](#7-spatial-security-console)
-- [8 User interface and demonstration](#8-user-interface-and-demonstration)
-- [9 Verification methodology](#9-verification-methodology)
-- [10 Results and evaluation](#10-results-and-evaluation)
-- [11 Limitations and future improvements](#11-limitations-and-future-improvements)
-- [12 Conclusion and requirement traceability](#12-conclusion-and-requirement-traceability)
+- [5 Source code and implementation](#5-source-code-and-implementation)
+- [6 Algorithms and numerical policies](#6-algorithms-and-numerical-policies)
+- [7 Execution interaction and persistence](#7-execution-interaction-and-persistence)
+- [8 Spatial Security Console](#8-spatial-security-console)
+- [9 User interface and output](#9-user-interface-and-output)
+- [10 Verification methodology](#10-verification-methodology)
+- [11 Results and evaluation](#11-results-and-evaluation)
+- [12 Limitations and future improvements](#12-limitations-and-future-improvements)
+- [13 Conclusion and requirement traceability](#13-conclusion-and-requirement-traceability)
 - [References](#references)
 - [Appendix A Control reference](#appendix-a-control-reference)
 - [Appendix B Saved formats and source map](#appendix-b-saved-formats-and-source-map)
-- [Appendix C Selected OOP source code](#appendix-c-selected-oop-source-code)
-- [Appendix D Execution output and demonstration](#appendix-d-execution-output-and-demonstration)
 
 <!-- endtoc -->
 
@@ -183,7 +182,7 @@ CMake also provides engine-release, engine-debug and Linux sanitizer presets. GE
 
 **Security adaptation.** A strict CSV adapter loads synthetic event records. Common filters select a population before local geographic projection or per-device rate aggregation. Both transformations produce an ordinary Scene for the existing engine. Source-record indices, scaling, analyst review and export settings remain with the security model.
 
-**Evaluation and documentation.** Expected cases, deterministic generated inputs, reference checks, failure-path regressions, structured-evidence checks and automated desktop states exercise the delivered system. Operation comparisons use identical inputs and exclude playback and reference work. The report connects requirements to classes, actual source excerpts, measured outputs and a repeatable demonstration.
+**Evaluation and documentation.** Expected cases, deterministic generated inputs, reference checks, failure-path regressions, structured-evidence checks and automated desktop states exercise the delivered system. Operation comparisons use identical inputs and exclude playback and reference work. The report connects requirements to classes, actual source excerpts and reproducible execution outputs.
 
 These phases describe the implementation method and its verification. They do not imply an experimental comparison with unfamiliar users; the completed usability review uses repeatable assistant-driven tasks.
 
@@ -256,9 +255,344 @@ The implementation uses interfaces where behaviour varies and ordinary value typ
 
 <!-- pagebreak -->
 
-# 5 Algorithms and numerical policies
+# 5 Source code and implementation
 
-## 5.1 Geometry kernel and collision mode
+The following source extracts show how the project implements object oriented concepts. Each block preserves the original code and identifies its file and line range. The complete compilable source is included in the project repository.
+
+## 5.1 Encapsulation and validation
+
+Point keeps coordinates private. Construction and setters use one check, so an invalid coordinate cannot enter through an ordinary public edit. Accessors permit observation without exposing writable fields.
+
+**Source** `include/scene.hpp` lines 24 to 40.
+
+```cpp
+class Point {
+    double x_ = 0;
+    double y_ = 0;
+    static double checked(double value) {
+        if (!std::isfinite(value) || std::abs(value) > 1e7)
+            throw std::invalid_argument("Coordinate must be finite and within +/-10000000.");
+        return value;
+    }
+
+  public:
+    Point() = default;
+    Point(double x, double y) : x_(checked(x)), y_(checked(y)) {}
+    double x() const noexcept { return x_; }
+    void setX(double value) { x_ = checked(value); }
+    double y() const noexcept { return y_; }
+    void setY(double value) { y_ = checked(value); }
+};
+```
+
+Scene applies the same principle to parameters. A successful radius edit advances the model revision, allowing dependent results and history to detect input changes.
+
+**Source** `include/scene.hpp` lines 108 to 113.
+
+```cpp
+    void setRadius(double value) {
+        if (!std::isfinite(value) || value <= 0 || value > 1e7)
+            throw std::invalid_argument("Radius must be positive and at most 10000000.");
+        radius_ = value;
+        touch();
+    }
+```
+
+<!-- pagebreak -->
+
+## 5.2 Abstraction and the Template Method
+
+Algorithm is abstract because mode() and calculate() are pure virtual. Its public run() function defines the execution lifecycle, while protected calculate() is the specialization point. A virtual destructor permits safe destruction through an Algorithm pointer.
+
+**Source** `include/algorithms.hpp` lines 66 to 74.
+
+```cpp
+class Algorithm {
+  protected:
+    virtual Result calculate(const Scene &scene, bool record) const = 0;
+
+  public:
+    virtual ~Algorithm() = default;
+    virtual Mode mode() const noexcept = 0;
+    Result run(const Scene &scene, bool record = true) const;
+};
+```
+**Source** `src/algorithms.cpp` lines 627 to 632.
+
+```cpp
+Result Algorithm::run(const Scene &scene, bool record) const {
+    Engine::validate(scene);
+    Result result = calculate(scene, record);
+    Engine::verify(scene, result);
+    return result;
+}
+```
+
+The call to calculate() dispatches to the concrete strategy at runtime. Engine validation and result checking stay in the shared lifecycle. The concrete hull class supplies the calculation and identifies its mode; override checks the signatures, and final closes this implementation to further inheritance.
+
+**Source** `include/algorithms.hpp` lines 76 to 81.
+
+```cpp
+class HullAlgorithm final : public Algorithm {
+    Result calculate(const Scene &scene, bool record) const override;
+
+  public:
+    Mode mode() const noexcept override { return Mode::Hull; }
+};
+```
+
+Template Method is a design pattern here. It does not mean that Algorithm is a C++ template. This distinction separates the object oriented lifecycle from generic programming syntax.
+
+<!-- pagebreak -->
+
+## 5.3 Runtime polymorphism and owned strategies
+
+The application can call AlgorithmRunner without depending on Engine's registry. Engine implements that interface and owns concrete Algorithm objects through unique_ptr. Composition manages ownership; inheritance provides substitutable behaviour.
+
+**Source** `include/algorithms.hpp` lines 146 to 161.
+
+```cpp
+class AlgorithmRunner {
+  public:
+    virtual ~AlgorithmRunner() = default;
+    virtual Result execute(const Scene &scene, Mode mode, bool record = true) const = 0;
+};
+// Owning registry of algorithm Strategies, keyed by scoped Mode values.
+class Engine final : public AlgorithmRunner {
+    std::map<Mode, std::unique_ptr<Algorithm>> algorithms_;
+
+  public:
+    Engine();
+    Result execute(const Scene &scene, Mode mode, bool record = true) const override;
+    static void validate(const Scene &scene);
+    static bool verify(const Scene &scene, Result &result);
+};
+```
+**Source** `src/algorithms.cpp` lines 634 to 657.
+
+```cpp
+Engine::Engine() {
+    auto add = [this](std::unique_ptr<Algorithm> algorithm) {
+        const Mode key = algorithm->mode();
+        algorithms_.emplace(key, std::move(algorithm));
+    };
+    add(std::make_unique<HullAlgorithm>());
+    add(std::make_unique<GeofenceAlgorithm>());
+    add(std::make_unique<DijkstraAlgorithm>());
+    add(std::make_unique<AStarAlgorithm>());
+    add(std::make_unique<DBSCANAlgorithm>(false));
+    add(std::make_unique<ClosestPairAlgorithm>());
+    add(std::make_unique<SpatialQueryAlgorithm>(Mode::KDNearest));
+    add(std::make_unique<SpatialQueryAlgorithm>(Mode::KDRadius));
+    add(std::make_unique<DBSCANAlgorithm>(true));
+    add(std::make_unique<CollisionAlgorithm>());
+}
+// Reject unknown modes before dispatch through the abstract algorithm interface.
+Result Engine::execute(const Scene &scene, Mode mode, bool record) const {
+    auto found = algorithms_.find(mode);
+    if (found == algorithms_.end())
+        throw std::invalid_argument("Unknown algorithm mode.");
+    return found->second->run(scene, record);
+}
+```
+
+The registry contains both DBSCAN variants as differently configured instances of one class. execute() validates the mode lookup and invokes the selected object's common run() method. The virtual calculation inside that method chooses the concrete implementation. No owning raw new and delete pair is required.
+
+<!-- pagebreak -->
+
+## 5.4 Inheritance with a shared route algorithm
+
+RouteAlgorithm derives from Algorithm and provides the shared calculation. DijkstraAlgorithm and AStarAlgorithm derive from RouteAlgorithm. This is multilevel inheritance with two concrete sibling specializations.
+
+**Source** `include/algorithms.hpp` lines 90 to 109.
+
+```cpp
+class RouteAlgorithm : public Algorithm {
+    Result calculate(const Scene &scene, bool record) const final;
+
+  protected:
+    virtual double estimate(const Scene &scene, int from, int goal) const = 0;
+};
+// Route specialization whose heuristic is identically zero.
+class DijkstraAlgorithm final : public RouteAlgorithm {
+    double estimate(const Scene &, int, int) const override { return 0.0; }
+
+  public:
+    Mode mode() const noexcept override { return Mode::Dijkstra; }
+};
+// Route specialization using Euclidean or grid-Manhattan estimates.
+class AStarAlgorithm final : public RouteAlgorithm {
+    double estimate(const Scene &scene, int from, int goal) const override;
+
+  public:
+    Mode mode() const noexcept override { return Mode::AStar; }
+};
+```
+
+The route loop is final, so the children change the protected estimate() hook rather than duplicate search, relaxation, trace construction and path reconstruction. Dijkstra returns zero; A* supplies a geometric estimate. Both expose their mode through the inherited public contract.
+
+The design supports substitution while preserving a common cost and validity policy. An incompatible A* estimate is reduced to zero by the shared implementation, which retains shortest-path correctness for that input.
+
+**Execution example.** App calls AlgorithmRunner::execute. Engine selects an AStarAlgorithm object and invokes Algorithm::run. The inherited RouteAlgorithm::calculate loop calls AStarAlgorithm::estimate through the virtual hook. The checked Result returns through the same interfaces used for Dijkstra.
+
+<!-- pagebreak -->
+
+## 5.5 Spatial index Strategy and dependency substitution
+
+SpatialIndex defines proximity operations. LinearIndex and KDTree implement this contract with different query methods. The virtual destructor keeps exclusive polymorphic ownership safe.
+
+**Source** `include/algorithms.hpp` lines 23 to 39.
+
+```cpp
+class SpatialIndex {
+  public:
+    virtual ~SpatialIndex() = default;
+    virtual int nearest(Point query, Stats &stats, Trace *trace = nullptr) const = 0;
+    virtual std::vector<int> radius(Point query, double distance, Stats &stats,
+                                    Trace *trace = nullptr) const = 0;
+};
+// Exhaustive proximity Strategy and direct DBSCAN neighbourhood provider.
+class LinearIndex final : public SpatialIndex {
+    std::vector<Point> points_;
+
+  public:
+    explicit LinearIndex(std::vector<Point> points) : points_(std::move(points)) {}
+    int nearest(Point query, Stats &stats, Trace *trace = nullptr) const override;
+    std::vector<int> radius(Point query, double distance, Stats &stats,
+                            Trace *trace = nullptr) const override;
+};
+```
+
+The beginning of DBSCAN's calculation selects an index through the interface. The remaining density expansion calls radius() and is shared by both modes.
+
+**Source** `src/algorithms.cpp` lines 228 to 238.
+
+```cpp
+Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
+    const bool indexed = indexed_;
+    Result r(mode(), record);
+    int n = static_cast<int>(s.points().size());
+    // -2 unassigned; -1 noise; >=0 cluster. kind: 0 noise, 1 border, 2 core.
+    std::vector<int> labels(n, -2), kind(n, 0), visited(n, 0);
+    std::unique_ptr<SpatialIndex> index;
+    if (indexed)
+        index = std::make_unique<KDTree>(s.points());
+    else
+        index = std::make_unique<LinearIndex>(s.points());
+```
+
+This is the Strategy pattern: the clustering operation holds one interchangeable neighbourhood strategy. unique_ptr communicates exclusive ownership; make_unique creates the selected implementation. Sorted neighbour IDs preserve the same deterministic cluster and border assignments across both strategies.
+
+The separation permits a useful comparison: labels should agree on identical input, while query-distance work may differ. Tree construction, reference checking and playback remain separate from that counter comparison.
+
+<!-- pagebreak -->
+
+## 5.6 Composition value snapshots and RAII
+
+Run contains a Scene and Result by value. Its constructor accepts values and moves them into owned members. Const accessors make completed input and results read-only through the public Run interface, so later live edits cannot modify a historical calculation.
+
+**Source** `include/trace.hpp` lines 207 to 216.
+
+```cpp
+class Run {
+    Scene input_;
+    Result result_;
+
+  public:
+    Run() = default;
+    Run(Scene input, Result result) : input_(std::move(input)), result_(std::move(result)) {}
+    const Scene &input() const noexcept { return input_; }
+    const Result &result() const noexcept { return result_; }
+};
+```
+
+DrawingSession uses resource acquisition is initialization to balance graphics operations across scope exits. Copy operations are deleted because duplicating the scope owner would cause duplicate cleanup.
+
+**Source** `src/ui_support.hpp` lines 273 to 287.
+
+```cpp
+class DrawingSession final {
+  public:
+    DrawingSession() {
+        BeginDrawing();
+        Ui::beginTarget();
+        BeginMode2D(Ui::camera());
+    }
+    ~DrawingSession() {
+        EndMode2D();
+        Ui::endTarget();
+        EndDrawing();
+    }
+    DrawingSession(const DrawingSession &) = delete;
+    DrawingSession &operator=(const DrawingSession &) = delete;
+};
+```
+
+Construction begins the drawing session; destruction ends it. The Window wrapper similarly pairs InitWindow with CloseWindow, and Ui owns loaded fonts. Standard containers and unique_ptr provide the same lifetime discipline for ordinary data and polymorphic strategies.
+
+Composition describes which object owns another object's lifetime. RAII describes when cleanup happens. Move semantics transfers an owned value efficiently; it is a language mechanism that supports these ownership choices.
+
+<!-- pagebreak -->
+
+## 5.7 Adapter abstraction and the Memento pattern
+
+The ingestion boundary depends on a LogAdapter interface. CsvLogAdapter supplies the local CSV implementation without adding parser details to the geometry algorithms.
+
+**Source** `include/security.hpp` lines 124 to 133.
+
+```cpp
+class LogAdapter {
+  public:
+    virtual ~LogAdapter() = default;
+    virtual std::vector<Event> load(const std::string &path) const = 0;
+};
+// Strict single-line CSV implementation of the log-loading interface.
+class CsvLogAdapter final : public LogAdapter {
+  public:
+    std::vector<Event> load(const std::string &path) const override;
+};
+```
+
+WorkspaceState composes the editable Lab model, security model and unfinished fence. EditHistory retains these values as input mementos.
+
+**Source** `include/workspace.hpp` lines 8 to 14.
+
+```cpp
+struct WorkspaceState {
+    Scene lab;
+    SecurityConsole security;
+    std::vector<Point> fenceDraft;
+    WorkspaceState(Scene labInput = {}, SecurityConsole console = {}, std::vector<Point> draft = {})
+        : lab(std::move(labInput)), security(std::move(console)), fenceDraft(std::move(draft)) {}
+};
+```
+**Source** `include/workspace.hpp` lines 84 to 98.
+
+```cpp
+    bool record(const WorkspaceState &state) {
+        remember({state.lab, state.security, state.fenceDraft});
+        auto key = workspaceKey(state);
+        if (!states_.empty() && currentKey_ == key)
+            return false;
+        if (!states_.empty())
+            states_.erase(states_.begin() + static_cast<std::ptrdiff_t>(cursor_ + 1),
+                          states_.end());
+        states_.push_back(state);
+        currentKey_ = std::move(key);
+        if (states_.size() > 128)
+            states_.erase(states_.begin());
+        cursor_ = states_.size() - 1;
+        return true;
+    }
+```
+
+record() avoids equivalent duplicate states, removes a redo branch after a new edit and bounds history to 128 states. Undo and redo restore stored input through the public history interface. This editable input history is separate from Run's completed calculation evidence.
+
+<!-- pagebreak -->
+
+# 6 Algorithms and numerical policies
+
+## 6.1 Geometry kernel and collision mode
 
 The geometry kernel provides squared distance, distance, orientation, on-segment tests, closed-segment intersection and polygon validation. All modes use world coordinates with x increasing rightward and y upward. Screen scaling and canvas zoom do not change geometric input.
 
@@ -277,7 +611,7 @@ Collision mode treats consecutive points as separate closed segments: points 0 a
 
 The reference collision scene contains four segments and reports two intersecting pairs. Traces highlight the tested pair and the segments involved in intersections. With m segments, the pair loop performs m(m-1)/2 tests and has O(m squared) calculation time. Retained intersection lines and trace snapshots consume additional storage.
 
-## 5.2 Common input bounds
+## 6.2 Common input bounds
 
 | Input | Bound or policy |
 | --- | --- |
@@ -291,7 +625,7 @@ Validation and result checking are separate from the core algorithm costs stated
 
 <!-- pagebreak -->
 
-## 5.3 Convex hull and polygon membership
+## 6.3 Convex hull and polygon membership
 
 **Convex hull.** GeoViz implements Andrew's monotone-chain construction [3]. Points are sorted by exact x, y and input identity, and duplicate coordinates are collapsed. Lower and upper chains are built by removing the last chain point whenever the newest triple does not make a left turn. Joining the two chains produces the boundary without repeating endpoints.
 
@@ -319,7 +653,7 @@ Hull calculation costs O(n log n) time and O(n) auxiliary storage. Membership co
 
 <!-- pagebreak -->
 
-## 5.4 Dijkstra and A star routing
+## 6.4 Dijkstra and A star routing
 
 Dijkstra and A* operate on the same undirected graph with finite, nonnegative edge weights. Blocked edges are omitted from adjacency. The search maintains tentative costs, predecessors and settled vertices. A lazy priority queue accepts improved entries and discards stale ones when popped.
 
@@ -340,13 +674,13 @@ For ordinary spatial graphs, the estimate is Euclidean distance. Built-in unit-c
 
 Frames retain the frontier, settled labels, tentative g costs, f scores, predecessors and current focus. Compare executes both strategies on the same frozen input and synchronizes their traces. Bellman-Ford checks the reported optimum, and returned edges and path cost are checked separately.
 
-The six built-in route inputs produced equal Dijkstra and A* costs. On the reference graph, Dijkstra settled nine vertices and A* five. On Island bridges both settled fourteen, demonstrating that a heuristic does not guarantee fewer expansions. Chapter 10 gives the full comparison.
+The six built-in route inputs produced equal Dijkstra and A* costs. On the reference graph, Dijkstra settled nine vertices and A* five. On Island bridges both settled fourteen, demonstrating that a heuristic does not guarantee fewer expansions. Chapter 11 gives the full comparison.
 
 With a binary heap, the standard core bound is O((V + E) log V) for the bounded simple-graph setting; lazy heap entries can occupy O(V + E) storage. Dense inputs, validation, recorded snapshots and Bellman-Ford verification add work beyond the visible route counters. Weights, coordinate units and the heuristic must describe compatible costs.
 
 <!-- pagebreak -->
 
-## 5.5 Direct and indexed DBSCAN
+## 6.5 Direct and indexed DBSCAN
 
 DBSCAN groups points connected through sufficiently dense neighbourhoods rather than assigning them to fixed centres [6]. GeoViz uses an inclusive radius epsilon, and MinPts includes the query point itself. A core point has at least MinPts neighbours; a border point belongs to a core-connected group without meeting the density threshold; remaining points are noise.
 
@@ -375,7 +709,7 @@ DBSCAN radius depends on coordinate scale and density. A noise label means the s
 
 <!-- pagebreak -->
 
-## 5.6 Divide and conquer closest pair
+## 6.6 Divide and conquer closest pair
 
 Closest-pair mode finds the minimum-distance pair among all input points. It answers a different question from finding a neighbour of a chosen query. GeoViz sorts point identities by x coordinate once, recursively solves left and right ranges and merges their y order on return.
 
@@ -397,7 +731,7 @@ For the reference scene, the closest distance is approximately 82.462 world unit
 
 The core calculation takes O(n log n) time with O(n) auxiliary arrays and logarithmic recursion depth. Snapshot storage and verification are additional. The result retains the pair identities, numeric distance, work counts and check status, allowing the same output and playback interfaces to serve this mode without a special renderer lifecycle.
 
-## 5.7 Interpreting algorithm work
+## 6.7 Interpreting algorithm work
 
 Stats stores operations, neighbourhood-query counts and expanded or visited counts. The meaning of an operation depends on the strategy: route heap and edge work differs from a distance comparison. Counts are useful for comparing compatible modes on the same input; adding unrelated modes' counters does not create a common benchmark score.
 
@@ -405,7 +739,7 @@ Playback speed only changes how quickly frames are displayed. Core calculation, 
 
 <!-- pagebreak -->
 
-## 5.8 Balanced k d tree queries
+## 6.8 Balanced k d tree queries
 
 GeoViz builds a two-dimensional k-d tree using alternating x and y median splits [7]. std::nth_element selects each median, and every node retains an axis-aligned region. A new tree is constructed from each input snapshot so edits cannot leave a stale spatial partition.
 
@@ -421,7 +755,7 @@ Expected construction time is O(n log n) with O(n) stored nodes. Queries can vis
 
 <!-- pagebreak -->
 
-## 5.9 Core complexity summary
+## 6.9 Core complexity summary
 
 | Algorithm | Core time | Main auxiliary storage |
 | --- | --- | --- |
@@ -444,9 +778,9 @@ The implemented distinctions matter in evaluation. Dijkstra and A* use comparabl
 
 <!-- pagebreak -->
 
-# 6 Execution interaction and persistence
+# 7 Execution interaction and persistence
 
-## 6.1 From editable input to a frozen run
+## 7.1 From editable input to a frozen run
 
 ![Figure 5 Shared execution and inspection workflow](media/report-workflow.svg)
 
@@ -456,7 +790,7 @@ Each Frame is a value snapshot containing only the state needed for inspection: 
 
 Rewind and step therefore read existing snapshots. They do not reverse algorithm instructions or depend on current rendering timing. Final jumps directly to the last frame. When the 4,096-frame cap is reached, middle decisions may be omitted, the cap is disclosed, and finish() preserves the final state. The complete answer remains available.
 
-## 6.2 Editing and comparison
+## 7.2 Editing and comparison
 
 Input changes invalidate the current result and comparison. A new run uses the changed input, while completed historical runs retain their own copies. Choosing another algorithm retains the scene and its saved state but invalidates the old mode's trace. Playing frames and changing presentation layout do not count as input edits.
 
@@ -466,7 +800,7 @@ Keyboard commands, canvas editing, native file dialogs and Windows drag-and-drop
 
 <!-- pagebreak -->
 
-## 6.3 Input history save checkpoints and recovery
+## 7.3 Input history save checkpoints and recovery
 
 EditHistory stores up to 128 semantic input states. Undo and redo restore input and invalidate completed results. Equivalent edits do not create redundant history entries, and a new edit after undo removes the abandoned redo branch. Saved-state checkpoints track whether current input matches the last successful save.
 
@@ -474,7 +808,7 @@ Revision tokens support efficient change detection. WorkspaceView borrows models
 
 SceneIO writes full-precision coordinates and reloads through validation. Security snapshots retain events, settings, fence and reviews together, so a later CSV change does not alter a saved analysis. Recent Sessions omits missing and duplicate paths. Recovery restores complete input, not the active algorithm, playback cursor or original save path.
 
-## 6.4 Failure handling
+## 7.4 Failure handling
 
 AtomicFiles stages related files before publication and restores prior files after a reported commit failure. A rejected import constructs no partial replacement of the live workspace. A failed save leaves the input and saved-state checkpoint available, allowing Save As to a different location.
 
@@ -494,9 +828,9 @@ Staged publication handles reported I/O errors. It is not a power-loss journal, 
 
 <!-- pagebreak -->
 
-# 7 Spatial Security Console
+# 8 Spatial Security Console
 
-## 7.1 Source to observation pipeline
+## 8.1 Source to observation pipeline
 
 The console reuses the geometry engine while retaining the relationship between each displayed point and its source records. Local CSV ingestion validates records before publication. A common UTC time window and exact user and device filters select the population. The start is included and the end is excluded; an asterisk selects all identities.
 
@@ -519,7 +853,7 @@ Observation retains source-event indices. Selecting a geographic point exposes i
 
 <!-- pagebreak -->
 
-## 7.2 Behavioural coordinates and parameter sensitivity
+## 8.2 Behavioural coordinates and parameter sensitivity
 
 The feature view first applies the same filters and then groups selected events by device. Each device uses the full selected window duration, including intervals without records. Its request and failure totals are converted into rates and divided by explicit scale factors.
 
@@ -535,7 +869,7 @@ Default scales are 10 requests per minute and 1 failure per minute. With 400 req
 
 Changing the window changes denominators as well as selected records. Changing a scale changes relative distances and neighbourhoods. The sensitivity view compares nearby parameter choices for teaching; it does not estimate real-world detection accuracy. Truth labels and analyst verdicts never enter the feature coordinates or clustering decisions.
 
-## 7.3 Review and reproducible evidence
+## 8.3 Review and reproducible evidence
 
 The documented candidate rule flags a selected source event when it is strictly outside the permitted fence or belongs to a device labelled as feature-space DBSCAN noise. A device's feature flag propagates to its selected events. Geographic clustering noise is a separate view result and is not substituted for that rule.
 
@@ -547,13 +881,13 @@ Geographic outliers and density noise prompt review. Travel, VPNs, approximate g
 
 <!-- pagebreak -->
 
-## 7.4 Security inputs and scenario catalogue
+## 8.4 Security inputs and scenario catalogue
 
 The CSV adapter requires event identity, UTC timestamp, user and device identities, geographic coordinates, request and failure counts, truth label and summary. IDs must be nonempty and event IDs unique. Counts are nonnegative integers, failures cannot exceed requests, and requests cannot exceed one billion. Labels are benign, suspicious or unknown.
 
 The parser supports quoted commas and doubled quotation marks in single-line records and requires the exact header. Files are limited to 8 MiB and 4,096 source records. Each filtered view supports up to 256 observations; users narrow filters when necessary. Windows must be positive and at most 31 days.
 
-| Scenario | File records | Selected events | Device points | Demonstration |
+| Scenario | File records | Selected events | Device points | Purpose |
 | --- | --- | --- | --- | --- |
 | Compact reference | 12 | 12 | 12 | Normal use, backup and an isolated failure burst |
 | Campus operations | 50 | 48 | 16 | Repeated records and excluded time endpoints |
@@ -571,17 +905,17 @@ All nine scenarios are local synthetic study data. The adapter reads a selected 
 
 <!-- pagebreak -->
 
-# 8 User interface and demonstration
+# 9 User interface and output
 
-## 8.1 Geometry laboratory
+## 9.1 Geometry laboratory
 
 ![Figure 7 GeoViz Lab displaying a completed convex hull](media/lab.png)
 
 The top controls select Lab, Security map or Security features and the applicable algorithm. The main canvas displays world-coordinate geometry and algorithm state. The inspector explains the current frame, final answer, verification status and counters. The timeline and playback controls inspect the recorded sequence.
 
-A typical demonstration starts with Lab, an algorithm and Samples. Run computes and checks the result; Play, Step and Rewind explain its reasoning. Dragging a point invalidates the result, after which Run creates a fresh trace. A paired mode can then be opened with Compare.
+In Lab, users select an algorithm and an input through Samples. Run computes and checks the result; Play, Step and Rewind explain its reasoning. Dragging a point invalidates the result, after which Run creates a fresh trace. A paired mode can then be opened with Compare.
 
-## 8.2 Editing and presentation
+## 9.2 Editing and accessibility
 
 Canvas tools add and move points, construct polygons, connect graph vertices and block edges. Source, goal, selected edge weight, query position, radius and MinPts can be edited as applicable. Mouse zoom and pan support spatial inspection; Fit restores a useful view.
 
@@ -591,7 +925,7 @@ The interface remains an educational desktop tool. The bundled fonts do not cove
 
 <!-- pagebreak -->
 
-## 8.3 Security investigation walkthrough
+## 9.3 Security investigation walkthrough
 
 ![Figure 8 Geographic security workspace with source inspection](media/security.png)
 
@@ -601,7 +935,7 @@ Open Settings to adjust the common UTC window, exact identity filters, radii, Mi
 
 Select a group or isolated observation and inspect its contributing records. Benign or Suspect opens a review note; saving records the verdict, note and time separately from synthetic truth. Export then writes reproducible evidence and adjacent snapshots. Reloading a saved security snapshot reproduces input without relying on the current CSV.
 
-## 8.4 Feedback and input preservation
+## 9.4 Feedback and input preservation
 
 The status and inspector distinguish invalid input, no path, checked results and trace truncation. Save stores editable input; Export stores result evidence. The UNSAVED marker compares input with a successful save checkpoint rather than with playback activity.
 
@@ -609,9 +943,9 @@ Keyboard navigation and native Windows file dialogs supplement canvas input. Ope
 
 <!-- pagebreak -->
 
-# 9 Verification methodology
+# 10 Verification methodology
 
-## 9.1 Independent checks and invariants
+## 10.1 Independent checks and invariants
 
 | Concern | Verification approach |
 | --- | --- |
@@ -627,21 +961,21 @@ Keyboard navigation and native Windows file dialogs supplement canvas input. Ope
 
 The fixed random seed 425050 makes generated reference comparisons reproducible. Checks exercise all 60 Lab samples and all nine security scenarios. Limits are tested at the maximum supported input and immediately beyond it; capped traces retain their final state and completed results.
 
-## 9.2 Reliability and desktop verification
+## 10.2 Reliability and desktop verification
 
 Product tests exercise bounded text editing, UTF-8 deletion, equivalent edits, replacement models with distinct revisions, recent-path filtering and incomplete recovery. Desktop command checks cover rejected imports, selection preservation, failed saves and refused unsaved close when recovery fails.
 
 The documented portable-package review completed 77 states at each of three display sizes: 960 by 640, 1440 by 900 and 1920 by 1200. It covered every mode, both security views, all scenarios, intermediate frames, dialogs, comparisons, presentation and enlarged text. Asset checks and startup failures were tested after fresh extraction into a path containing spaces and Omega.
 
-## 9.3 Scope of the evidence
+## 10.3 Scope of the evidence
 
 Runtime reference checks add work beyond the algorithm counters. Hull invariant checks are not a general proof for every input; collision has no separate runtime oracle. Automated state checks and assistant-driven UI tasks establish observed behaviour on the tested setup, not novice-user success rates or exhaustive physical interaction coverage. No unfamiliar-user usability study is claimed.
 
 <!-- pagebreak -->
 
-# 10 Results and evaluation
+# 11 Results and evaluation
 
-## 10.1 Fresh build and test results
+## 11.1 Fresh build and test results
 
 The following checks were executed on 1 November 2026 against source revision 2bb28197. A clean exported source folder was configured with GCC 15.2, C++17, Release optimization and warnings treated as errors. The engine build uses GEOVIZ_BUILD_APP=OFF; the supplied Windows executable was exercised separately.
 
@@ -656,19 +990,19 @@ The following checks were executed on 1 November 2026 against source revision 2b
 | Supplied desktop executable | 77 automated states at 1440 by 900 passed |
 | Report output collection | 60 Lab runs and 9 security scenarios completed |
 
-The concern suites separately check geometry, routing, clustering, persistence, security and workspace transitions. The desktop run renders every mode, both security views, every scenario, intermediate frames, dialogs, comparison, presentation layout and enlarged text. These are executed programmatic checks; they do not replace a physical mouse and keyboard demonstration.
+The concern suites separately check geometry, routing, clustering, persistence, security and workspace transitions. The desktop run renders every mode, both security views, every scenario, intermediate frames, dialogs, comparison, presentation layout and enlarged text. These checks exercise production application commands and rendered states.
 
 The earlier implementation revision 1076a66f has a completed successful GitHub Actions run with six jobs: GCC and Clang in Debug and Release, Linux desktop checks and Windows package verification [8]. Its Linux Debug jobs enable address and undefined-behaviour sanitizers. The new local checks above are stated separately from that historical CI result.
 
-## 10.2 Interpretation
+## 11.2 Interpretation
 
-The checks support determinism, model invariants, reference agreement and input preservation in the exercised cases. They include failure behaviour as well as successful demonstrations. They do not establish correctness for all floating-point configurations, every graphics driver or every possible user interaction.
+The checks support determinism, model invariants, reference agreement and input preservation in the exercised cases. They include failure behaviour as well as successful operations. They do not establish correctness for all floating-point configurations, every graphics driver or every possible user interaction.
 
 For report examples, a small headless exporter executed the existing engine on every built-in Lab variant and every security catalogue entry. The comparisons on the following pages therefore use the delivered C++ implementation with supplied inputs and parameters. They are operation and result comparisons rather than timed performance benchmarks.
 
 <!-- pagebreak -->
 
-## 10.3 Routing and clustering comparisons
+## 11.3 Routing and clustering comparisons
 
 | Route sample | Equal optimal cost | Dijkstra expansions | A* expansions |
 | --- | --- | --- | --- |
@@ -696,9 +1030,9 @@ The mixed-density input produces 22 noise points under its supplied settings, wh
 
 <!-- pagebreak -->
 
-## 10.4 Security candidate evaluation
+## 11.4 Security candidate evaluation
 
-The following results use each scenario's catalogue defaults, common window, supplied fence and candidate rule from Section 7.3. Evaluation units are selected source events, so one noisy device can contribute several flagged records. Unknown truth labels are excluded from the four known-label counts.
+The following results use each scenario's catalogue defaults, common window, supplied fence and candidate rule from Section 8.3. Evaluation units are selected source events, so one noisy device can contribute several flagged records. Unknown truth labels are excluded from the four known-label counts.
 
 | Scenario | TP | FP | TN | FN | Unknown |
 | --- | --- | --- | --- | --- | --- |
@@ -722,9 +1056,40 @@ These results expose both over-flagging and missed cases. They support contextua
 
 <!-- pagebreak -->
 
-# 11 Limitations and future improvements
+## 11.5 Algorithm execution outputs
 
-## 11.1 Current limits
+The following summaries were collected from the delivered C++ engine on 1 November 2026. Each row uses that mode's first built-in Reference scene, not one common scene across unrelated algorithm families. Distances and costs use the scene's world-compatible units and display precision.
+
+| Mode | Recorded reference scene output |
+| --- | --- |
+| Convex hull | Hull has 7 vertices. |
+| Geofence | INSIDE |
+| Dijkstra | Optimal cost 403.434; expanded 9 vertices. |
+| A star | Optimal cost 403.434; expanded 5 vertices. |
+| DBSCAN scan | 2 clusters; 2 noise points. |
+| Closest pair | Closest distance 82.462 |
+| KD nearest | Nearest distance 53.852 |
+| KD radius | 1 point inside radius. |
+| DBSCAN indexed | 2 clusters; 2 noise points. |
+| Segment collision | 2 intersecting segment pairs. |
+
+Hull checks convexity and containment. Geofence, routes, clustering and proximity compare with the references described in Chapter 10. Collision uses explicit expected-case tests rather than claiming a separate runtime oracle. The direct and indexed DBSCAN reference inputs produce identical labels and point kinds; Dijkstra and A* produce the same stored optimal cost.
+
+The application screenshots in Chapter 9 show the visible canvas, playback and source inspection. This table records actual numeric and textual engine output, complementing those figures. All 60 generated Lab inputs and all nine security scenarios completed during report output collection.
+
+## 11.6 Automated desktop check
+
+```powershell
+.\GeoViz.exe --root . --smoke --smoke-size 1440 900
+```
+
+The command runs the automated desktop path and writes its report and captures to output/. The check completed 77 states at the stated size. A normal launch omits --smoke and opens the interactive application.
+
+<!-- pagebreak -->
+
+# 12 Limitations and future improvements
+
+## 12.1 Current limits
 
 Geometry uses finite doubles and documented tolerances. Near-degenerate inputs can remain sensitive to rounding, and the local projection approximates geographic distance within a limited study area. Exact predicates or a suitable geospatial library would be needed for stronger numerical guarantees or larger regions.
 
@@ -734,7 +1099,7 @@ The security inputs are synthetic and the candidate rule is deliberately transpa
 
 Staged saves handle reported publication failures but do not form a power-loss transaction journal. Recovery is local to the extraction directory. The supplied executable targets Windows x64, native file dialogs are Windows-only, and font coverage is limited. Automated and assistant UI review do not measure unfamiliar-user learning time or full accessibility.
 
-## 11.2 Prioritized improvements
+## 12.2 Prioritized improvements
 
 1. Add exact or adaptive geometric predicates for difficult degeneracies and make tolerance sensitivity easier to inspect.
 2. Separate large result computation from compressed trace retention, with background execution and cancellation before increasing dataset limits.
@@ -748,7 +1113,7 @@ These are extensions to the delivered system. They are distinct from the impleme
 
 <!-- pagebreak -->
 
-# 12 Conclusion and requirement traceability
+# 13 Conclusion and requirement traceability
 
 GeoViz delivers an inspectable computational geometry laboratory and a second application of the same engine to source-linked security observations. It combines ten algorithm modes, sixty deterministic Lab samples and nine synthetic security scenarios with editable input, recorded playback, comparison and reproducible output.
 
@@ -758,16 +1123,16 @@ Fresh tests and the published revision's CI results support the exercised implem
 
 | Requirement group | Implementation | Main report section |
 | --- | --- | --- |
-| Geometry kernel and boundaries | GeometryKernel, HullAlgorithm, GeofenceAlgorithm | 5.1 to 5.3 |
-| Weighted and blocked routing | Shared RouteAlgorithm, Dijkstra and A* | 5.4 and 10.3 |
-| Direct and indexed clustering | DBSCANAlgorithm with LinearIndex or KDTree | 5.5 and 10.3 |
-| Proximity and collision | ClosestPairAlgorithm, SpatialQueryAlgorithm, CollisionAlgorithm | 5.1, 5.6 and 5.8 |
-| OOP and reusable computation | Interfaces, strategies, Template Method, composition and RAII | 4 |
-| Editing playback and comparisons | Scene, Frame, Trace, Playback and Run | 6 and 8 |
-| Persistence and input preservation | SceneIO, AtomicFiles, EditHistory and SessionFiles | 6.3 and 6.4 |
-| Security map and feature planes | SecurityConsole, Observation and CSV adapter | 7 |
-| Source-linked reproducible evidence | Reviews, JSON, snapshots and consistency checks | 7.3 and Appendix B |
-| Validation and evaluation | Reference checks, regressions, desktop checks and CI | 9 and 10 |
+| Geometry kernel and boundaries | GeometryKernel, HullAlgorithm, GeofenceAlgorithm | 6.1 to 6.3 |
+| Weighted and blocked routing | Shared RouteAlgorithm, Dijkstra and A* | 6.4 and 11.3 |
+| Direct and indexed clustering | DBSCANAlgorithm with LinearIndex or KDTree | 6.5 and 11.3 |
+| Proximity and collision | ClosestPairAlgorithm, SpatialQueryAlgorithm, CollisionAlgorithm | 6.1, 6.6 and 6.8 |
+| OOP and reusable computation | Interfaces, strategies, Template Method, composition and RAII | 4 and 5 |
+| Editing playback and comparisons | Scene, Frame, Trace, Playback and Run | 7 and 9 |
+| Persistence and input preservation | SceneIO, AtomicFiles, EditHistory and SessionFiles | 7.3 and 7.4 |
+| Security map and feature planes | SecurityConsole, Observation and CSV adapter | 8 |
+| Source-linked reproducible evidence | Reviews, JSON, snapshots and consistency checks | 8.3 and Appendix B |
+| Validation and evaluation | Reference checks, regressions, desktop checks and CI | 10 and 11 |
 
 <!-- pagebreak -->
 
@@ -791,7 +1156,7 @@ Fresh tests and the published revision's CI results support the exercised implem
 
 [9] International Institute of Information Technology Bhubaneswar. Official institute website and cover crest reproduced from the institute letterhead. https://www.iiit-bh.ac.in/ and [official institute letterhead](https://www.iiit-bh.ac.in/wp-content/uploads/2026/jobs/ANRF_V2_2101.pdf).
 
-Implementation measurements in Chapter 10 and scenario counts in Section 7.4 were regenerated from the cited source revision on 1 November 2026. Historical CI and second-compiler checks retain their original dates and source revision. Screenshot figures use the repository's bundled application captures. Architecture and explanatory figures summarize the implemented source relationships and policies. The institute logo is reproduced from its official website for academic identification [9].
+Implementation measurements in Chapter 11 and scenario counts in Section 8.4 were regenerated from the cited source revision on 1 November 2026. Historical CI and second-compiler checks retain their original dates and source revision. Screenshot figures use the repository's bundled application captures. Architecture and explanatory figures summarize the implemented source relationships and policies. The institute logo is reproduced from its official website for academic identification [9].
 
 <!-- pagebreak -->
 
@@ -859,399 +1224,3 @@ Timestamps are integer UTC seconds. The half-open filter is start <= timestamp <
 ## B.3 Repository navigation
 
 Domain interfaces live under include/. Core algorithms and predicates are in src/algorithms.cpp and src/geometry.cpp. Security processing is split across security.cpp, security_io.cpp, security_samples.cpp and csv.cpp. App command, input, inspector and render methods live in separate src/app*.cpp files. Tests cover the engine, regressions, product behaviour, desktop commands, structured evidence and portable packaging.
-
-
-<!-- pagebreak -->
-
-# Appendix C Selected OOP source code
-
-This appendix prints the project code where object oriented concepts are directly visible. Each block is an unchanged extract from the documented source revision, with its file and line range. The complete compilable source remains in the repository. The separate OOP Code Extracts PDF contains these same pages for convenient printing.
-
-## C.1 Encapsulation and validation
-
-Point keeps coordinates private. Construction and setters use one check, so an invalid coordinate cannot enter through an ordinary public edit. Accessors permit observation without exposing writable fields.
-
-**Source** `include/scene.hpp` lines 24 to 40.
-
-```cpp
-class Point {
-    double x_ = 0;
-    double y_ = 0;
-    static double checked(double value) {
-        if (!std::isfinite(value) || std::abs(value) > 1e7)
-            throw std::invalid_argument("Coordinate must be finite and within +/-10000000.");
-        return value;
-    }
-
-  public:
-    Point() = default;
-    Point(double x, double y) : x_(checked(x)), y_(checked(y)) {}
-    double x() const noexcept { return x_; }
-    void setX(double value) { x_ = checked(value); }
-    double y() const noexcept { return y_; }
-    void setY(double value) { y_ = checked(value); }
-};
-```
-
-Scene applies the same principle to parameters. A successful radius edit advances the model revision, allowing dependent results and history to detect input changes.
-
-**Source** `include/scene.hpp` lines 108 to 113.
-
-```cpp
-    void setRadius(double value) {
-        if (!std::isfinite(value) || value <= 0 || value > 1e7)
-            throw std::invalid_argument("Radius must be positive and at most 10000000.");
-        radius_ = value;
-        touch();
-    }
-```
-
-
-<!-- pagebreak -->
-
-## C.2 Abstraction and the Template Method
-
-Algorithm is abstract because mode() and calculate() are pure virtual. Its public run() function defines the execution lifecycle, while protected calculate() is the specialization point. A virtual destructor permits safe destruction through an Algorithm pointer.
-
-**Source** `include/algorithms.hpp` lines 66 to 74.
-
-```cpp
-class Algorithm {
-  protected:
-    virtual Result calculate(const Scene &scene, bool record) const = 0;
-
-  public:
-    virtual ~Algorithm() = default;
-    virtual Mode mode() const noexcept = 0;
-    Result run(const Scene &scene, bool record = true) const;
-};
-```
-**Source** `src/algorithms.cpp` lines 627 to 632.
-
-```cpp
-Result Algorithm::run(const Scene &scene, bool record) const {
-    Engine::validate(scene);
-    Result result = calculate(scene, record);
-    Engine::verify(scene, result);
-    return result;
-}
-```
-
-The call to calculate() dispatches to the concrete strategy at runtime. Engine validation and result checking stay in the shared lifecycle. The concrete hull class supplies the calculation and identifies its mode; override checks the signatures, and final closes this implementation to further inheritance.
-
-**Source** `include/algorithms.hpp` lines 76 to 81.
-
-```cpp
-class HullAlgorithm final : public Algorithm {
-    Result calculate(const Scene &scene, bool record) const override;
-
-  public:
-    Mode mode() const noexcept override { return Mode::Hull; }
-};
-```
-
-Template Method is a design pattern here. It does not mean that Algorithm is a C++ template. This distinction separates the object oriented lifecycle from generic programming syntax.
-
-
-<!-- pagebreak -->
-
-## C.3 Runtime polymorphism and owned strategies
-
-The application can call AlgorithmRunner without depending on Engine's registry. Engine implements that interface and owns concrete Algorithm objects through unique_ptr. Composition manages ownership; inheritance provides substitutable behaviour.
-
-**Source** `include/algorithms.hpp` lines 146 to 161.
-
-```cpp
-class AlgorithmRunner {
-  public:
-    virtual ~AlgorithmRunner() = default;
-    virtual Result execute(const Scene &scene, Mode mode, bool record = true) const = 0;
-};
-// Owning registry of algorithm Strategies, keyed by scoped Mode values.
-class Engine final : public AlgorithmRunner {
-    std::map<Mode, std::unique_ptr<Algorithm>> algorithms_;
-
-  public:
-    Engine();
-    Result execute(const Scene &scene, Mode mode, bool record = true) const override;
-    static void validate(const Scene &scene);
-    static bool verify(const Scene &scene, Result &result);
-};
-```
-**Source** `src/algorithms.cpp` lines 634 to 657.
-
-```cpp
-Engine::Engine() {
-    auto add = [this](std::unique_ptr<Algorithm> algorithm) {
-        const Mode key = algorithm->mode();
-        algorithms_.emplace(key, std::move(algorithm));
-    };
-    add(std::make_unique<HullAlgorithm>());
-    add(std::make_unique<GeofenceAlgorithm>());
-    add(std::make_unique<DijkstraAlgorithm>());
-    add(std::make_unique<AStarAlgorithm>());
-    add(std::make_unique<DBSCANAlgorithm>(false));
-    add(std::make_unique<ClosestPairAlgorithm>());
-    add(std::make_unique<SpatialQueryAlgorithm>(Mode::KDNearest));
-    add(std::make_unique<SpatialQueryAlgorithm>(Mode::KDRadius));
-    add(std::make_unique<DBSCANAlgorithm>(true));
-    add(std::make_unique<CollisionAlgorithm>());
-}
-// Reject unknown modes before dispatch through the abstract algorithm interface.
-Result Engine::execute(const Scene &scene, Mode mode, bool record) const {
-    auto found = algorithms_.find(mode);
-    if (found == algorithms_.end())
-        throw std::invalid_argument("Unknown algorithm mode.");
-    return found->second->run(scene, record);
-}
-```
-
-The registry contains both DBSCAN variants as differently configured instances of one class. execute() validates the mode lookup and invokes the selected object's common run() method. The virtual calculation inside that method chooses the concrete implementation. No owning raw new and delete pair is required.
-
-
-<!-- pagebreak -->
-
-## C.4 Inheritance with a shared route algorithm
-
-RouteAlgorithm derives from Algorithm and provides the shared calculation. DijkstraAlgorithm and AStarAlgorithm derive from RouteAlgorithm. This is multilevel inheritance with two concrete sibling specializations.
-
-**Source** `include/algorithms.hpp` lines 90 to 109.
-
-```cpp
-class RouteAlgorithm : public Algorithm {
-    Result calculate(const Scene &scene, bool record) const final;
-
-  protected:
-    virtual double estimate(const Scene &scene, int from, int goal) const = 0;
-};
-// Route specialization whose heuristic is identically zero.
-class DijkstraAlgorithm final : public RouteAlgorithm {
-    double estimate(const Scene &, int, int) const override { return 0.0; }
-
-  public:
-    Mode mode() const noexcept override { return Mode::Dijkstra; }
-};
-// Route specialization using Euclidean or grid-Manhattan estimates.
-class AStarAlgorithm final : public RouteAlgorithm {
-    double estimate(const Scene &scene, int from, int goal) const override;
-
-  public:
-    Mode mode() const noexcept override { return Mode::AStar; }
-};
-```
-
-The route loop is final, so the children change the protected estimate() hook rather than duplicate search, relaxation, trace construction and path reconstruction. Dijkstra returns zero; A* supplies a geometric estimate. Both expose their mode through the inherited public contract.
-
-The design supports substitution while preserving a common cost and validity policy. An incompatible A* estimate is reduced to zero by the shared implementation, which retains shortest-path correctness for that input.
-
-**Execution example.** App calls AlgorithmRunner::execute. Engine selects an AStarAlgorithm object and invokes Algorithm::run. The inherited RouteAlgorithm::calculate loop calls AStarAlgorithm::estimate through the virtual hook. The checked Result returns through the same interfaces used for Dijkstra.
-
-
-<!-- pagebreak -->
-
-## C.5 Spatial index Strategy and dependency substitution
-
-SpatialIndex defines proximity operations. LinearIndex and KDTree implement this contract with different query methods. The virtual destructor keeps exclusive polymorphic ownership safe.
-
-**Source** `include/algorithms.hpp` lines 23 to 39.
-
-```cpp
-class SpatialIndex {
-  public:
-    virtual ~SpatialIndex() = default;
-    virtual int nearest(Point query, Stats &stats, Trace *trace = nullptr) const = 0;
-    virtual std::vector<int> radius(Point query, double distance, Stats &stats,
-                                    Trace *trace = nullptr) const = 0;
-};
-// Exhaustive proximity Strategy and direct DBSCAN neighbourhood provider.
-class LinearIndex final : public SpatialIndex {
-    std::vector<Point> points_;
-
-  public:
-    explicit LinearIndex(std::vector<Point> points) : points_(std::move(points)) {}
-    int nearest(Point query, Stats &stats, Trace *trace = nullptr) const override;
-    std::vector<int> radius(Point query, double distance, Stats &stats,
-                            Trace *trace = nullptr) const override;
-};
-```
-
-The beginning of DBSCAN's calculation selects an index through the interface. The remaining density expansion calls radius() and is shared by both modes.
-
-**Source** `src/algorithms.cpp` lines 228 to 238.
-
-```cpp
-Result DBSCANAlgorithm::calculate(const Scene &s, bool record) const {
-    const bool indexed = indexed_;
-    Result r(mode(), record);
-    int n = static_cast<int>(s.points().size());
-    // -2 unassigned; -1 noise; >=0 cluster. kind: 0 noise, 1 border, 2 core.
-    std::vector<int> labels(n, -2), kind(n, 0), visited(n, 0);
-    std::unique_ptr<SpatialIndex> index;
-    if (indexed)
-        index = std::make_unique<KDTree>(s.points());
-    else
-        index = std::make_unique<LinearIndex>(s.points());
-```
-
-This is the Strategy pattern: the clustering operation holds one interchangeable neighbourhood strategy. unique_ptr communicates exclusive ownership; make_unique creates the selected implementation. Sorted neighbour IDs preserve the same deterministic cluster and border assignments across both strategies.
-
-The separation permits a useful comparison: labels should agree on identical input, while query-distance work may differ. Tree construction, reference checking and playback remain separate from that counter comparison.
-
-
-<!-- pagebreak -->
-
-## C.6 Composition value snapshots and RAII
-
-Run contains a Scene and Result by value. Its constructor accepts values and moves them into owned members. Const accessors make completed input and results read-only through the public Run interface, so later live edits cannot modify a historical calculation.
-
-**Source** `include/trace.hpp` lines 207 to 216.
-
-```cpp
-class Run {
-    Scene input_;
-    Result result_;
-
-  public:
-    Run() = default;
-    Run(Scene input, Result result) : input_(std::move(input)), result_(std::move(result)) {}
-    const Scene &input() const noexcept { return input_; }
-    const Result &result() const noexcept { return result_; }
-};
-```
-
-DrawingSession uses resource acquisition is initialization to balance graphics operations across scope exits. Copy operations are deleted because duplicating the scope owner would cause duplicate cleanup.
-
-**Source** `src/ui_support.hpp` lines 273 to 287.
-
-```cpp
-class DrawingSession final {
-  public:
-    DrawingSession() {
-        BeginDrawing();
-        Ui::beginTarget();
-        BeginMode2D(Ui::camera());
-    }
-    ~DrawingSession() {
-        EndMode2D();
-        Ui::endTarget();
-        EndDrawing();
-    }
-    DrawingSession(const DrawingSession &) = delete;
-    DrawingSession &operator=(const DrawingSession &) = delete;
-};
-```
-
-Construction begins the drawing session; destruction ends it. The Window wrapper similarly pairs InitWindow with CloseWindow, and Ui owns loaded fonts. Standard containers and unique_ptr provide the same lifetime discipline for ordinary data and polymorphic strategies.
-
-Composition describes which object owns another object's lifetime. RAII describes when cleanup happens. Move semantics transfers an owned value efficiently; it is a language mechanism that supports these ownership choices.
-
-
-<!-- pagebreak -->
-
-## C.7 Adapter abstraction and the Memento pattern
-
-The ingestion boundary depends on a LogAdapter interface. CsvLogAdapter supplies the local CSV implementation without adding parser details to the geometry algorithms.
-
-**Source** `include/security.hpp` lines 124 to 133.
-
-```cpp
-class LogAdapter {
-  public:
-    virtual ~LogAdapter() = default;
-    virtual std::vector<Event> load(const std::string &path) const = 0;
-};
-// Strict single-line CSV implementation of the log-loading interface.
-class CsvLogAdapter final : public LogAdapter {
-  public:
-    std::vector<Event> load(const std::string &path) const override;
-};
-```
-
-WorkspaceState composes the editable Lab model, security model and unfinished fence. EditHistory retains these values as input mementos.
-
-**Source** `include/workspace.hpp` lines 8 to 14.
-
-```cpp
-struct WorkspaceState {
-    Scene lab;
-    SecurityConsole security;
-    std::vector<Point> fenceDraft;
-    WorkspaceState(Scene labInput = {}, SecurityConsole console = {}, std::vector<Point> draft = {})
-        : lab(std::move(labInput)), security(std::move(console)), fenceDraft(std::move(draft)) {}
-};
-```
-**Source** `include/workspace.hpp` lines 84 to 98.
-
-```cpp
-    bool record(const WorkspaceState &state) {
-        remember({state.lab, state.security, state.fenceDraft});
-        auto key = workspaceKey(state);
-        if (!states_.empty() && currentKey_ == key)
-            return false;
-        if (!states_.empty())
-            states_.erase(states_.begin() + static_cast<std::ptrdiff_t>(cursor_ + 1),
-                          states_.end());
-        states_.push_back(state);
-        currentKey_ = std::move(key);
-        if (states_.size() > 128)
-            states_.erase(states_.begin());
-        cursor_ = states_.size() - 1;
-        return true;
-    }
-```
-
-record() avoids equivalent duplicate states, removes a redo branch after a new edit and bounds history to 128 states. Undo and redo restore stored input through the public history interface. This editable input history is separate from Run's completed calculation evidence.
-
-
-<!-- pagebreak -->
-
-# Appendix D Execution output and demonstration
-
-## D.1 Actual engine output
-
-The following summaries were collected from the delivered C++ engine on 1 November 2026. Each row uses that mode's first built-in Reference scene, not one common scene across unrelated algorithm families. Distances and costs use the scene's world-compatible units and display precision.
-
-| Mode | Recorded reference scene output |
-| --- | --- |
-| Convex hull | Hull has 7 vertices. |
-| Geofence | INSIDE |
-| Dijkstra | Optimal cost 403.434; expanded 9 vertices. |
-| A star | Optimal cost 403.434; expanded 5 vertices. |
-| DBSCAN scan | 2 clusters; 2 noise points. |
-| Closest pair | Closest distance 82.462 |
-| KD nearest | Nearest distance 53.852 |
-| KD radius | 1 point inside radius. |
-| DBSCAN indexed | 2 clusters; 2 noise points. |
-| Segment collision | 2 intersecting segment pairs. |
-
-Hull checks convexity and containment. Geofence, routes, clustering and proximity compare with the references described in Chapter 9. Collision uses explicit expected-case tests rather than claiming a separate runtime oracle. The direct and indexed DBSCAN reference inputs produce identical labels and point kinds; Dijkstra and A* produce the same stored optimal cost.
-
-The application screenshots in Chapter 8 show the visible canvas, playback and source inspection. This table records actual numeric and textual engine output, complementing those figures. All 60 generated Lab inputs and all nine security scenarios completed during report output collection.
-
-## D.2 Reproducing the automated check
-
-```powershell
-.\GeoViz.exe --root . --smoke --smoke-size 1440 900
-```
-
-The command runs the automated desktop path and writes its report and captures to output/. The check completed 77 states at the stated size. A normal launch omits --smoke and opens the interactive project for the live demonstration.
-
-<!-- pagebreak -->
-
-## D.3 Live demonstration sequence
-
-Use the complete extracted project folder with GeoViz.exe, assets/ and data/ together. Launch GeoViz.exe normally before presenting. The accompanying GeoViz Presentation PPTX contains the workflow on slide 2 and the algorithm problem statements, outputs and pseudocode on later slides.
-
-| Step | Action and visible result |
-| --- | --- |
-| 1 Start and explain | Show the workflow slide, then open the running GeoViz window and identify Lab, algorithms and Samples |
-| 2 Record geometry | Choose Convex hull, load the Reference scene, Run and Step; show a candidate removal and the final hull |
-| 3 Change the input | Move a point and show that the old trace is invalidated; run again, then demonstrate Undo and a fresh run |
-| 4 Compare routing | Choose Dijkstra and a route sample; Run and Compare with A star; show equal cost and the expansion counts |
-| 5 Compare density | Choose DBSCAN scan, run the Reference scene and Compare with indexed DBSCAN; explain core, border, noise and query work |
-| 6 Apply the engine | Open Security map, choose Compact reference, run indexed DBSCAN and inspect an event; switch to Security features and explain scaled rates |
-| 7 Reproduce and finish | Export evidence, show the saved snapshot and summary, then identify the Algorithm, SpatialIndex and Run code excerpts |
-
-For a short presentation, use approximately one minute for the workflow, three minutes for geometry and comparisons, two minutes for security and one minute for OOP and saved evidence. Keep the full folder available offline. Exact results depend on the selected built-in scene and settings; use the Reference scenes when matching the table on the previous page.
-
-**Questions to be ready to answer.** Explain why boundary is distinct from outside; why A star may fall back to a zero estimate; why MinPts includes the point itself; why density noise can be benign; why rewind reads recorded Frames; and how a virtual destructor and unique_ptr support safe ownership. Point to the relevant implementation in Appendix C while answering.
