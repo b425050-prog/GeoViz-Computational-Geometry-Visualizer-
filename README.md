@@ -13,8 +13,8 @@ to examine synthetic location and device-activity records.
 ## Run
 
 **The Windows executable is included in this repository:** [GeoViz.exe](GeoViz.exe).
-Download and extract the complete repository or the
-[final project ZIP](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/releases/download/final-submission/GeoViz-Final.zip),
+Download and extract the
+[latest repository ZIP](https://github.com/b425050-prog/GeoViz-Computational-Geometry-Visualizer-/archive/refs/heads/main.zip),
 then double-click `GeoViz.exe`. Keep `assets/` and `data/` beside it.
 Runtime saves, recovery files and exports go into `output/`.
 
@@ -60,13 +60,17 @@ diagrams are linked from the [design guide](docs/DESIGN.md).
 
 | Document | Contents |
 | --- | --- |
-| [Project report](docs/GeoViz_Project_Report.pdf) | One complete report covering the project, methodology, architecture, a numbered source code chapter, algorithms, execution outputs, security analysis and measured evaluation; [editable source](docs/PROJECT_REPORT.md) |
-| [Workflow presentation](docs/GeoViz_Presentation.pptx) | Class presentation with the workflow on slide 2, algorithm outputs and pseudocode |
+| [Project report](docs/GeoViz_Project_Report.pdf) | Complete 41-page report covering the project, methodology, architecture, a numbered source code chapter, algorithms, execution outputs, security analysis and measured evaluation; [editable source](docs/PROJECT_REPORT.md) |
+| [Class presentation](docs/GeoViz_Presentation.pptx) | Latest 27-slide presentation with the workflow on slide 2, all ten algorithm modes, outputs, pseudocode, spatial security analysis and conclusion |
 | [Project workflow](docs/WORKFLOW.md) | Input → validation → execution → playback → save/export; suitable for the workflow PPT |
 | [Design and algorithms](docs/DESIGN.md) | Modules, OOP concepts, shared implementations, algorithms and limitations |
 | [User guide](docs/USER_GUIDE.md) | Build commands, controls, security data and file formats |
 | [Verification](docs/VERIFICATION.md) | Executed checks, fixes and testing limits |
 | [Usability review](docs/USABILITY.md) | Repeatable user tasks and the completed assistant UI review |
+
+The presentation, report and editable report source are the current submission
+documents. Their [SHA-256 checksums](docs/DELIVERABLES.sha256) identify the exact
+files included in this repository and the portable package.
 
 ```text
 GeoViz.exe     Tested Windows application, included in the repository
